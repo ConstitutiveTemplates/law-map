@@ -1,0 +1,94 @@
+version: 1
+id: obligation.privacy.external-transmission-declared
+title: "External transmission of user data must be declared and controlled"
+category: privacy
+modality: obligation
+severity: high
+summary: >
+  Transmitting user information (identifiers, browsing attributes, device
+  data) to external services — analytics, ads, crash reporting, CDNs — must
+  be discoverable to the user: declared in a privacy/notice surface,
+  consent-gated where the regime requires it, and configurable so the
+  transmission can be disabled.
+scope:
+  components: [telemetry, analytics, error_reporting, third_party_sdk, frontend]
+  data_types: [ip_address, device_id, identifier, browsing_data, email]
+  excludes: >
+    First-party backend communication within the service's own
+    infrastructure; transmissions the user explicitly initiated.
+groundings:
+  - jurisdiction: JP
+    source_type: statute
+    status: in_force
+    authority: "電気通信事業法 (Telecommunications Business Act)"
+    citation: >
+      第27条の12 — telecommunications carriers must, when transmitting
+      user information to third parties, either opt-in consent, opt-out
+      notification, notify the MIC (届出), or disclose a privacy policy;
+      enforced since 2023-06-16.
+    effective: "2023-06-16"
+    review_by: "2027-03-31"
+    applicability: >
+      Web services and apps transmitting user identifiers to external
+      parties (ads/analytics/crash tooling) toward Japanese users.
+    sources:
+      - https://laws.e-gov.go.jp/law/359AC0000000166
+      - https://www.soumu.go.jp/main_sosiki/joho_tsusin/d_syohi/gaibu_soushin/index.html
+  - jurisdiction: EU
+    source_type: regulation
+    status: in_force
+    authority: "ePrivacy Directive 2002/58/EC (as amended); GDPR where identifiers are personal data"
+    citation: >
+      ePrivacy Art. 5(3) — consent required for storing/accessing
+      information on the terminal device (cookies/SDKs); GDPR Art. 13-14
+      transparency and Art. 6/7 lawful basis.
+    effective: "2009-12-19"
+    review_by: "2027-03-31"
+    sources:
+      - https://eur-lex.europa.eu/eli/dir/2002/58/oj
+      - https://eur-lex.europa.eu/eli/reg/2016/679/oj
+  - jurisdiction: DE
+    source_type: statute
+    status: in_force
+    authority: "TTDSG (Telekommunikation-Telemedien-Datenschutz-Gesetz)"
+    citation: "§ 25 TTDSG — consent for storing or accessing information in the user's terminal equipment"
+    effective: "2021-12-01"
+    review_by: "2027-03-31"
+    applicability: "German-implementation baseline; the strictest ePrivacy transposition."
+    sources:
+      - https://dsgvo-gesetz.de/ttdsg/
+  - jurisdiction: US
+    subdivision: CA
+    source_type: statute
+    status: in_force
+    authority: "California Consumer Privacy Act as amended by CPRA"
+    citation: >
+      Cal. Civ. Code §1798.100 (notice at collection), §1798.120/.135
+      (right to opt out of sale/sharing, Global Privacy Control signal
+      honoured).
+    effective: "2023-01-01"
+    review_by: "2027-01-31"
+    sources:
+      - https://oag.ca.gov/privacy/ccpa
+conflicts: []
+requires:
+  - obligation.privacy.no-cleartext-pii-logging
+directives:
+  human: >
+    Maintain a register of every external endpoint user data reaches;
+    expose it in the privacy notice; gate non-essential transmissions on
+    consent where ePrivacy/TTDSG/CCPA require; provide an opt-out or
+    consent-management surface.
+  agent: >
+    When adding an analytics, ads, crash-reporting, or third-party SDK
+    that transmits user identifiers, MUST update the declared-transmissions
+    surface (privacy notice / config registry) and wire it behind the
+    consent or opt-out mechanism the jurisdiction requires. Never add a
+    silent third-party transmission.
+related_sections:
+  - region-jp-external-transmission
+  - baseline-personal-data
+enforcement:
+  level: L1
+  check_refs:
+    - privacy/external-transmission-declared

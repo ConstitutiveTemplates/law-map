@@ -1,0 +1,32 @@
+# check stub for obligation.crypto.no-deprecated-algorithms
+# Contract: flag deprecated algorithms in security-relevant code and
+# transport config; MUST NOT flag marked non-security uses. L1 detection.
+
+id: crypto/no-deprecated-algorithms
+obligation: obligation.crypto.no-deprecated-algorithms
+level: L1
+tools:
+  - semgrep
+  - dependency metadata scan (e.g. weak-crypto linters)
+
+code_sinks:
+  - "hashlib.md5( / hashlib.sha1( in signing/MAC contexts"
+  - "Crypto.Cipher DES/3DES/ARC4/ARC2"
+  - "javax.crypto DESede/RC4"
+  - "crypto.createHash('md5'|'sha1') used for integrity"
+  - "openssl commands using -md5/-sha1/-des"
+config_sinks:
+  - TLS < 1.2 in server/CI deploy config (ssl_version, minVersion)
+  - cipher suites containing DES/3DES/RC4/MD5 or RSA <2048
+  - certificate generation requesting sha1WithRSA or 1024-bit RSA
+
+exemptions:
+  - comment-adjacent marker `non-security` / `checksum-only` on the call
+  - fixtures and test vectors under tests/
+  - explicit legacy-import helpers gated behind a named flag
+
+result_format: sarif
+fail_when: >
+  Any non-exempt code or config sink triggers; report per file+line with
+  the standard body being violated (NIST SP 800-131A, PCI DSS 4.2.1,
+  CRYPTREC list).

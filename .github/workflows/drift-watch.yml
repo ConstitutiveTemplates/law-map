@@ -42,6 +42,18 @@ jobs:
             echo "FOUND=1" >> "$GITHUB_ENV"
           fi
           cat drift.txt >> "$GITHUB_STEP_SUMMARY"
+      - name: Checkout good-future-codex
+        uses: actions/checkout@v4
+        with:
+          repository: ConstitutiveTemplates/good-future-codex
+          path: codex
+      - name: Codex section cross-reference
+        # related_sections ids drift when codex renames/removes a section —
+        # surface it here rather than only on PRs touching law-map itself.
+        run: |
+          if ! uv run law-map validate --codex codex >> drift.txt 2>&1; then
+            echo "FOUND=1" >> "$GITHUB_ENV"
+          fi
       - name: Open or update drift issue
         if: env.FOUND == '1'
         env:

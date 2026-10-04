@@ -1,0 +1,33 @@
+# check stub for obligation.licensing.no-copyleft-contamination
+# Contract: copyleft-licensed material must not enter the shipped
+# artifact without a recorded policy decision. L1 detection; L2 when
+# wired as a release gate.
+
+id: licensing/no-copyleft-contamination
+obligation: obligation.licensing.no-copyleft-contamination
+level: L1
+tools:
+  - licence scanner (pip-licenses, cargo-deny, licensee)
+  - vendored-file scan for GPL headers
+
+scan_scope:
+  - resolved dependency tree of the shipped artifact (not dev-only deps)
+  - vendored / copied source files inside the package
+  - distribution artifacts (wheels, containers, installers)
+
+copyleft_families:
+  strong: [GPL-2.0, GPL-3.0, AGPL-3.0, "CDDL", "SSPL"]
+  weak: [LGPL, MPL-2.0, EPL-2.0]  # allowed only per policy
+  non_code_cc: [CC-BY-SA, CC-BY-NC-SA]  # flags on code assets
+
+decision_surface: >
+  LICENSING.md or a policy file listing deliberate copyleft adoptions;
+  any flagged family absent from the surface fails.
+
+exemptions:
+  - build-time tools not shipped in the artifact
+  - LGPL with dynamic linking only, when policy allows it
+
+fail_when: >
+  A strong-copyleft component or vendored copyleft file is present in
+  the shipped set without a matching entry in the decision surface.

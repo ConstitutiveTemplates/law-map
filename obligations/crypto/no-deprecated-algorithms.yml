@@ -1,0 +1,89 @@
+version: 1
+id: obligation.crypto.no-deprecated-algorithms
+title: "No deprecated cryptographic algorithms in code or transport configuration"
+category: crypto
+modality: prohibition
+severity: high
+summary: >
+  Security-relevant code paths and TLS/certificate configuration must not
+  use algorithms retired by standards bodies: MD5 and SHA-1 for
+  integrity/signatures, DES/3DES/RC4 ciphers, RSA <2048, SSLv3/TLS 1.0/1.1
+  transport. Legacy-read-only compatibility belongs behind explicit
+  configuration, never defaults.
+scope:
+  components: [crypto, tls, authentication, signing, storage_encryption]
+  data_types: [credential, certificate, signature]
+  excludes: >
+    Non-security uses (e.g. MD5 as a cache key or content-addressed
+    deduplication) that are marked as such; read-only import paths for
+    legacy data migration.
+groundings:
+  - jurisdiction: US
+    source_type: standard
+    status: in_force
+    authority: "NIST SP 800-131A Rev.2 — Transitioning Cryptographic Algorithms and Key Lengths"
+    citation: >
+      SHA-1 disallowed for digital signatures since 2013; 3DES deprecated
+      (disallowed after 2023); minimums: RSA/DH ≥2048, ECDSA ≥224 bits;
+      FIPS 140-3 approved algorithm list.
+    effective: "2019-03-21"
+    review_by: "2027-03-31"
+    applicability: >
+      Binding on US federal systems; the de facto deprecation calendar
+      industry and FTC 'reasonable security' analysis follow.
+    sources:
+      - https://csrc.nist.gov/pubs/sp/800/131/a/r2/final
+  - jurisdiction: US
+    source_type: standard
+    status: in_force
+    authority: "PCI DSS v4.0"
+    citation: "Req. 4.2.1 — strong cryptography for transmission; Req. 2.2.5/8.3.6 — no insecure protocols/services or weak algorithms"
+    effective: "2024-03-31"
+    review_by: "2027-03-31"
+    applicability: "Systems storing, processing, or transmitting cardholder data."
+    sources:
+      - https://www.pcisecuritystandards.org/document_library
+  - jurisdiction: EU
+    source_type: regulation
+    status: scheduled
+    authority: "Cyber Resilience Act (CRA), Regulation (EU) 2024/2847"
+    citation: >
+      Annex I Part I (1) — products must ensure an appropriate level of
+      security based on risks and provide 'security by default';
+      deprecated algorithms fail the state-of-the-art test ENISA guidance
+      operationalises.
+    effective: "2027-12-11"
+    review_by: "2027-01-31"
+    sources:
+      - https://eur-lex.europa.eu/eli/reg/2024/2847/oj
+  - jurisdiction: JP
+    source_type: guidance
+    status: in_force
+    authority: "CRYPTREC 電子政府推奨暗号リスト / IPA TLS 安全設定ガイドライン"
+    citation: >
+      CRYPTREC ciphers list retired MD5/SHA-1-signature use, RC4 and
+      64-bit block ciphers; IPA guidance requires TLS 1.2+ with
+      forward-secrecy suites for e-Gov facing systems.
+    review_by: "2027-03-31"
+    sources:
+      - https://www.cryptrec.go.jp/english/index.html
+conflicts: []
+requires: []
+directives:
+  human: >
+    Audit crypto call sites and transport config against the NIST SP
+    800-131A transition table; replace SHA-1 signatures, DES-family
+    ciphers, and pre-1.2 TLS; where legacy read compatibility is
+    unavoidable, isolate it behind an explicit opt-in flag.
+  agent: >
+    NEVER introduce MD5, SHA-1-for-security, DES/3DES, RC4, RSA <2048, or
+    TLS <1.2 in code or configuration. Flag any existing usage as a
+    finding; non-security MD5 uses must carry a comment stating they are
+    not integrity-protecting.
+related_sections:
+  - baseline-pqc-fips
+  - baseline-pki-chain
+enforcement:
+  level: L1
+  check_refs:
+    - crypto/no-deprecated-algorithms

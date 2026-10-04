@@ -1,0 +1,31 @@
+# check stub for obligation.security.coordinated-vulnerability-disclosure
+# Contract: a repository shipping a product or service must expose a
+# coordinated vulnerability disclosure channel discoverable without
+# insider knowledge. Level L1 = detection/report, not yet a release gate.
+
+id: security/vdp-contact-published
+obligation: obligation.security.coordinated-vulnerability-disclosure
+level: L1
+tools:
+  - file-presence gate in CI
+  - HTTP probe for web services
+
+acceptance: >
+  At least one discovery surface names a monitored intake channel:
+  SECURITY.md at repository root or docs/, .well-known/security.txt on
+  the deployed service (RFC 9116), or a linked VDP page naming a
+  monitored contact (address, form, or platform handle) plus an
+  expected response timeline.
+
+signals:
+  repo:
+    present: [SECURITY.md, docs/SECURITY.md, .github/SECURITY.md]
+    must_contain_any: [contact, email, form URL, intake, disclosure]
+  service:
+    well_known: ".well-known/security.txt"
+    must_contain_any: ["Contact:", "Expires:"]
+
+fail_when:
+  - all discovery surfaces absent on a shipped-product repo
+  - surface exists but names no reachable intake channel
+  - security.txt lacks Contact: field

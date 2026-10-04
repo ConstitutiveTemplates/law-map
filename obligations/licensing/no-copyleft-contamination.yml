@@ -1,0 +1,76 @@
+version: 1
+id: obligation.licensing.no-copyleft-contamination
+title: "No unreviewed copyleft material linked or shipped into the product"
+category: licensing
+modality: prohibition
+severity: advisory
+summary: >
+  Copyleft obligations (GPL-family source-offer, licence-text carriage,
+  AGPL network-use clause) attach at distribution and enforce through
+  copyright law — courts treat non-compliance as infringement, not merely
+  contract breach. A copyleft dependency or code copy must never enter
+  the shipped artifact without an explicit licensing decision.
+scope:
+  components: [dependencies, distribution, packaging, copied_code]
+  data_types: []
+  excludes: >
+    Copyleft components deliberately adopted under a documented policy
+    (e.g. the project itself is GPL); LGPL dynamically-linked usage
+    evaluated per policy.
+groundings:
+  - jurisdiction: US
+    source_type: precedent
+    status: in_force
+    authority: "Copyright Act, 17 USC"
+    citation: >
+      Jacobsen v. Katzer, 535 F.3d 1373 (Fed. Cir. 2008) — OSS license
+      conditions are enforceable through copyright (conditions, not mere
+      covenants); 17 USC §§ 501-504 infringement remedies apply.
+    effective: "2008-08-13"
+    review_by: "2027-03-31"
+    sources:
+      - https://law.justia.com/cases/federal/appellate-courts/cafc/08-1001/08-1001-2011-03-14.html
+  - jurisdiction: EU
+    source_type: statute
+    status: in_force
+    authority: "Information Society Directive 2001/29/EC"
+    citation: "Art. 2 reproduction right and Art. 4 distribution right — licence conditions attach at copying/distribution."
+    effective: "2001-06-22"
+    review_by: "2027-03-31"
+    sources:
+      - https://eur-lex.europa.eu/eli/dir/2001/29/oj
+  - jurisdiction: DE
+    source_type: precedent
+    status: in_force
+    authority: "GPL enforcement in German courts"
+    citation: "Welte v. Sitecom, OLG München / Landgericht München I (2004, 2006) — GPL conditions enforceable via injunction in copyright proceedings."
+    review_by: "2027-03-31"
+    sources:
+      - https://fsfe.org/activities/policy/eu/2004-05-19-sitecom-munich.en.html
+  - jurisdiction: JP
+    source_type: statute
+    status: in_force
+    authority: "著作権法 (Copyright Act)"
+    citation: "第21条・第26条 — reproduction and transfer rights; licence violations actionable as infringement."
+    review_by: "2027-03-31"
+    sources:
+      - https://laws.e-gov.go.jp/law/345AC0000000048
+conflicts: []
+requires: []
+directives:
+  human: >
+    Run licence scanning in CI before every release; block merges that
+    introduce copyleft-licensed components into the shipped artifact
+    without a policy decision; document any deliberate adoption.
+  agent: >
+    NEVER add a dependency, vendored file, or code copy carrying a
+    copyleft licence (GPL-2/3, AGPL, CC-BY-SA on code, EUPL where the
+    compatibility clause binds) into the distributed artifact without a
+    declared licensing decision. Run the licence check; report conflicts
+    instead of resolving them silently.
+related_sections:
+  - baseline-license-drift
+enforcement:
+  level: L1
+  check_refs:
+    - licensing/no-copyleft-contamination

@@ -1,0 +1,33 @@
+# check stub for obligation.privacy.external-transmission-declared
+# Contract: every third-party transmission of user identifiers must be
+# registered in a declared-transmissions surface AND consent-gated where
+# the applicable regime requires it. L1 detection.
+
+id: privacy/external-transmission-declared
+obligation: obligation.privacy.external-transmission-declared
+level: L1
+tools:
+  - manifest diff (sdk registry vs declared list)
+  - semgrep for SDK endpoint calls
+
+acceptance: >
+  A declared-transmissions surface exists (privacy notice section,
+  config registry, or PRIVACY.md) listing every third-party host/SDK the
+  product transmits user identifiers to, with purpose and jurisdiction
+  tag. Each registered sink maps to an entry; unregistered sinks fail.
+
+sdk_sinks:
+  - analytics SDK init/track calls (mixpanel, ga4, segment, amplitude)
+  - crash reporters (sentry, firebase crashlytics) when they carry
+    user identifiers per scope.data_types
+  - ad networks and tracking pixels embedded in shipped surfaces
+
+gate_checks:
+  - ePrivacy/TTDSG-targeted builds: non-essential sinks behind consent UI
+  - CCPA/GPC: honour opt-out signal before transmission
+  - JP TBA Art. 27-12: transmission register maps to opt-in / opt-out
+    notice / MIC filing / policy-disclosure basis
+
+fail_when:
+  - transmission code exists with no registry entry
+  - registry entry lacks purpose or jurisdiction handling
