@@ -274,13 +274,18 @@ def codex_section_path(codex_root: Path, section_id: str) -> Path | None:
 
     ``baseline-personal-data`` resolves to
     ``sections/baseline/personal-data.md.jinja``: the id's first segment is
-    the tier directory, the rest the slug. Ids without a ``<tier>-`` prefix
-    (or an empty slug) resolve to None — they cannot name a section.
+    the tier directory, the rest the slug. The tier segment must name an
+    existing directory under ``sections/`` — ids like ``personal-data``
+    (``personal`` is not a codex tier) resolve to None, as do ids with no
+    separator or an empty slug.
     """
     tier, sep, slug = section_id.partition("-")
     if not sep or not tier or not slug:
         return None
-    return Path(codex_root) / CODEX_SECTIONS_DIR / tier / f"{slug}.md.jinja"
+    tier_dir = Path(codex_root) / CODEX_SECTIONS_DIR / tier
+    if not tier_dir.is_dir():
+        return None
+    return tier_dir / f"{slug}.md.jinja"
 
 
 def check_codex_sections(corpus: Corpus, codex_root: Path) -> list[str]:

@@ -51,12 +51,16 @@ def test_validate_codex_unknown_section_errors(corpus_dir: str, tmp_path, capsys
         "sections:\n  - id: baseline-personal-data\n    file: baseline/personal-data.md.jinja\n",
         encoding="utf-8",
     )
+    (codex / "sections" / "baseline" / "personal-data.md.jinja").write_text(
+        "{# ethics: id=baseline-personal-data version=2026-09-01.1 status=active #}\n",
+        encoding="utf-8",
+    )
     for yml in Path(corpus_dir).rglob("*.yml"):
         doc = yaml.safe_load(yml.read_text(encoding="utf-8"))
         doc["related_sections"].append("not-a-real-section")
         yml.write_text(yaml.safe_dump(doc), encoding="utf-8")
     assert cli.main(["--root", corpus_dir, "validate", "--codex", str(codex), "--warnings"]) == 1
-    assert "not present in good-future-codex" in capsys.readouterr().err
+    assert "does not resolve" in capsys.readouterr().err
 
 
 def test_validate_codex_known_section_ok(corpus_dir: str, tmp_path, capsys) -> None:
@@ -127,3 +131,46 @@ def test_export_empty_exits_1(tmp_path, capsys) -> None:
     root = tmp_path / "obligations"
     root.mkdir()
     assert cli.main(["--root", str(root), "export", "--out", str(tmp_path / "o")]) == 1
+
+
+def _write_codex(tmp_path) -> Path:
+    """Minimal codex checkout: sections/baseline/personal-data.md.jinja exists."""
+    codex = tmp_path / "codex"
+    (codex / "sections" / "baseline").mkdir(parents=True)
+    (codex / "sections" / "baseline" / "personal-data.md.jinja").write_text(
+        "{# ethics: id=baseline-personal-data #}\n", encoding="utf-8"
+    )
+    return codex
+
+
+def test_check_codex_clean_exits_0(corpus_dir: str, tmp_path, capsys) -> None:
+    codex = _write_codex(tmp_path)
+    assert cli.main(["--root", corpus_dir, "check", "--codex", str(codex)]) == 0
+    assert "0 expired" in capsys.readouterr().out
+
+
+def test_check_codex_broken_checkout_exits_1(corpus_dir: str, tmp_path, capsys) -> None:
+    codex = tmp_path / "codex"  # no sections/ directory at all
+    assert cli.main(["--root", corpus_dir, "check", "--codex", str(codex)]) == 1
+    assert "not a good-future-codex checkout" in capsys.readouterr().err
+
+
+def test_check_codex_unresolved_section_exits_1(corpus_dir: str, tmp_path, capsys) -> None:
+    codex = tmp_path / "codex"
+    (codex / "sections").mkdir(parents=True)  # sections/ exists but personal-data.md.jinja is missing
+    assert cli.main(["--root", corpus_dir, "check", "--codex", str(codex)]) == 1
+    err = capsys.readouterr().err
+    assert "related_sections 'baseline-personal-data' does not resolve" in err
+
+
+def test_validate_codex_clean_exits_0(corpus_dir: str, tmp_path, capsys) -> None:
+    codex = _write_codex(tmp_path)
+    assert cli.main(["--root", corpus_dir, "validate", "--codex", str(codex)]) == 0
+    assert "ok: 1 obligation(s)" in capsys.readouterr().out
+
+
+def test_validate_codex_unresolved_section_exits_1(corpus_dir: str, tmp_path, capsys) -> None:
+    codex = tmp_path / "codex"
+    (codex / "sections").mkdir(parents=True)
+    assert cli.main(["--root", corpus_dir, "validate", "--codex", str(codex)]) == 1
+    assert "does not resolve" in capsys.readouterr().err
