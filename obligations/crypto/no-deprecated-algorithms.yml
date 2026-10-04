@@ -81,6 +81,7 @@ directives:
     finding; non-security MD5 uses must carry a comment stating they are
     not integrity-protecting.
 related_sections:
+  - baseline-deprecated-crypto
   - baseline-pqc-fips
   - baseline-pki-chain
 enforcement:
