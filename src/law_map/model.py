@@ -266,12 +266,67 @@ def _check_uniqueness(corpus: Corpus) -> None:
             seen[ob_id] = ob.path
 
 
-def check_cross_references(corpus: Corpus, checks_root: Path | None = None) -> None:
+CODEX_SECTIONS_DIR = "sections"
+
+
+def codex_section_path(codex_root: Path, section_id: str) -> Path | None:
+    """Map a ``related_sections`` id to its codex file per the ``<tier>-<slug>`` rule.
+
+    ``baseline-personal-data`` resolves to
+    ``sections/baseline/personal-data.md.jinja``: the id's first segment is
+    the tier directory, the rest the slug. Ids without a ``<tier>-`` prefix
+    (or an empty slug) resolve to None — they cannot name a section.
+    """
+    tier, sep, slug = section_id.partition("-")
+    if not sep or not tier or not slug:
+        return None
+    return Path(codex_root) / CODEX_SECTIONS_DIR / tier / f"{slug}.md.jinja"
+
+
+def check_codex_sections(corpus: Corpus, codex_root: Path) -> list[str]:
+    """Verify every ``related_sections`` id resolves inside a codex checkout.
+
+    Per the ``<tier>-<slug>`` naming rule each id must map to an *existing*
+    ``sections/<tier>/<slug>.md.jinja`` in good-future-codex; anything else
+    is an error, not a warning. Returns a list of error strings (empty when
+    the corpus is consistent with the checkout). Never raises: a missing or
+    wrong-shaped checkout surfaces as per-id errors.
+    """
+    root = Path(codex_root)
+    errors: list[str] = []
+    for ob in corpus.obligations:
+        related = ob.data.get("related_sections", [])
+        if not isinstance(related, list):
+            continue
+        for section in related:
+            if not isinstance(section, str):
+                continue  # non-strings already error in per-file validation
+            target = codex_section_path(root, section)
+            if target is None or not target.is_file():
+                errors.append(
+                    f"{ob.id}: related_sections '{section}' does not resolve to a "
+                    "good-future-codex section (expected sections/<tier>/<slug>.md.jinja, "
+                    "e.g. baseline-personal-data -> sections/baseline/personal-data.md.jinja)"
+                )
+    return errors
+
+
+def check_cross_references(
+    corpus: Corpus,
+    checks_root: Path | None = None,
+    codex_root: Path | None = None,
+) -> None:
     """Cross-file checks: check_refs targets and requires/conflicts ids.
 
     Runs after load_corpus; appends to the corpus's error/warning lists.
     ``checks_root`` may be None to skip check_refs resolution (export/check
     commands operate on obligations only).
+
+    With ``codex_root`` (a good-future-codex checkout) every
+    ``related_sections`` id must resolve to ``sections/<tier>/<slug>.md.jinja``
+    per the ``<tier>-<slug>`` naming rule — missing ids are errors and the
+    weak "referenced by no other obligation" warning is suppressed. Without
+    it, the lenient offline warning behavior is kept.
     """
     known_ids = {ob.id for ob in corpus.obligations if ob.id}
     section_users: dict[str, int] = {}
@@ -289,10 +344,21 @@ def check_cross_references(corpus: Corpus, checks_root: Path | None = None) -> N
         related = ob.data.get("related_sections", [])
         if isinstance(related, list):
             for section in related:
-                if isinstance(section, str) and section_users.get(section, 0) < 2:
+                if not isinstance(section, str):
+                    continue
+                if codex_root is not None:
+                    target = codex_section_path(codex_root, section)
+                    if target is None or not target.is_file():
+                        corpus.errors.append(
+                            f"{ob.id}: related_sections '{section}' does not resolve to a "
+                            "good-future-codex section (expected sections/<tier>/<slug>.md.jinja, "
+                            "e.g. baseline-personal-data -> sections/baseline/personal-data.md.jinja)"
+                        )
+                elif section_users.get(section, 0) < 2:
                     corpus.warnings.append(
                         f"{ob.id}: related_sections '{section}' is referenced by no other obligation "
-                        "(possibly unknown to good-future-codex)"
+                        f"(possibly unknown to good-future-codex; run 'law-map check --codex <checkout>' "
+                        "for a definitive resolution check)"
                     )
         if checks_root is not None:
             enforcement = ob.data.get("enforcement")

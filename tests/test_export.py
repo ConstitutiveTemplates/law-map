@@ -49,3 +49,9 @@ def test_export_groundings_sorted_and_deterministic(tmp_path: Path) -> None:
     first = export_obligations([ob], tmp_path / "a")[0].read_text(encoding="utf-8")
     second = export_obligations([ob], tmp_path / "b")[0].read_text(encoding="utf-8")
     assert first == second
+
+
+def test_export_threads_today_through(tmp_path: Path) -> None:
+    ob = one_obligation()
+    text = export_obligations([ob], tmp_path, today=FIXED_TODAY)[0].read_text(encoding="utf-8")
+    assert f"version={FIXED_TODAY.isoformat()}.1" in text

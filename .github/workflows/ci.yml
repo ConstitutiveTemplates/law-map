@@ -26,5 +26,10 @@ jobs:
         run: uv run mypy src/law_map
       - name: Tests
         run: uv run pytest -q
-      - name: Corpus validates
-        run: uv run law-map validate
+      - name: Checkout good-future-codex
+        uses: actions/checkout@v4
+        with:
+          repository: ConstitutiveTemplates/good-future-codex
+          path: codex
+      - name: Corpus validates against codex sections
+        run: uv run law-map validate --codex codex

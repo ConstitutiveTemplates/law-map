@@ -30,6 +30,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_validate = sub.add_parser("validate", help="validate the corpus against the schema rules")
     p_validate.add_argument("--warnings", action="store_true", help="also print non-fatal warnings")
+    p_validate.add_argument(
+        "--codex",
+        type=Path,
+        default=None,
+        help=(
+            "path to a good-future-codex checkout; every related_sections id must "
+            "resolve to sections/<tier>/<slug>.md.jinja (errors on unresolved ids)"
+        ),
+    )
 
     sub.add_parser("list", help="list obligation ids")
 
@@ -42,6 +51,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--sources",
         action="store_true",
         help="HEAD-check grounding source URLs (network access)",
+    )
+    p_check.add_argument(
+        "--codex",
+        type=Path,
+        default=None,
+        help=(
+            "path to a good-future-codex checkout; every related_sections id must "
+            "resolve to sections/<tier>/<slug>.md.jinja (errors on unresolved ids)"
+        ),
     )
 
     p_export = sub.add_parser("export", help="render obligations as .md.jinja codex sections")
@@ -57,7 +75,17 @@ def main(argv: list[str] | None = None) -> int:
 
     corpus = model_mod.load_corpus(args.root)
     checks_root = args.root.parent / "checks"
-    model_mod.check_cross_references(corpus, checks_root=checks_root if checks_root.is_dir() else None)
+    codex_root = getattr(args, "codex", None)
+    if codex_root is not None and not (codex_root / "sections").is_dir():
+        corpus.errors.append(
+            f"--codex {codex_root}: not a good-future-codex checkout (no sections/ directory)"
+        )
+        codex_root = None  # avoid redundant per-id errors from a broken path
+    model_mod.check_cross_references(
+        corpus,
+        checks_root=checks_root if checks_root.is_dir() else None,
+        codex_root=codex_root,
+    )
 
     if args.command == "validate":
         return _cmd_validate(args, corpus)
@@ -109,6 +137,15 @@ def _cmd_show(args: argparse.Namespace, corpus: Any) -> int:
 
 
 def _cmd_check(args: argparse.Namespace, corpus: Any, check_mod: Any) -> int:
+    if getattr(args, "codex", None) is not None:
+        for issue in corpus.errors:
+            print(f"error: {issue}", file=sys.stderr)
+        if corpus.errors:
+            print(
+                f"check failed: {len(corpus.errors)} corpus error(s) with --codex — exit 1",
+                file=sys.stderr,
+            )
+            return 1
     report = check_mod.run_check(corpus, today=check_mod.today(), days=args.days, sources=args.sources)
     for e in report.expiry:
         state = "EXPIRED" if e.expired else f"due by {e.review_by}"
@@ -127,7 +164,9 @@ def _cmd_check(args: argparse.Namespace, corpus: Any, check_mod: Any) -> int:
 
 
 def _cmd_export(args: argparse.Namespace, corpus: Any, export_mod: Any) -> int:
-    written = export_mod.export_obligations(corpus.obligations, args.out)
+    from . import check as check_mod
+
+    written = export_mod.export_obligations(corpus.obligations, args.out, today=check_mod.today())
     for path in written:
         print(f"wrote {path}")
     if not written:

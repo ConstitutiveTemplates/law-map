@@ -50,6 +50,7 @@ docs/why-law-map.md             design note: functional equivalence
 ```bash
 uv sync
 uv run law-map validate            # load corpus, report every error/warning
+uv run law-map validate --codex codex/   # also cross-check related_sections against a good-future-codex checkout
 uv run law-map list                # all obligation ids
 uv run law-map show privacy/no-cleartext-pii-logging
 uv run law-map check               # groundings due for review (default 30 days)
@@ -72,15 +73,20 @@ uniqueness, grounding shape (jurisdiction, source_type, status, authority,
 citation, ISO `review_by`, non-empty http(s) `sources`), and cross-references
 (`requires`/`conflicts` ids, `enforcement.check_refs` files). Files whose
 basename starts with `_` are excluded from the corpus (see
-`obligations/_example.yml`). Unknown `related_sections` only warn.
+`obligations/_example.yml`). Without `--codex`, unknown `related_sections` only
+warn; with `--codex <checkout>` they are validated against that
+good-future-codex checkout's `sections/MANIFEST.yml` ids plus each
+`sections/**/*.md.jinja` frontmatter `id`, and an id not present becomes an
+error.
 
 ## Review freshness
 
 Every grounding carries a `review_by` date — the freshness contract. The
 weekly `drift-watch` workflow runs `law-map check --sources --days 30` and
 opens one GitHub issue (`law-drift` label) listing groundings due or expired
-plus source URLs that now 404 or redirect. `law-map check` exits 1 when any
-grounding is expired, so the workflow can gate on it.
+plus source URLs that now 404 or redirect; when a run is clean it closes any
+open `law-drift` issue with a "drift resolved" comment. `law-map check` exits
+1 when any grounding is expired, so the workflow can gate on it.
 
 ## License
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+from pathlib import Path
 
 import pytest
 import yaml
@@ -41,6 +42,36 @@ def test_validate_empty_corpus(tmp_path, capsys) -> None:
     root.mkdir()
     assert cli.main(["--root", str(root), "validate"]) == 0
     assert "ok: 0 obligation(s)" in capsys.readouterr().out
+
+
+def test_validate_codex_unknown_section_errors(corpus_dir: str, tmp_path, capsys) -> None:
+    codex = tmp_path / "codex"
+    (codex / "sections" / "baseline").mkdir(parents=True)
+    (codex / "sections" / "MANIFEST.yml").write_text(
+        "sections:\n  - id: baseline-personal-data\n    file: baseline/personal-data.md.jinja\n",
+        encoding="utf-8",
+    )
+    for yml in Path(corpus_dir).rglob("*.yml"):
+        doc = yaml.safe_load(yml.read_text(encoding="utf-8"))
+        doc["related_sections"].append("not-a-real-section")
+        yml.write_text(yaml.safe_dump(doc), encoding="utf-8")
+    assert cli.main(["--root", corpus_dir, "validate", "--codex", str(codex), "--warnings"]) == 1
+    assert "not present in good-future-codex" in capsys.readouterr().err
+
+
+def test_validate_codex_known_section_ok(corpus_dir: str, tmp_path, capsys) -> None:
+    codex = tmp_path / "codex"
+    (codex / "sections" / "baseline").mkdir(parents=True)
+    (codex / "sections" / "MANIFEST.yml").write_text(
+        "sections:\n  - id: baseline-personal-data\n    file: baseline/personal-data.md.jinja\n",
+        encoding="utf-8",
+    )
+    (codex / "sections" / "baseline" / "personal-data.md.jinja").write_text(
+        "{# ethics: id=baseline-personal-data version=2026-09-01.1 status=active #}\n",
+        encoding="utf-8",
+    )
+    assert cli.main(["--root", corpus_dir, "validate", "--codex", str(codex)]) == 0
+    assert "ok: 1 obligation(s)" in capsys.readouterr().out
 
 
 def test_list(corpus_dir: str, capsys) -> None:

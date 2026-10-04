@@ -97,13 +97,19 @@ def _groundings(ob: Obligation) -> list[dict[str, Any]]:
     return out
 
 
-def export_obligations(obligations: list[Obligation], out_dir: str | Path) -> list[Path]:
-    """Write one ``.md.jinja`` per obligation into ``out_dir``; return written paths."""
+def export_obligations(
+    obligations: list[Obligation], out_dir: str | Path, today: date | None = None
+) -> list[Path]:
+    """Write one ``.md.jinja`` per obligation into ``out_dir``; return written paths.
+
+    ``today`` is the version date stamp; defaulting to import-time
+    ``_VERSION_TODAY`` when omitted keeps direct callers' behavior identical.
+    """
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
     for ob in sorted(obligations, key=lambda o: o.id):
         target = out / f"{_slug(ob)}.md.jinja"
-        target.write_text(render_obligation(ob), encoding="utf-8")
+        target.write_text(render_obligation(ob, today=today), encoding="utf-8")
         written.append(target)
     return written

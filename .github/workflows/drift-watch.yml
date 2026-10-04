@@ -1,9 +1,10 @@
 name: drift-watch
 
 # Weekly review-freshness scan: groundings whose review_by is due/expired and
-# source URLs that 404 or redirect. Opens or updates ONE issue per run so the
-# inbox does not flood (reuses any open 'law-drift' issue). Skips when the
-# report is clean.
+# source URLs that 404 or redirect. On a finding it opens or updates ONE
+# issue per run so the inbox does not flood (reuses any open 'law-drift'
+# issue). When the report is clean it closes any open 'law-drift' issue with
+# a "drift resolved" comment.
 
 on:
   schedule:
@@ -53,4 +54,16 @@ jobs:
             gh issue edit "$issue" --title "Law-map drift report $(date -u +%Y-%m-%d)" --body "$body"
           else
             gh issue create --title "Law-map drift report $(date -u +%Y-%m-%d)" --label "$label" --body "$body"
+          fi
+      - name: Close drift issue on clean report
+        if: env.FOUND != '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          label="law-drift"
+          issue=$(gh issue list --state open --label "$label" --json number --jq '.[0].number // empty' | head -1)
+          if [ -n "$issue" ]; then
+            gh issue close "$issue" --comment "drift resolved"
+          else
+            echo "no open $label issue; nothing to close"
           fi

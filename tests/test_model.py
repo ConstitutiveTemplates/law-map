@@ -8,7 +8,9 @@ import pytest
 import yaml
 
 from law_map.model import (
+    check_codex_sections,
     check_cross_references,
+    codex_section_path,
     load_corpus,
 )
 
@@ -195,3 +197,55 @@ def test_cross_reference_unknown_related_section_warns_only(tmp_path: Path) -> N
     assert corpus.ok()
     assert any("unknown-section" in w for w in corpus.warnings)
     assert not any("shared-section" in w for w in corpus.warnings)
+
+
+def _write_codex(tmp_path: Path) -> Path:
+    """A minimal good-future-codex checkout: MANIFEST + one frontmatter id."""
+    codex = tmp_path / "codex"
+    sections = codex / "sections"
+    (sections / "baseline").mkdir(parents=True)
+    (sections / "evolving").mkdir()
+    (sections / "MANIFEST.yml").write_text(
+        "sections:\n  - id: baseline-personal-data\n    file: baseline/personal-data.md.jinja\n",
+        encoding="utf-8",
+    )
+    # id present only in frontmatter, not in MANIFEST
+    (sections / "evolving" / "new-section.md.jinja").write_text(
+        "{# ethics: id=evolving-new-section version=2026-09-01.1 status=draft #}\n",
+        encoding="utf-8",
+    )
+    return codex
+
+
+def test_load_codex_sections_union_of_manifest_and_frontmatter(tmp_path: Path) -> None:
+    codex = _write_codex(tmp_path)
+    assert load_codex_sections(codex) == {"baseline-personal-data", "evolving-new-section"}
+
+
+def test_load_codex_sections_missing_checkout_is_empty(tmp_path: Path) -> None:
+    assert load_codex_sections(tmp_path / "nonexistent") == set()
+
+
+def test_codex_unknown_related_section_errors(tmp_path: Path) -> None:
+    codex = _write_codex(tmp_path)
+    doc_a = yaml.safe_load(yaml.safe_dump(VALID_OBLIGATION))
+    doc_a["related_sections"] = ["baseline-personal-data", "not-a-real-section"]
+    doc_a["enforcement"]["check_refs"] = []
+    root = write_corpus(tmp_path, doc_a)
+    corpus = load_corpus(root)
+    check_cross_references(corpus, checks_root=None, codex_sections=load_codex_sections(codex))
+    assert not corpus.ok()
+    assert any("related_sections 'not-a-real-section' is not present" in e for e in corpus.errors)
+    # known ids must not error, and the weak sharing warning is suppressed
+    assert not any("referenced by no other obligation" in w for w in corpus.warnings)
+
+
+def test_codex_known_frontmatter_only_id_passes(tmp_path: Path) -> None:
+    codex = _write_codex(tmp_path)
+    doc_a = yaml.safe_load(yaml.safe_dump(VALID_OBLIGATION))
+    doc_a["related_sections"] = ["evolving-new-section"]
+    doc_a["enforcement"]["check_refs"] = []
+    root = write_corpus(tmp_path, doc_a)
+    corpus = load_corpus(root)
+    check_cross_references(corpus, checks_root=None, codex_sections=load_codex_sections(codex))
+    assert corpus.ok(), corpus.errors

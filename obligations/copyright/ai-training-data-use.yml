@@ -28,7 +28,7 @@ groundings:
     effective: "2019-01-01"
     review_by: "2027-03-31"
     sources:
-      - https://elaws.e-gov.go.jp/document?lawid=345AC0000000048
+      - https://laws.e-gov.go.jp/document?lawid=345AC0000000048
       - https://www.cric.or.jp/english/clj/cl2.html
   - jurisdiction: EU
     source_type: regulation

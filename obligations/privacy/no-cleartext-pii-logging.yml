@@ -24,7 +24,7 @@ groundings:
     review_by: "2027-04-01"
     applicability: "個人情報取扱事業者 — any business handling personal data"
     sources:
-      - https://elaws.e-gov.go.jp/document?lawid=415AC0000000057
+      - https://laws.e-gov.go.jp/document?lawid=415AC0000000057
       - https://www.ppc.go.jp/personalinfo/legal/
   - jurisdiction: EU
     source_type: regulation
@@ -55,7 +55,7 @@ groundings:
     review_by: "2027-01-31"
     applicability: "businesses meeting CCPA thresholds processing CA residents' data"
     sources:
-      - https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=1798.150.&lawCode=CIV
+      - https://oag.ca.gov/privacy/ccpa
   - jurisdiction: US
     source_type: precedent
     status: in_force
