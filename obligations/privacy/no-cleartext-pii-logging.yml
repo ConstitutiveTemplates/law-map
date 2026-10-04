@@ -1,0 +1,88 @@
+version: 1
+id: obligation.privacy.no-cleartext-pii-logging
+title: "No cleartext personal identifiers in logs, telemetry, or error reports"
+category: privacy
+modality: prohibition
+severity: critical
+summary: >
+  Application logs, error trackers, and telemetry pipelines must not receive
+  raw personal identifiers (emails, phone numbers, real names, government
+  IDs, full IP addresses, credentials). Mask, hash, or drop before emitting.
+scope:
+  components: [logging, telemetry, error_reporting, observability, crash_reporting]
+  data_types: [email, phone, person_name, ip_address, government_id, credential]
+  excludes: >
+    Synthetic or deliberately flagged canary values in tests; identifiers the
+    data subject explicitly pasted into a free-text field they control.
+groundings:
+  - jurisdiction: JP
+    source_type: statute
+    status: in_force
+    authority: "個人情報の保護に関する法律 (Act on the Protection of Personal Information, APPI)"
+    citation: "第23条 (個人データの安全管理措置)"
+    effective: "2022-04-01"
+    review_by: "2027-04-01"
+    applicability: "個人情報取扱事業者 — any business handling personal data"
+    sources:
+      - https://elaws.e-gov.go.jp/document?lawid=415AC0000000057
+      - https://www.ppc.go.jp/personalinfo/legal/
+  - jurisdiction: EU
+    source_type: regulation
+    status: in_force
+    authority: "General Data Protection Regulation (GDPR)"
+    citation: "Art. 5(1)(f) integrity and confidentiality; Art. 32 security of processing"
+    effective: "2018-05-25"
+    review_by: "2027-03-31"
+    applicability: "controllers and processors of personal data of data subjects in the Union"
+    sources:
+      - https://eur-lex.europa.eu/eli/reg/2016/679/oj
+  - jurisdiction: UK
+    source_type: statute
+    status: in_force
+    authority: "UK GDPR and Data Protection Act 2018"
+    citation: "UK GDPR Art. 5(1)(f), Art. 32; ICO guidance on logging and monitoring"
+    effective: "2021-01-01"
+    review_by: "2027-03-31"
+    sources:
+      - https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/
+  - jurisdiction: US
+    subdivision: CA
+    source_type: statute
+    status: in_force
+    authority: "California Consumer Privacy Act as amended by CPRA"
+    citation: "Cal. Civ. Code §1798.150 (private right of action for unredacted personal information)"
+    effective: "2023-01-01"
+    review_by: "2027-01-31"
+    applicability: "businesses meeting CCPA thresholds processing CA residents' data"
+    sources:
+      - https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=1798.150.&lawCode=CIV
+  - jurisdiction: US
+    source_type: precedent
+    status: in_force
+    authority: "FTC Act Section 5 — unfair or deceptive acts or practices"
+    citation: "FTC v. Wyndham Worldwide Corp., 799 F.3d 236 (3d Cir. 2015); In re LabMD, Inc., FTC enforcement history on unreasonable security"
+    review_by: "2027-03-31"
+    applicability: >
+      Companies whose data-security practices are unfair or deceptive;
+      enforcement-established baseline that careless handling (including
+      exposure via logs and error reports) is actionable.
+    sources:
+      - https://www.ftc.gov/legal-library/browse/cases-proceedings
+conflicts: []
+requires: []
+directives:
+  human: >
+    Treat every log line and error report as publishable. Mask emails, phone
+    numbers, names, and IPs before they reach a logger; never attach raw
+    request bodies to exception tracking; scrub before shipping telemetry.
+  agent: >
+    NEVER pass raw user identifiers (email, phone, real name, IP, government
+    ID, credentials) to logging, telemetry, or error-reporting calls. Mask or
+    hash before serializing. Do not include request bodies or headers in
+    exception reports without scrubbing.
+related_sections:
+  - baseline-personal-data
+enforcement:
+  level: L1
+  check_refs:
+    - privacy/no-cleartext-pii

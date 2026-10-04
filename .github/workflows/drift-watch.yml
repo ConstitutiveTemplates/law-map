@@ -1,0 +1,56 @@
+name: drift-watch
+
+# Weekly review-freshness scan: groundings whose review_by is due/expired and
+# source URLs that 404 or redirect. Opens or updates ONE issue per run so the
+# inbox does not flood (reuses any open 'law-drift' issue). Skips when the
+# report is clean.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+      - name: Offline due/expired scan
+        run: |
+          uv run law-map check --days 30 > drift.txt 2>&1 || true
+          cat drift.txt
+          if grep -Eq "EXPIRED|due by|\[source " drift.txt; then
+            echo "FOUND=1" >> "$GITHUB_ENV"
+          fi
+      - name: Source liveness probes
+        run: |
+          uv run law-map check --sources --days 30 >> drift.txt 2>&1 || true
+          if grep -Eq "\[source " drift.txt; then
+            echo "FOUND=1" >> "$GITHUB_ENV"
+          fi
+          cat drift.txt >> "$GITHUB_STEP_SUMMARY"
+      - name: Open or update drift issue
+        if: env.FOUND == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          label="law-drift"
+          body=$(cat drift.txt)
+          issue=$(gh issue list --state open --label "$label" --json number --jq '.[0].number // empty' | head -1)
+          if [ -n "$issue" ]; then
+            gh issue edit "$issue" --title "Law-map drift report $(date -u +%Y-%m-%d)" --body "$body"
+          else
+            gh issue create --title "Law-map drift report $(date -u +%Y-%m-%d)" --label "$label" --body "$body"
+          fi

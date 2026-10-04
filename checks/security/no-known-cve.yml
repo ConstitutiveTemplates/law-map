@@ -1,0 +1,20 @@
+# check stub for obligation.security.sbom-and-vulnerability-handling
+# Contract: no unremediated known-exploitable vulnerability may ship.
+# Level L2 = release-blocking gate.
+
+id: security/no-known-cve
+obligation: obligation.security.sbom-and-vulnerability-handling
+level: L2
+tools:
+  - pip-audit       # or osv-scanner for the consumer's language
+  - cisa-kev cross-reference
+
+audit:
+  trigger: "release job and weekly schedule"
+  blocking: >
+    Findings fail the job unless suppressed by a dated, reasoned ignore
+    entry in the consumer's audit config.
+  kev_escalation: >
+    Any CVE on CISA's Known Exploited Vulnerabilities catalog is a release
+    blocker regardless of configured severity threshold (CRA Annex I
+    "known exploitable vulnerabilities").

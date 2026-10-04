@@ -1,0 +1,106 @@
+version: 1
+id: obligation.copyright.ai-training-data-use
+title: "Conditions under which copyrighted works may be used for AI training / text and data mining"
+category: copyright
+modality: permission
+severity: high
+summary: >
+  Using copyrighted works for machine learning or TDM is permitted under
+  jurisdiction-specific exceptions — Japan's broad Art. 30-4, the EU's
+  conditional TDM exceptions with opt-outs, the UK's narrow non-commercial
+  exception, and US case-by-case fair use. The permission is conditioned,
+  not general.
+scope:
+  components: [data_pipeline, scraping, model_training, dataset_provenance]
+  data_types: [copyrighted_text, copyrighted_media, dataset_metadata]
+  excludes: >
+    Works already under a license that expressly permits TDM; purely
+    public-domain corpora.
+groundings:
+  - jurisdiction: JP
+    source_type: statute
+    status: in_force
+    authority: "著作権法 (Copyright Act of Japan)"
+    citation: >
+      第30条の4 — exploitation permitted for non-enjoyment purposes including
+      machine-learning information analysis, regardless of method, unless it
+      would unreasonably prejudice the copyright owner's interests.
+    effective: "2019-01-01"
+    review_by: "2027-03-31"
+    sources:
+      - https://elaws.e-gov.go.jp/document?lawid=345AC0000000048
+      - https://www.cric.or.jp/english/clj/cl2.html
+  - jurisdiction: EU
+    source_type: regulation
+    status: in_force
+    authority: "Directive (EU) 2019/790 on copyright in the Digital Single Market"
+    citation: >
+      Art. 3 (TDM for scientific research — mandatory exception for research
+      organisations) and Art. 4 (general TDM exception — applies UNLESS
+      rightsholders expressly reserved use, e.g. machine-readable opt-out).
+    effective: "2021-06-07"
+    review_by: "2027-03-31"
+    applicability: >
+      Art. 4 applies to commercial training only where no opt-out was
+      reserved; opt-out compliance is the operative duty.
+    sources:
+      - https://eur-lex.europa.eu/eli/dir/2019/790/oj
+  - jurisdiction: EU
+    source_type: regulation
+    status: scheduled
+    authority: "Artificial Intelligence Act, Regulation (EU) 2024/1689"
+    citation: >
+      Art. 53(1)(c) — GPAI providers must comply with EU copyright law
+      including Art. 4(3) DSM opt-outs; transparency obligations on training
+      content summaries.
+    effective: "2025-08-02"
+    review_by: "2027-02-28"
+    sources:
+      - https://eur-lex.europa.eu/eli/reg/2024/1689/oj
+  - jurisdiction: UK
+    source_type: statute
+    status: in_force
+    authority: "Copyright, Designs and Patents Act 1988"
+    citation: >
+      s.29A — TDM exception ONLY for non-commercial research; commercial
+      training requires a licence. (Proposed broader exception shelved 2023;
+      reform consultation active — watch.)
+    review_by: "2026-12-31"
+    sources:
+      - https://www.legislation.gov.uk/ukpga/1988/48/section/29A
+  - jurisdiction: US
+    source_type: precedent
+    status: in_force
+    authority: "Copyright Act §107 fair use — unsettled for AI training as of 2026"
+    citation: >
+      Authors Guild v. Google (2d Cir. 2015) found TDM transformative for
+      search; 2025 rulings split — Bartz v. Anthropic (N.D. Cal.: training
+      transformative; pirated-source acquisition infringing) vs. Thomson
+      Reuters v. Ross Intelligence (D. Del. 2025: NOT fair use for commercial
+      substitute). Treat as contested, case-by-case.
+    review_by: "2026-12-31"
+    applicability: >
+      Not a licence: a fact-specific defence. Document source provenance and
+      non-substitutive purpose to stay defensible.
+    sources:
+      - https://www.copyright.gov/ai/
+conflicts: []
+requires: []
+directives:
+  human: >
+    Check the jurisdiction where training occurs and where the model ships.
+    JP 30-4 is broad but still bars unreasonable prejudice; EU requires honouring
+    machine-readable opt-outs; UK permits commercial training only under licence;
+    US is case-by-case — keep provenance records to support a fair-use defence.
+  agent: >
+    NEVER claim a general right to train on scraped works. Respect
+    machine-readable TDM opt-outs (EU Art. 4(3)); record dataset provenance
+    per source; flag UK commercial use as licence-required; treat US fair use
+    as a defence to be argued, not a permission.
+related_sections:
+  - baseline-copyright-ai
+  - domain-scraping-law
+enforcement:
+  level: L1
+  check_refs:
+    - copyright/tdm-optout-respected

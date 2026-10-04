@@ -1,0 +1,46 @@
+# check stub for obligation.privacy.no-cleartext-pii-logging
+# Enforcement level: L1 (detection). This file is a machine-check spec
+# sketch; actual rulesets live here or are referenced from here by the
+# consuming template. The contract: any tool implementing this check MUST
+# flag raw personal identifiers passed to logging/telemetry/error-reporting
+# calls and MUST NOT flag masked/hashed/dropped values.
+
+id: privacy/no-cleartext-pii
+obligation: obligation.privacy.no-cleartext-pii-logging
+level: L1
+tools:
+  - semgrep
+  - ruff
+
+semgrep:
+  # Sketch rules; run with --config checks/privacy/no-cleartext-pii.yml.
+  # Language-agnostic heuristic: any call whose name matches a sink set...
+  sinks:
+    - logger.info/warn/error/debug
+    - print
+    - console.log
+    - telemetry.track_event
+    - sentry.capture_exception
+    - Structlog/Loguru bound-style calls
+    - f-string interpolation into a sink
+  sinks_ignore_when:
+    # ...is flagged UNLESS the payload is masked/hashed or the call is
+    # inside a test file (canary strings allowed per obligation scope).
+    - payload contains mask/redact/hash/[REDACTED] markers
+    - call site is under tests/ and value comes from a fixtures/canary set
+  taint_sources:
+    - request params / body fields mapped to scope.data_types
+    - user profile fields (email, phone, name, ip_address, government_id)
+    - any variable named *(password|token|secret|credential|api_key)*
+  result_format: sarif
+  # Exit 1 on any unignored finding; wire into CI as a non-blocking gate
+  # (level L1 = detection, alerting, not yet a hard release gate).
+
+ruff:
+  # Optional Python-specific complement: flag direct string interpolation
+  # into logging calls (flake8-logging-format class rules); no core ruff
+  # rule yet covers telemetry sinks, hence semgrep is the primary engine.
+
+fixtures:
+  - tests/fixtures/cleartext_logging.py   # must trigger
+  - tests/fixtures/masked_logging.py      # must NOT trigger

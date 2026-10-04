@@ -1,0 +1,31 @@
+# check stub for obligation.copyright.ai-training-data-use
+# Contract: crawl/fetch code feeding a training pipeline must consult
+# machine-readable TDM reservations (EU DSM Art. 4(3) opt-out). Level L1.
+
+id: copyright/tdm-optout-respected
+obligation: obligation.copyright.ai-training-data-use
+level: L1
+tools:
+  - semgrep
+  - provenance manifest inspection
+
+semgrep:
+  sinks:
+    - crawl/fetch loops whose results land in dataset or training dirs
+  sinks_ignore_when:
+    - pipeline consults robots.txt TDM directives / X-Robots-Tag / meta opt-out
+    - source is recorded in the dataset manifest with opt-out evaluation
+  taint_sources:
+    - fetcher outputs flowing into dataset builders
+  note: >
+    Flag pipelines that fetch content for training with no opt-out check
+    anywhere in the path. The opt-out layer may live in open-law's fetcher,
+    a middleware, or the dataset builder — the check requires it to exist
+    somewhere, not at a specific call site.
+
+provenance:
+  path: dataset manifest(s)
+  acceptance: >
+    Every training corpus records per-source origin URL plus the opt-out
+    evaluation performed (supports EU AI Act Art. 53 transparency and US
+    fair-use defence documentation).

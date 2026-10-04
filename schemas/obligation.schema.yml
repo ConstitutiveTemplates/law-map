@@ -1,0 +1,91 @@
+# obligation.schema.yml — field reference
+
+Human-readable (and machine-checkable) documentation of the obligation
+document format. This file is a **reference spec**, not a jsonschema
+dependency; `src/law_map/model.py` implements the enforceable subset
+exactly, and it is the source of truth for validation.
+
+Every obligation lives in `obligations/<domain>/<slug>.yml`. One obligation
+per file. Files whose basename starts with `_` are excluded from the corpus
+(e.g. `_example.yml`). Top-level scalars are YAML strings unless a type is
+listed.
+
+## Top-level fields
+
+| field            | type              | required | constraint                                                        |
+| ---------------- | ----------------- | -------- | ----------------------------------------------------------------- |
+| `version`        | int               | yes      | must equal `1`                                                    |
+| `id`             | string            | yes      | `obligation.<domain>.<slug>`; lowercase alnum segments, unique     |
+| `title`          | string            | yes      | non-empty                                                         |
+| `category`       | enum              | yes      | one of `privacy, security, copyright, ai, licensing, telemetry, crypto` |
+| `modality`       | enum              | yes      | one of `obligation, prohibition, permission`                      |
+| `severity`       | enum              | yes      | one of `info, advisory, high, critical`                           |
+| `summary`        | string            | yes      | one sentence                                                      |
+| `scope`          | mapping           | yes      | see below                                                         |
+| `groundings`     | list              | yes      | non-empty; see Grounding                                          |
+| `conflicts`      | list of id        | no       | ids this obligation can clash with; must exist in corpus         |
+| `requires`       | list of id        | no       | ids this obligation depends on; must exist in corpus             |
+| `directives`     | mapping           | no       | keys `human` and `agent` (both recommended)                      |
+| `related_sections` | list of string  | no       | good-future-codex section ids; unknown ids warn, not error       |
+| `enforcement`    | mapping           | no       | see below                                                         |
+
+### scope
+
+| field         | type   | required | constraint                                  |
+| ------------- | ------ | -------- | ------------------------------------------- |
+| `components`  | list   | no       | string tags (logging, telemetry, ci, ...)    |
+| `data_types`  | list   | no       | string tags (email, phone, ip_address, ...)  |
+| `excludes`    | string | no       | what is out of scope                         |
+
+### directives
+
+| field  | type   | required | constraint          |
+| ------ | ------ | -------- | ------------------- |
+| `human`| string | rec.     | for human reviewers |
+| `agent`| string | rec.     | machine-imperative prose for agents/Vendored into templates |
+
+### enforcement
+
+| field       | type       | required | constraint                                                |
+| ----------- | ---------- | -------- | --------------------------------------------------------- |
+| `level`     | enum       | no       | `L0` prose \| `L1` detection \| `L2` hard gate           |
+| `check_refs`| list       | no       | each `domain/slug` must match `checks/<domain>/<slug>.yml` |
+
+## Grounding (one entry in `groundings`)
+
+Each grounding is a single jurisdiction with a precise legal source.
+
+| field           | type   | required | constraint                                                          |
+| --------------- | ------ | -------- | ------------------------------------------------------------------- |
+| `jurisdiction`  | string | yes      | ISO 3166-1 alpha-2 (`JP`, `US`, ...) or `EU`, `UK`                  |
+| `subdivision`   | string | no       | ISO 3166-2 suffix (`CA` for US); only allowed with US/CA/AU/DE/GB    |
+| `source_type`   | enum   | yes      | `statute, regulation, precedent, guidance, standard, model_code`    |
+| `status`        | enum   | yes      | `in_force, scheduled, proposed, superseded`                         |
+| `authority`     | string | yes      | issuing body / instrument name (native script allowed)             |
+| `citation`      | string | yes      | pinpoint: article/section/case, e.g. `第23条 (安全管理措置義務)`    |
+| `effective`     | date   | no       | ISO `YYYY-MM-DD`                                                    |
+| `review_by`     | date   | yes      | ISO `YYYY-MM-DD`; freshness contract, checked by `law-map check`    |
+| `applicability` | string | no       | narrows who the source binds                                         |
+| `sources`       | list   | yes      | non-empty; every entry an `http(s)` URL                              |
+
+## Validation rules (implemented in `src/law_map/model.py`)
+
+- `version` must equal 1.
+- `id` must match `obligation.<domain>.<slug>` (lowercase alphanumeric
+  segments, hyphens allowed) and be unique across the corpus; the domain in
+  the id must match the directory the file lives in.
+- `title`, `summary` non-empty; `category`, `modality`, `severity` must be
+  valid enum values.
+- `groundings` must be non-empty; every grounding needs `jurisdiction`,
+  `source_type` (enum), `status` (enum), `authority`, `citation`,
+  `review_by` (ISO date), and a non-empty list of `http(s)` URLs in
+  `sources`. `effective` must be an ISO date if present.
+- `subdivision` is only allowed for jurisdictions `US, CA, AU, DE, GB`;
+  anywhere else it is a **warning**, not an error.
+- `enforcement.check_refs` entries must point to existing
+  `checks/<domain>/<slug>.yml` files (error otherwise).
+- `related_sections` unknown ids produce a warning, not an error.
+- `requires` / `conflicts` must reference ids present in the corpus.
+- `groundings` must have `authority`, `citation`, `review_by` (ISO date).
+- Errors are collected (not raised); `law-map validate` exits non-zero if
+  any error exists.

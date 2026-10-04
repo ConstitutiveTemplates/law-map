@@ -1,0 +1,64 @@
+name: Legal RFC
+description: Propose, amend, or retire an obligation in the law-map corpus.
+title: "[law-rfc] <obligation id or 'new obligation'>: <one-line summary>"
+labels: ["law-rfc"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a change to the obligation graph. Grounding
+        changes should cite the exact legal text; do not rely on memory.
+  - type: input
+    id: jurisdiction
+    attributes:
+      label: Jurisdiction
+      description: ISO 3166-1 alpha-2 code (JP, US, DE, ...) or EU/UK; subdivision (ISO 3166-2) optional.
+      placeholder: "JP or US / CA"
+    validations:
+      required: true
+  - type: dropdown
+    id: source_type
+    attributes:
+      label: Source type
+      description: What kind of legal source grounds this change?
+      multiple: false
+      options:
+        - statute
+        - regulation
+        - precedent
+        - guidance
+        - standard
+        - model_code
+    validations:
+      required: true
+  - type: input
+    id: obligation_id
+    attributes:
+      label: Affected obligation id
+      description: "Existing obligation.<domain>.<slug>, or 'new' for a new obligation."
+      placeholder: "obligation.privacy.no-cleartext-pii-logging"
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_change
+    attributes:
+      label: Proposed change
+      description: What should be added, changed, or retired, and why (functional equivalence: which behavior is really being required)?
+      placeholder: "Add a grounding for ... / tighten scope to ... / mark superseded because ..."
+    validations:
+      required: true
+  - type: input
+    id: primary_source
+    attributes:
+      label: Primary source URL
+      description: Canonical URL of the instrument or decision (official gazette, EUR-Lex, court opinion, regulator page).
+      placeholder: "https://eur-lex.europa.eu/eli/reg/2016/679/oj"
+    validations:
+      required: true
+  - type: input
+    id: reviewer_expertise
+    attributes:
+      label: Reviewer expertise
+      description: What background does a reviewer need to evaluate this (e.g., JP data-protection law, US FTC practice, EU product liability)?
+    validations:
+      required: true

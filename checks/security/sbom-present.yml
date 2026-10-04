@@ -1,0 +1,23 @@
+# check stub for obligation.security.sbom-and-vulnerability-handling
+# Contract: an SBOM artifact must exist per release, and a SECURITY.md
+# intake channel must be reachable. Level L2 = hard release gate.
+
+id: security/sbom-present
+obligation: obligation.security.sbom-and-vulnerability-handling
+level: L2
+tools:
+  - cyclonedx-bom   # or syft
+  - file-presence gate in CI
+
+sbom:
+  format: [cyclonedx, spdx]
+  trigger: "release job, every dependency change"
+  acceptance: >
+    Release pipeline produces an SBOM artifact adjacent to build outputs and
+    records its digest; job fails when absent.
+
+security_contact:
+  path: SECURITY.md
+  acceptance: >
+    Repo root SECURITY.md names a monitored intake channel (CRA Art. 14
+    coordinated disclosure; SSDF RV.3).

@@ -1,0 +1,68 @@
+# _example.yml — corpus-excluded demonstration of every field.
+# Leading underscore in the basename: this file is NOT part of the corpus
+# (see model.py). It exists so reviewers can see the full documented shape.
+version: 1
+id: obligation.privacy.example-with-every-field
+title: "Example obligation showing every documented field"
+category: privacy
+modality: prohibition
+severity: advisory
+summary: "This file is a field-reference example and is excluded from the corpus."
+scope:
+  components: [logging, observability]
+  data_types: [email, ip_address]
+  excludes: "dummy values in test fixtures"
+groundings:
+  - jurisdiction: JP
+    source_type: statute
+    status: in_force
+    authority: "個人情報の保護に関する法律 (APPI)"
+    citation: "第23条 (安全管理措置義務)"
+    effective: "2022-04-01"
+    review_by: "2027-03-31"
+    applicability: "personal information handlers"
+    sources:
+      - https://www.ppc.go.jp/personalinfo/legal/
+  - jurisdiction: US
+    subdivision: CA
+    source_type: precedent
+    status: in_force
+    authority: "FTC Act Section 5 enforcement"
+    citation: "In re LabMD, 11th Cir. 2018"
+    review_by: "2027-03-31"
+    sources:
+      - https://www.ftc.gov/legal-library/browse/cases-proceedings
+  - jurisdiction: EU
+    source_type: regulation
+    status: scheduled
+    authority: "Cyber Resilience Act"
+    citation: "Regulation (EU) 2024/2847, Annex I"
+    effective: "2027-12-11"
+    review_by: "2027-01-31"
+    sources:
+      - https://eur-lex.europa.eu/eli/reg/2024/2847/oj
+  - jurisdiction: GB
+    subdivision: ENG
+    source_type: guidance
+    status: proposed
+    authority: "ICO draft guidance"
+    citation: "proposed data protection guidance"
+    review_by: "2028-01-01"
+    sources:
+      - https://ico.org.uk/
+conflicts:
+  - obligation.privacy.another-obligation
+requires:
+  - obligation.privacy.a-dependency
+  - obligation.security.another-dep
+directives:
+  human: "Example instruction for a human reviewer."
+  agent: "Example machine-imperative instruction for an agent."
+related_sections:
+  - baseline-personal-data
+  - some-unknown-section   # unknown ids warn, not error
+enforcement:
+  level: L1
+  check_refs:
+    - privacy/no-cleartext-pii
+    - privacy/does-not-exist   # error: no checks/privacy/does-not-exist.yml
