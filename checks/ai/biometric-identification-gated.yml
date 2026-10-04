@@ -1,0 +1,34 @@
+# check stub for obligation.ai.biometric-identification-gated
+# Contract: biometric identification code must show a lawful basis.
+# L1 detection — critical severity means findings page a human.
+
+id: ai/biometric-identification-gated
+obligation: obligation.ai.biometric-identification-gated
+level: L1
+tools:
+  - semgrep
+  - design review (consent flow, retention schedule)
+
+code_sinks:
+  - "face recognition/verification/matching imports (face_recognition, deepface, insightface)"
+  - "embedding extraction + similarity search over face stores"
+  - "liveness or attribute-classification pipelines fed by face images"
+  - "dataset builders downloading face images at scale"
+
+config_sinks:
+  - "consent flow absent where biometric capture exists"
+  - "retention/destruction schedule absent (BIPA §15(a) pattern)"
+
+prohibited_uses:
+  - "real-time remote identification in publicly accessible spaces (EU)"
+  - "untargeted facial scraping into a database (EU)"
+  - "emotion inference at work or school (EU)"
+
+acceptance: >
+  Each biometric surface names its lawful basis, consent mechanism, and
+  retention/destruction schedule; prohibited uses are absent.
+
+fail_when:
+  - identification code with no declared basis or consent flow
+  - any prohibited-use pattern present
+  - face-image scraping into training/matching sets

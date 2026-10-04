@@ -1,0 +1,79 @@
+version: 1
+id: obligation.ai.llm-appsec-baseline
+title: "LLM applications and agents ship with least-privilege tools, human approval, and output validation"
+category: ai
+modality: obligation
+severity: high
+summary: >
+  Code that calls LLMs, invokes tools, or runs agent loops must bound
+  authority: allowlisted minimal tool permissions, human approval before
+  destructive or irreversible actions, and structured validation of model
+  output before execution — never shell handoff.
+scope:
+  components: [llm_client, tool_call, agent_loop, mcp_server, prompt_template]
+  data_types: [prompt, tool_output, model_output]
+  excludes: >
+    Purely local, non-networked experimentation with no tool calls and
+    no persistent side effects.
+groundings:
+  - jurisdiction: US
+    source_type: standard
+    status: in_force
+    authority: "OWASP Top 10 for LLM Applications (2025)"
+    citation: >
+      LLM01 prompt injection, LLM02 sensitive-information disclosure,
+      LLM06 excessive agency, LLM07 system-prompt leakage; mitigation
+      patterns: least privilege, human-in-the-loop, output handling.
+    effective: "2024-11-01"
+    review_by: "2027-03-31"
+    applicability: >
+      Industry baseline referenced by procurement and security reviews
+      worldwide; version-agnostic (cite by name, not number).
+    sources:
+      - https://genai.owasp.org/llm-top-10/
+  - jurisdiction: EU
+    source_type: regulation
+    status: scheduled
+    authority: "EU AI Act, Regulation (EU) 2024/1689"
+    citation: >
+      High-risk and GPAI-model duties (transparency, human oversight
+      Art. 14, incident reporting); general applicability from
+      2026-08-02, high-risk in regulated products from 2027-08-02.
+    effective: "2026-08-02"
+    review_by: "2026-12-18"
+    applicability: >
+      Deployers of high-risk AI and providers of GPAI models with
+      systemic risk placing on the EU market.
+    sources:
+      - https://eur-lex.europa.eu/eli/reg/2024/1689/oj
+  - jurisdiction: US
+    source_type: standard
+    status: in_force
+    authority: "NIST AI Risk Management Framework 1.0; NIST AI 600-1 (GenAI profile)"
+    citation: >
+      AI RMF Govern/Map/Measure/Manage functions; GenAI profile on
+      dangerous-content, data-privacy, and confabulation risks with
+      human-oversight controls.
+    effective: "2023-01-26"
+    review_by: "2027-03-31"
+    sources:
+      - https://www.nist.gov/itl/ai-risk-management-framework
+conflicts: []
+requires: []
+directives:
+  human: >
+    Scope every tool the agent can call to an allowlist of minimal CRUD;
+    insert a human-approval step before destructive, irreversible, or
+    externally-visible actions; validate structured model output against
+    a schema before executing it.
+  agent: >
+    NEVER grant an LLM tool call broad filesystem, network, or
+    credential scope. NEVER execute model output as shell without
+    schema validation. Route destructive or irreversible operations
+    through human approval first.
+related_sections:
+  - domain-llm-appsec
+enforcement:
+  level: L1
+  check_refs:
+    - ai/llm-appsec-baseline

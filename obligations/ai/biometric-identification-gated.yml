@@ -1,0 +1,90 @@
+version: 1
+id: obligation.ai.biometric-identification-gated
+title: "Biometric identification requires prior written consent and a prohibited-use check"
+category: ai
+modality: prohibition
+severity: critical
+summary: >
+  Building, training, or deploying face/biometric identification must not
+  proceed without confirming the use is lawful: written consent and
+  retention/destruction schedules where BIPA-style statutes apply, and an
+  EU AI Act prohibited-use check (real-time remote identification in
+  public spaces is banned).
+scope:
+  components: [model_training, face_recognition, embedding_store, liveness, attribute_classification]
+  data_types: [face_image, biometric_identifier, embedding]
+  excludes: >
+    Face *detection* (bounding boxes with no identity claim) and
+    on-device verification the user explicitly enrolled for, where no
+    biometric database is built or shared.
+groundings:
+  - jurisdiction: US
+    subdivision: IL
+    source_type: statute
+    status: in_force
+    authority: "Illinois Biometric Information Privacy Act (BIPA), 740 ILCS 14"
+    citation: >
+      §§ 15(a)-(b) — written policy with retention/destruction schedule
+      and informed written release before collection; §20 — aggrieved
+      person has a private right of action ($1,000/$5,000 per violation).
+    effective: "2008-10-03"
+    review_by: "2027-03-31"
+    applicability: >
+      Private entities collecting Illinois residents' biometrics; the
+      US's most-enforced biometric statute (Facebook $650M, Google $100M
+      settlements).
+    sources:
+      - https://www.ilga.gov/legislation/ilcs/ilcs3.asp?ActID=3004
+  - jurisdiction: EU
+    source_type: regulation
+    status: in_force
+    authority: "EU AI Act, Regulation (EU) 2024/1689; GDPR Art. 9"
+    citation: >
+      AI Act Art. 5(1)(h)-(j) — prohibited: real-time remote biometric
+      identification in public spaces (narrow law-enforcement exceptions),
+      untargeted facial scraping, emotion inference at work/school;
+      GDPR Art. 9 — biometric data is special-category, explicit consent.
+    effective: "2024-08-01"
+    review_by: "2026-12-18"
+    sources:
+      - https://eur-lex.europa.eu/eli/reg/2024/1689/oj
+      - https://eur-lex.europa.eu/eli/reg/2016/679/oj
+  - jurisdiction: US
+    subdivision: TX
+    source_type: statute
+    status: in_force
+    authority: "Texas Capture or Use of Biometric Identifier Act (CUBI), Tex. Bus. & Com. Code Ch. 503"
+    citation: "§503.001 — informed consent before capture; destruction within one year of purpose expiry."
+    effective: "2009-09-01"
+    review_by: "2027-03-31"
+    sources:
+      - https://statutes.capitol.texas.gov/Docs/BC/htm/BC.503.htm
+  - jurisdiction: US
+    subdivision: CA
+    source_type: statute
+    status: in_force
+    authority: "CCPA/CPRA — biometric information as sensitive personal information"
+    citation: "Cal. Civ. Code §1798.140(ae), §1798.121 — right to limit use/disclosure of sensitive PI including biometrics."
+    effective: "2023-01-01"
+    review_by: "2027-01-31"
+    sources:
+      - https://oag.ca.gov/privacy/ccpa
+conflicts: []
+requires: []
+directives:
+  human: >
+    Before writing or training biometric identification: confirm the use
+    is not EU-prohibited; obtain written consent with a published
+    retention/destruction schedule where BIPA/CUBI apply; never build a
+    face database from scraped images.
+  agent: >
+    NEVER generate or integrate face/biometric identification code
+    without a declared lawful basis and consent flow. NEVER scrape face
+    images into a training or matching set. Flag emotion-inference at
+    work/school and public-space identification as prohibited uses.
+related_sections:
+  - domain-face-recognition
+enforcement:
+  level: L1
+  check_refs:
+    - ai/biometric-identification-gated

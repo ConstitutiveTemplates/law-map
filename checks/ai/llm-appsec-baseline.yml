@@ -1,0 +1,35 @@
+# check stub for obligation.ai.llm-appsec-baseline
+# Contract: LLM/tool/agent code must show bounded authority.
+# L1 detection — flags unbounded patterns for review.
+
+id: ai/llm-appsec-baseline
+obligation: obligation.ai.llm-appsec-baseline
+level: L1
+tools:
+  - semgrep
+  - config review (tool allowlists, approval gates)
+
+code_sinks:
+  - "tool registrations granting filesystem/network/shell without scope"
+  - "subprocess.shell=True / os.system fed by model output"
+  - "eval/exec on strings derived from LLM responses"
+  - "agent loops with no max-iteration or approval hook"
+  - "system prompts assembled from untrusted input"
+
+config_sinks:
+  - "MCP server exposing destructive tools without an approval flag"
+  - "allowlist absent where a tool-call surface exists"
+
+exemptions:
+  - "read-only tools with no side effects"
+  - "tests/ fixtures demonstrating bad patterns with an explanatory comment"
+
+acceptance: >
+  Every tool-call surface maps to a declared allowlist; destructive or
+  irreversible operations route through a human-approval step; model
+  output reaching execution passes schema validation first.
+
+fail_when:
+  - unbounded tool scope on an agent/MCP surface
+  - model output executed as shell without validation
+  - no approval gate before destructive operations
