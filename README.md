@@ -16,7 +16,7 @@ behavior, they are one obligation node with multiple groundings.
 flowchart LR
     OL[open-law<br/>world legislation scrapers] -->|unified Law objects| V[law-map<br/>obligation graph<br/>statute / precedent / guidance]
     V -->|export .md.jinja sections| C[good-future-codex<br/>reviewed prose sections]
-    C --> T[python-copier-template<br/>vendors into generated repos]
+    C --> T[daimonion<br/>vendors into generated repos]
     T -->|AGENTS.md + CI gates| G[generated projects]
     V -->|checks/ specs| S[semgrep / ruff / pytest stubs]
     S --> T
@@ -30,7 +30,7 @@ flowchart LR
   (precedent/guidance) via functional equivalence.
 - [good-future-codex](https://github.com/ConstitutiveTemplates/good-future-codex) —
   reviewed human/AI-facing prose sections consumed by templates.
-- [python-copier-template](https://github.com/ConstitutiveTemplates/python-copier-template) —
+- [daimonion](https://github.com/ConstitutiveTemplates/daimonion) —
   vendors everything into generated AGENTS.md/CI.
 
 ## Layout
@@ -87,6 +87,13 @@ opens one GitHub issue (`law-drift` label) listing groundings due or expired
 plus source URLs that now 404 or redirect; when a run is clean it closes any
 open `law-drift` issue with a "drift resolved" comment. `law-map check` exits
 1 when any grounding is expired, so the workflow can gate on it.
+
+## Contributing
+
+Obligation changes start as a [Legal RFC
+issue](https://github.com/ConstitutiveTemplates/law-map/issues/new?template=legal_rfc.yml)
+using the existing template; see [CONTRIBUTING.md](CONTRIBUTING.md) for
+grounding requirements and the validation commands.
 
 ## License
 

@@ -56,7 +56,7 @@ bound and how hard.
 ## The pipeline
 
 ```text
-open-law ──> law-map ──> good-future-codex ──> python-copier-template ──> projects
+open-law ──> law-map ──> good-future-codex ──> daimonion ──> projects
 scrape      organize       review prose           vendor                  generated
 legislation deontic rules  human/AI-facing        AGENTS.md + CI gates    repos
 ```
@@ -71,7 +71,7 @@ legislation deontic rules  human/AI-facing        AGENTS.md + CI gates    repos
    URLs for 404s and redirects and files one issue.
 3. **good-future-codex** contains the reviewed, human/AI-facing prose
    sections derived from the graph (`law-map export` produces the skeletons).
-4. **python-copier-template** vendors the outcomes into generated
+4. **daimonion** vendors the outcomes into generated
    repositories: AGENTS.md obligations and CI gates that enforce them.
 
 ## Design consequences
