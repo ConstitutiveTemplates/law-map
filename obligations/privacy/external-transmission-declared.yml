@@ -33,7 +33,7 @@ groundings:
       parties (ads/analytics/crash tooling) toward Japanese users.
     sources:
       - https://laws.e-gov.go.jp/law/359AC0000000166
-      - https://www.soumu.go.jp/main_sosiki/joho_tsusin/d_syohi/gaibu_soushin/index.html
+      - https://www.soumu.go.jp/main_sosiki/joho_tsusin/d_syohi/gaibusoushin_kiritsu_00001.html
   - jurisdiction: EU
     source_type: regulation
     status: in_force
@@ -50,13 +50,13 @@ groundings:
   - jurisdiction: DE
     source_type: statute
     status: in_force
-    authority: "TTDSG (Telekommunikation-Telemedien-Datenschutz-Gesetz)"
-    citation: "§ 25 TTDSG — consent for storing or accessing information in the user's terminal equipment"
+    authority: "TDDDG (Telekommunikation-Digitale-Dienste-Datenschutz-Gesetz)"
+    citation: "§ 25 TDDDG — consent for storing or accessing information in the user's terminal equipment"
     effective: "2021-12-01"
     review_by: "2027-03-31"
     applicability: "German-implementation baseline; the strictest ePrivacy transposition."
     sources:
-      - https://dsgvo-gesetz.de/ttdsg/
+      - https://dsgvo-gesetz.de/tdddg/
   - jurisdiction: US
     subdivision: CA
     source_type: statute

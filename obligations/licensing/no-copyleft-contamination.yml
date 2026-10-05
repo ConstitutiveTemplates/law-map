@@ -46,7 +46,9 @@ groundings:
     citation: "Welte v. Sitecom, OLG München / Landgericht München I (2004, 2006) — GPL conditions enforceable via injunction in copyright proceedings."
     review_by: "2027-03-31"
     sources:
-      - https://fsfe.org/activities/policy/eu/2004-05-19-sitecom-munich.en.html
+      # English translation of LG München I 21 O 6123/04 (Welte v. Sitecom),
+      # hosted by ifrOSS; the old fsfe.org activity page is gone (404).
+      - https://www.ifross.org/Fremdartikel/judgment_dc_munich_gpl.pdf
   - jurisdiction: JP
     source_type: statute
     status: in_force

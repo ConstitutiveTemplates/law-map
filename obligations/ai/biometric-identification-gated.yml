@@ -34,7 +34,9 @@ groundings:
       US's most-enforced biometric statute (Facebook $650M, Google $100M
       settlements).
     sources:
-      - https://www.ilga.gov/legislation/ilcs/ilcs3.asp?ActID=3004
+      # ilga.gov rejects datacenter egress (TLS reset/timeouts); the
+      # Wayback snapshot is the reachable copy of the same statute page.
+      - https://web.archive.org/web/20250630192313/https://www.ilga.gov/legislation/ilcs/ilcs3.asp?ActID=3004
   - jurisdiction: EU
     source_type: regulation
     status: in_force

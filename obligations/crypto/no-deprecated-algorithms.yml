@@ -42,7 +42,7 @@ groundings:
     review_by: "2027-03-31"
     applicability: "Systems storing, processing, or transmitting cardholder data."
     sources:
-      - https://www.pcisecuritystandards.org/document_library
+      - https://www.pcisecuritystandards.org/document_library/
   - jurisdiction: EU
     source_type: regulation
     status: scheduled
@@ -66,7 +66,7 @@ groundings:
       forward-secrecy suites for e-Gov facing systems.
     review_by: "2027-03-31"
     sources:
-      - https://www.cryptrec.go.jp/english/index.html
+      - https://www.cryptrec.go.jp/en/index.html
 conflicts: []
 requires: []
 directives:
