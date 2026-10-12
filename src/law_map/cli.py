@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
-from typing import Any
+
+from . import check as check_mod
+from . import commands
+from .loader import load_corpus
+from .refs import check_cross_references
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
@@ -70,121 +73,30 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    from . import check as check_mod
-    from . import export as export_mod
-    from . import model as model_mod
-    corpus = model_mod.load_corpus(args.root, today=check_mod.today())
+    corpus = load_corpus(args.root, today=check_mod.today())
 
     checks_root = args.root.parent / "checks"
     codex_root = getattr(args, "codex", None)
     if codex_root is not None and not (codex_root / "sections").is_dir():
-        corpus.errors.append(
-            f"--codex {codex_root}: not a good-future-codex checkout (no sections/ directory)"
-        )
+        corpus.errors.append(f"--codex {codex_root}: not a good-future-codex checkout (no sections/ directory)")
         codex_root = None  # avoid redundant per-id errors from a broken path
-    model_mod.check_cross_references(
+    check_cross_references(
         corpus,
         checks_root=checks_root if checks_root.is_dir() else None,
         codex_root=codex_root,
     )
 
     if args.command == "validate":
-        return _cmd_validate(args, corpus)
+        return commands.cmd_validate(args, corpus)
     if args.command == "list":
-        return _cmd_list(corpus)
+        return commands.cmd_list(corpus)
     if args.command == "show":
-        return _cmd_show(args, corpus)
+        return commands.cmd_show(args, corpus)
     if args.command == "check":
-        return _cmd_check(args, corpus, check_mod)
+        return commands.cmd_check(args, corpus)
     if args.command == "export":
-        return _cmd_export(args, corpus, export_mod)
+        return commands.cmd_export(args, corpus)
     raise AssertionError(f"unhandled command {args.command!r}")
-
-
-def _print_issues(prefix: str, issues: list[str]) -> None:
-    for issue in issues:
-        print(f"{prefix}: {issue}", file=sys.stderr)
-
-
-def _cmd_validate(args: argparse.Namespace, corpus: Any) -> int:
-    _print_issues("error", corpus.errors)
-    if args.warnings:
-        _print_issues("warning", corpus.warnings)
-    n = len(corpus.obligations)
-    if corpus.ok():
-        print(f"ok: {n} obligation(s), no errors")
-        return 0
-    print(f"failed: {n} obligation(s), {len(corpus.errors)} error(s)", file=sys.stderr)
-    return 1
-
-
-def _cmd_list(corpus: Any) -> int:
-    for ob in sorted(corpus.obligations, key=lambda o: o.id):
-        print(ob.id)
-    return 0
-
-
-def _cmd_show(args: argparse.Namespace, corpus: Any) -> int:
-    norm = args.id.replace("/", ".")
-    if norm.startswith("obligation."):
-        norm = norm[len("obligation."):]
-    full = "obligation." + norm
-    match = [ob for ob in corpus.obligations if ob.id == args.id or ob.id == full or ob.id.endswith("." + norm)]
-    if not match:
-        print(f"no obligation matches '{args.id}'", file=sys.stderr)
-        return 1
-    import yaml
-
-    data = {k: v for k, v in match[0].data.items() if not k.startswith("_")}
-    print(yaml.safe_dump(data, sort_keys=False, allow_unicode=True).rstrip())
-    return 0
-
-
-def _print_report(report: Any, check_mod: Any) -> None:
-    for e in report.expiry:
-        print(check_mod.format_expiry_line(e))
-    for p in report.probes:
-        line = check_mod.format_source_line(p)
-        if line is not None:
-            print(line)
-    if report.probes:
-        print(check_mod.format_source_summary(report.probes))
-    for p in report.open_law:
-        line = check_mod.format_open_law_line(p)
-        if line is not None:
-            print(line)
-    if report.open_law:
-        print(check_mod.format_open_law_summary(report.open_law))
-
-
-def _cmd_check(args: argparse.Namespace, corpus: Any, check_mod: Any) -> int:
-    if getattr(args, "codex", None) is not None:
-        _print_issues("error", corpus.errors)
-        if corpus.errors:
-            print(
-                f"check failed: {len(corpus.errors)} corpus error(s) with --codex — exit 1",
-                file=sys.stderr,
-            )
-            return 1
-    report = check_mod.run_check(corpus, today=check_mod.today(), days=args.days, sources=args.sources)
-    _print_report(report, check_mod)
-    if report.expired:
-        print(f"{len(report.expired)} grounding(s) expired — exit 1", file=sys.stderr)
-        return 1
-    print(f"review check: {len(report.expiry)} due within {args.days} day(s), 0 expired")
-    return 0
-
-
-def _cmd_export(args: argparse.Namespace, corpus: Any, export_mod: Any) -> int:
-    from . import check as check_mod
-
-    written = export_mod.export_obligations(corpus.obligations, args.out, today=check_mod.today())
-    for path in written:
-        print(f"wrote {path}")
-    if not written:
-        print("nothing to export: corpus is empty", file=sys.stderr)
-        return 1
-    return 0
 
 
 if __name__ == "__main__":
