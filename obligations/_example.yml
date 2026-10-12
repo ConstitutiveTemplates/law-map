@@ -23,6 +23,9 @@ groundings:
     applicability: "personal information handlers"
     sources:
       - https://www.ppc.go.jp/personalinfo/legal/
+    open_law:
+      source: jp
+      id: "415AC0000000057"
   - jurisdiction: US
     subdivision: CA
     source_type: precedent

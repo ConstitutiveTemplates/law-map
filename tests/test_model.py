@@ -8,6 +8,7 @@ import pytest
 import yaml
 
 from law_map.model import (
+    check_codex_coverage,
     check_codex_sections,
     check_cross_references,
     codex_section_path,
@@ -123,6 +124,18 @@ def test_empty_or_missing_corpus() -> None:
         (
             lambda d: d["groundings"][0].__setitem__("effective", "not-a-date"),
             "effective must be an ISO date",
+        ),
+        (
+            lambda d: d["groundings"][0].__setitem__("open_law", "jp"),
+            "open_law must be a mapping",
+        ),
+        (
+            lambda d: d["groundings"][0].__setitem__("open_law", {"source": "jp"}),
+            "open_law.id must be a non-empty string",
+        ),
+        (
+            lambda d: d["groundings"][0].__setitem__("open_law", {"source": "", "id": "x"}),
+            "open_law.source must be a non-empty string",
         ),
     ],
 )
@@ -264,3 +277,101 @@ def test_codex_known_section_passes_without_warning(tmp_path: Path) -> None:
     check_cross_references(corpus, checks_root=None, codex_root=codex)
     assert corpus.ok(), corpus.errors
     assert not any("referenced by no other obligation" in w for w in corpus.warnings)
+
+
+def test_open_law_ref_valid_shape_passes(tmp_path: Path) -> None:
+    doc = yaml.safe_load(yaml.safe_dump(VALID_OBLIGATION))
+    doc["groundings"][0]["open_law"] = {"source": "jp", "id": "415AC0000000057"}
+    root = write_corpus(tmp_path, doc)
+    corpus = load_corpus(root)
+    assert corpus.ok(), corpus.errors
+
+
+def test_codex_coverage_warns_for_unreferenced_sections(tmp_path: Path) -> None:
+    codex = _write_codex(tmp_path)  # baseline-personal-data, evolving-new-section
+    doc_a = yaml.safe_load(yaml.safe_dump(VALID_OBLIGATION))
+    doc_a["related_sections"] = ["baseline-personal-data"]
+    doc_a["enforcement"]["check_refs"] = []
+    root = write_corpus(tmp_path, doc_a)
+    corpus = load_corpus(root)
+    warnings = check_codex_coverage(corpus, codex)
+    assert len(warnings) == 1
+    assert "evolving-new-section" in warnings[0]
+    assert "no referencing obligation" in warnings[0]
+
+
+def test_codex_coverage_clean_when_all_referenced(tmp_path: Path) -> None:
+    codex = _write_codex(tmp_path)
+    doc_a = yaml.safe_load(yaml.safe_dump(VALID_OBLIGATION))
+    doc_a["related_sections"] = ["baseline-personal-data", "evolving-new-section"]
+    doc_a["enforcement"]["check_refs"] = []
+    root = write_corpus(tmp_path, doc_a)
+    corpus = load_corpus(root)
+    assert check_codex_coverage(corpus, codex) == []
+
+
+def test_codex_coverage_missing_checkout_is_empty(tmp_path: Path) -> None:
+    root = write_corpus(tmp_path, VALID_OBLIGATION)
+    corpus = load_corpus(root)
+    assert check_codex_coverage(corpus, tmp_path / "nonexistent") == []
+
+
+def test_cross_references_with_codex_adds_reverse_warnings_not_errors(tmp_path: Path) -> None:
+    codex = _write_codex(tmp_path)
+    doc_a = yaml.safe_load(yaml.safe_dump(VALID_OBLIGATION))
+    doc_a["related_sections"] = ["baseline-personal-data"]
+    doc_a["enforcement"]["check_refs"] = []
+    root = write_corpus(tmp_path, doc_a)
+    corpus = load_corpus(root)
+    check_cross_references(corpus, checks_root=None, codex_root=codex)
+    assert corpus.ok(), corpus.errors
+    assert any(
+        "evolving-new-section" in w and "no referencing obligation" in w for w in corpus.warnings
+    )
+
+
+def test_scheduled_but_already_effective_warns(tmp_path: Path) -> None:
+    from datetime import date
+
+    doc = yaml.safe_load(yaml.safe_dump(VALID_OBLIGATION))
+    doc["groundings"][0]["status"] = "scheduled"
+    doc["groundings"][0]["effective"] = "2026-08-02"
+    root = write_corpus(tmp_path, doc)
+    corpus = load_corpus(root, today=date(2026, 10, 4))
+    assert corpus.ok(), corpus.errors
+    assert any(
+        "scheduled" in w and "already past" in w for w in corpus.warnings
+    ), corpus.warnings
+
+
+def test_scheduled_with_future_effective_is_quiet(tmp_path: Path) -> None:
+    from datetime import date
+
+    doc = yaml.safe_load(yaml.safe_dump(VALID_OBLIGATION))
+    doc["groundings"][0]["status"] = "scheduled"
+    doc["groundings"][0]["effective"] = "2027-12-11"
+    root = write_corpus(tmp_path, doc)
+    corpus = load_corpus(root, today=date(2026, 10, 4))
+    assert corpus.ok(), corpus.errors
+    assert not any("already past" in w for w in corpus.warnings), corpus.warnings
+
+
+def test_obligation_without_check_refs_warns(tmp_path: Path) -> None:
+    """Predicate is check_refs emptiness only — no enforcement block warns too."""
+    from datetime import date
+
+    doc = yaml.safe_load(yaml.safe_dump(VALID_OBLIGATION))
+    doc.pop("enforcement", None)
+    root = write_corpus(tmp_path, doc)
+    corpus = load_corpus(root, today=date(2026, 10, 4))
+    assert corpus.ok(), corpus.errors
+    assert any("check_refs" in w for w in corpus.warnings), corpus.warnings
+
+
+def test_obligation_with_check_refs_is_quiet(tmp_path: Path) -> None:
+    from datetime import date
+
+    root = write_corpus(tmp_path, VALID_OBLIGATION)
+    corpus = load_corpus(root, today=date(2026, 10, 4))
+    assert corpus.ok(), corpus.errors
+    assert not any("check_refs" in w for w in corpus.warnings), corpus.warnings

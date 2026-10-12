@@ -1,0 +1,46 @@
+version: 1
+id: obligation.security.public-ntp-hygiene
+title: "Do not hardcode single institutional NTP servers; use pool or client-configurable time sync"
+category: security
+modality: prohibition
+severity: high
+summary: >
+  Software and device firmware must not hardcode static public or institutional NTP server
+  hostnames; time synchronization must utilize pool infrastructure or user-configurable endpoints
+  with rate-limiting backoff.
+scope:
+  components: [ntp_client, time_synchronization, firmware_network, embedded_iot]
+  data_types: [network_packet, timestamp]
+  excludes: >
+    Dedicated time-distribution infrastructure operating internal reference clocks.
+groundings:
+  - jurisdiction: JP
+    source_type: precedent
+    status: in_force
+    authority: "Fukuoka University NTP Traffic Incident (NICT / JPNIC technical report)"
+    citation: >
+      Technical report documenting massive traffic concentration and service degradation
+      caused by consumer routers hardcoding clock.nc.fukuoka-u.ac.jp; establishes design
+      rule against static institutional NTP endpoints in distributed products.
+    effective: "2006-03-01"
+    review_by: "2027-03-31"
+    applicability: >
+      Firmware, IoT devices, embedded systems, and distributed client software synchronizing time.
+    sources:
+      - https://2017.apricot.net/assets/files/APIC674/apricot2017-20170222-01-english-presentation_1487892982.pdf
+conflicts: []
+requires: []
+directives:
+  human: >
+    Configure time synchronization to use ntp.pool.org or allow user-specified
+    NTP servers. Implement exponential backoff for failed NTP queries.
+  agent: >
+    NEVER hardcode specific university or single-organization NTP servers
+    (such as Fukuoka University or NICT reference servers) in client or firmware code.
+related_sections:
+  - region-kyushu-ntp
+
+# L0 prose-only: single-string config review; no automatable check
+# surface beyond reviewer judgment.
+enforcement:
+  level: L0

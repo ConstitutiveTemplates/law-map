@@ -8,14 +8,15 @@ flesh out later. Deterministic and offline.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from datetime import date
 from pathlib import Path
 from typing import Any
 
-from .model import Obligation
+from .model import Obligation, obligation_groundings
 
-YEAR_0 = date(1970, 1, 1)
 _VERSION_TODAY = date.today()
+_PLACEHOLDER_HEADINGS = ("禁止パターン", "推奨設定", "運用チェック")
 
 
 def _slug(ob: Obligation) -> str:
@@ -31,13 +32,75 @@ def _triggers(ob: Obligation) -> list[str]:
     scope = ob.data.get("scope")
     if isinstance(scope, dict) and isinstance(scope.get("components"), list):
         triggers.extend(str(c) for c in scope["components"])
-    category = ob.data.get("category")
-    if isinstance(category, str):
-        triggers.append(category)
-    modality = ob.data.get("modality")
-    if isinstance(modality, str):
-        triggers.append(modality)
+    for key in ("category", "modality"):
+        value = ob.data.get(key)
+        if isinstance(value, str):
+            triggers.append(value)
     return triggers or ["general"]
+
+
+def _directives(ob: Obligation) -> dict[str, str]:
+    """Obligation directives (human/agent) as plain strings."""
+    raw = ob.data.get("directives")
+    if not isinstance(raw, dict):
+        return {}
+    out: dict[str, str] = {}
+    for key in ("human", "agent"):
+        value = raw.get(key)
+        if isinstance(value, str) and value.strip():
+            out[key] = " ".join(value.split())
+    return out
+
+
+def _enforcement_line(ob: Obligation) -> str | None:
+    """One-line enforcement wiring (level + check_refs) for the skeleton."""
+    enforcement = ob.data.get("enforcement")
+    if not isinstance(enforcement, dict):
+        return None
+    parts: list[str] = []
+    if isinstance(enforcement.get("level"), str) and enforcement["level"]:
+        parts.append(f"level={enforcement['level']}")
+    refs = enforcement.get("check_refs")
+    if isinstance(refs, list) and refs:
+        parts.append("check_refs=[" + ", ".join(f"checks/{r}.yml" for r in refs) + "]")
+    return " ".join(parts) or None
+
+
+def _append(lines: list[str], *blocks: str) -> None:
+    """Append markdown blocks separated by exactly one blank line each."""
+    for block in blocks:
+        lines.append(block)
+        lines.append("")
+
+
+def _directive_lines(directives: dict[str, str], enforcement_line: str | None) -> list[str]:
+    """The optional ``## Directives`` section (empty when there is nothing to show)."""
+    if not directives and not enforcement_line:
+        return []
+    lines = ["## Directives", ""]
+    for key in ("human", "agent"):
+        if key in directives:
+            lines.append(f"- {key}: {directives[key]}")
+    if enforcement_line:
+        lines.append(f"- enforcement: {enforcement_line}")
+    lines.append("")
+    return lines
+
+
+def _grounding_lines(g: dict[str, Any], index: int) -> Iterator[str]:
+    jurisdiction = g.get("jurisdiction", "?")
+    if g.get("subdivision"):
+        jurisdiction = f"{jurisdiction}-{g['subdivision']}"
+    yield f"### {index}. {jurisdiction} — {g.get('source_type', '?')} ({g.get('status', '?')})"
+    yield ""
+    yield f"- authority: {g.get('authority', '—')}"
+    yield f"- citation: {g.get('citation', '—')}"
+    for key in ("effective", "applicability"):
+        if g.get(key):
+            yield f"- {key}: {g[key]}" if key == "effective" else f"- {key}: {str(g[key]).strip()}"
+    for url in g.get("sources", []):
+        yield f"- source: {url}"
+    yield ""
 
 
 def render_obligation(ob: Obligation, today: date | None = None) -> str:
@@ -46,40 +109,27 @@ def render_obligation(ob: Obligation, today: date | None = None) -> str:
     version = _version_date(today)
     triggers = ", ".join(_triggers(ob))
     lines: list[str] = []
-    lines.append(f"{{# ethics: id={slug} version={version}.1 status=draft triggers=[{triggers}] #}}")
-    lines.append("")
-    lines.append(f"# {ob.data.get('title', ob.id)}")
-    lines.append("")
-    lines.append(f"> 要約: {ob.data.get('summary', '').strip()}")
-    lines.append("")
-    lines.append("## 事実")
-    lines.append("")
-    for i, g in enumerate(_groundings(ob), 1):
-        jurisdiction = g.get("jurisdiction", "?")
-        if g.get("subdivision"):
-            jurisdiction = f"{jurisdiction}-{g['subdivision']}"
-        lines.append(f"### {i}. {jurisdiction} — {g.get('source_type', '?')} ({g.get('status', '?')})")
-        lines.append("")
-        lines.append(f"- authority: {g.get('authority', '—')}")
-        lines.append(f"- citation: {g.get('citation', '—')}")
-        if g.get("effective"):
-            lines.append(f"- effective: {g['effective']}")
-        if g.get("applicability"):
-            lines.append(f"- applicability: {str(g['applicability']).strip()}")
-        for url in g.get("sources", []):
-            lines.append(f"- source: {url}")
-        lines.append("")
-    for heading in ("禁止パターン", "推奨設定", "運用チェック"):
-        lines.append(f"## {heading}")
-        lines.append("")
-        lines.append("<!-- TODO: flesh out with implementation detail grounded in 事実 above. -->")
-        lines.append("")
+    _append(
+        lines,
+        f"{{# ethics: id={slug} version={version}.1 status=draft triggers=[{triggers}] #}}",
+        f"# {ob.data.get('title', ob.id)}",
+        f"> 要約: {ob.data.get('summary', '').strip()}",
+    )
+    lines.extend(_directive_lines(_directives(ob), _enforcement_line(ob)))
+    _append(lines, "## 事実")
+    for i, g in enumerate(obligation_groundings(ob), 1):
+        lines.extend(_grounding_lines(g, i))
+    for heading in _PLACEHOLDER_HEADINGS:
+        _append(
+            lines,
+            f"## {heading}",
+            "<!-- TODO: flesh out with implementation detail grounded in 事実 above. -->",
+        )
     lines.append("## 制度変更ウォッチ")
     lines.append("")
     lines.append("<!-- 確認TODO: re-review every grounding on its review_by date. -->")
-    for i, g in enumerate(_groundings(ob), 1):
-        review_by = g.get("review_by", "?")
-        lines.append(f"- 確認TODO: {g.get('jurisdiction', '?')} grounding #{i}: review_by {review_by}")
+    for i, g in enumerate(obligation_groundings(ob), 1):
+        lines.append(f"- 確認TODO: {g.get('jurisdiction', '?')} grounding #{i}: review_by {g.get('review_by', '?')}")
     lines.append("")
     lines.append("<!--")
     lines.append("本セクションは法的助言を構成しません。規制状況は変化します。")
@@ -87,14 +137,6 @@ def render_obligation(ob: Obligation, today: date | None = None) -> str:
     lines.append("-->")
     lines.append("")
     return "\n".join(lines)
-
-
-def _groundings(ob: Obligation) -> list[dict[str, Any]]:
-    out: list[dict[str, Any]] = []
-    for g in ob.data.get("groundings", []):
-        if isinstance(g, dict):
-            out.append(g)
-    return out
 
 
 def export_obligations(

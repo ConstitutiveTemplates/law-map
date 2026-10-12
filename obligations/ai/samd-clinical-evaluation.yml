@@ -1,0 +1,60 @@
+version: 1
+id: obligation.ai.samd-clinical-evaluation
+title: "Maintain validated boundaries for machine learning software as a medical device"
+category: ai
+modality: obligation
+severity: high
+summary: >
+  Software qualifying as Software as a Medical Device (SaMD) using AI/ML must
+  maintain performance within approved Predetermined Change Control Plans (PCCP),
+  preserve physician oversight, and maintain ongoing post-market surveillance.
+scope:
+  components: [clinical_algorithm, diagnostic_model, screening_pipeline, inference_engine]
+  data_types: [medical_images, patient_records, diagnostic_telemetry]
+  excludes: >
+    Administrative, billing, or general wellness software with no diagnostic or
+    therapeutic claim.
+groundings:
+  - jurisdiction: US
+    source_type: guidance
+    status: in_force
+    authority: "FDA Final Guidance: Marketing Submission Recommendations for a Predetermined Change Control Plan for AI-Enabled Device Software Functions"
+    citation: >
+      Section IV & V: bounds of authorized algorithmic modifications without new
+      marketing submission; post-market performance monitoring and clinical safety limits.
+    effective: "2024-12-03"
+    review_by: "2027-03-31"
+    applicability: >
+      Manufacturers submitting premarket applications for AI/ML-enabled medical devices.
+    sources:
+      - https://www.fda.gov/regulatory-information/search-fda-guidance-documents/marketing-submission-recommendations-predetermined-change-control-plan-artificial-intelligence
+  - jurisdiction: EU
+    source_type: regulation
+    status: in_force
+    authority: "EU Medical Device Regulation (MDR), Regulation (EU) 2017/745"
+    citation: >
+      Annex I Chapter II (Requirements regarding design and manufacture of devices
+      incorporating software); Annex XIV (Clinical evaluation and post-market clinical follow-up).
+    effective: "2021-05-26"
+    review_by: "2026-12-18"
+    applicability: >
+      Medical device software placed on the EU single market.
+    sources:
+      - https://eur-lex.europa.eu/eli/reg/2017/745/oj
+conflicts: []
+requires: []
+directives:
+  human: >
+    Verify that algorithmic changes remain within the parameters approved under
+    the device's PCCP or regional equivalent (e.g. PMDA IDATEN). Ensure automated
+    diagnostic suggestions retain human clinical decision-maker primacy.
+  agent: >
+    NEVER swap a clinical diagnostic model in production without verifying that
+    the updated weights or hyperparameters stay within approved change-control bounds.
+related_sections:
+  - sector-samd-regulatory
+
+# L0 prose-only: change-control bounds and clinical oversight need human
+# regulatory review; no automatable check surface.
+enforcement:
+  level: L0

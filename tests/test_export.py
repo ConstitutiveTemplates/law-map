@@ -55,3 +55,21 @@ def test_export_threads_today_through(tmp_path: Path) -> None:
     ob = one_obligation()
     text = export_obligations([ob], tmp_path, today=FIXED_TODAY)[0].read_text(encoding="utf-8")
     assert f"version={FIXED_TODAY.isoformat()}.1" in text
+
+
+def test_render_contains_directives_and_enforcement() -> None:
+    text = render_obligation(one_obligation(), today=FIXED_TODAY)
+    assert "## Directives" in text
+    # Directives sit after the summary, before the grounding facts.
+    assert text.index("## Directives") > text.index("> 要約:")
+    assert text.index("## Directives") < text.index("## 事実")
+    assert "- human: instruction" in text
+    assert "- agent: imperative" in text
+    assert "- enforcement: level=L1 check_refs=[checks/privacy/valid-fixture.yml]" in text
+
+
+def test_render_without_directives_or_enforcement_omits_section() -> None:
+    ob = one_obligation()
+    ob.data.pop("directives", None)
+    ob.data.pop("enforcement", None)
+    assert "## Directives" not in render_obligation(ob, today=FIXED_TODAY)

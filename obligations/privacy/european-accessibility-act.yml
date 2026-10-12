@@ -1,0 +1,55 @@
+version: 1
+id: obligation.privacy.european-accessibility-act
+title: "Conform consumer-facing digital services and e-commerce UI to accessibility standards under EAA"
+category: privacy
+modality: obligation
+severity: high
+summary: >
+  Consumer-facing digital products, e-commerce platforms, electronic banking, and e-books
+  offered in the EU must conform to harmonized European accessibility requirements (EN 301 549 / WCAG 2.1 AA).
+scope:
+  components: [web_ui, mobile_frontend, checkout_flow, digital_reader, banking_interface]
+  data_types: [user_interface, accessibility_tree, aria_labels]
+  excludes: >
+    Microenterprises providing services that qualify for statutory exemptions under Directive (EU) 2019/882 Art. 4(5).
+groundings:
+  - jurisdiction: EU
+    source_type: regulation
+    status: in_force
+    authority: "European Accessibility Act (EAA), Directive (EU) 2019/882"
+    citation: >
+      Article 4 — accessibility requirements for products and services placed on the
+      internal market from 2025-06-28; Annex I — general and sector-specific accessibility criteria.
+    effective: "2025-06-28"
+    review_by: "2027-01-31"
+    applicability: >
+      Economic operators placing designated consumer digital products and services on the EU market.
+    sources:
+      - https://eur-lex.europa.eu/eli/dir/2019/882/oj
+  - jurisdiction: EU
+    source_type: standard
+    status: in_force
+    authority: "Harmonised European Standard EN 301 549 (Accessibility requirements for ICT products and services)"
+    citation: >
+      Clause 9 (Web), Clause 10 (Non-web documents), Clause 11 (Software); defines technical
+      presumption of conformity corresponding to W3C WCAG 2.1 Level AA.
+    effective: "2021-03-01"
+    review_by: "2027-01-31"
+    sources:
+      - https://www.etsi.org/deliver/etsi_en/301500_301599/301549/
+conflicts: []
+requires: []
+directives:
+  human: >
+    Ensure frontend components meet WCAG 2.1 AA criteria: keyboard operability,
+    focus indication, color contrast, and descriptive accessibility names.
+  agent: >
+    NEVER write interactive web UI without keyboard navigation support and accessible
+    labels. Validate markup using automated accessibility auditing tools (e.g. axe-core).
+related_sections:
+  - region-eu-eaa
+
+# L0 prose-only: WCAG conformance is audited with dedicated tooling
+# (e.g. axe-core), not a repo check surface.
+enforcement:
+  level: L0

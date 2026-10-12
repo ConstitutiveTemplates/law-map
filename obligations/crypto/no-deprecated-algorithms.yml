@@ -85,6 +85,7 @@ related_sections:
   - baseline-pqc-fips
   - baseline-pki-chain
 enforcement:
-  level: L1
+  level: L2
   check_refs:
     - crypto/no-deprecated-algorithms
+    - crypto/deprecated-algorithms-prohibited

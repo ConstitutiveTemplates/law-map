@@ -1,0 +1,7 @@
+# Configuration for zizmor (GitHub Actions security analysis), run in CI via security.yml.
+# See https://woodruffw.github.io/zizmor for the full reference.
+#
+# All audits are enabled; there are currently no exceptions. Add an ignore
+# here only for a finding that is a deliberate, reviewed choice, and document
+# the reason both here and at the call site.
+rules: {}

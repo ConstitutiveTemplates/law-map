@@ -47,6 +47,9 @@ groundings:
     sources:
       - https://eur-lex.europa.eu/eli/dir/2002/58/oj
       - https://eur-lex.europa.eu/eli/reg/2016/679/oj
+    open_law:
+      source: eu
+      id: "32016R0679"
   - jurisdiction: DE
     source_type: statute
     status: in_force

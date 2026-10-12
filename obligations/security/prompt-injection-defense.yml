@@ -1,0 +1,60 @@
+version: 1
+id: obligation.security.prompt-injection-defense
+title: "Isolate external untrusted input from instruction channels in LLM applications and agent tools"
+category: security
+modality: obligation
+severity: high
+summary: >
+  Applications calling LLM APIs or orchestrating agent tool invocations must separate
+  untrusted external text from instruction channels, constrain tool execution authority,
+  and gate destructive operations behind human approval.
+scope:
+  components: [llm_client, rag_pipeline, tool_execution, agent_loop, prompt_builder]
+  data_types: [untrusted_input, prompt, retrieved_document, tool_output]
+  excludes: >
+    Purely deterministic software not invoking generative models or language agents.
+groundings:
+  - jurisdiction: US
+    source_type: standard
+    status: in_force
+    authority: "OWASP Top 10 for LLM Applications (2025) — LLM01: Prompt Injection"
+    citation: >
+      LLM01 Prompt Injection vulnerability and mitigation guidance; direct and
+      indirect prompt injection controls through input isolation, least-privilege
+      tool scoping, and human-in-the-loop authorization.
+    effective: "2024-11-01"
+    review_by: "2027-03-31"
+    applicability: >
+      Developers, architects, and deployers of LLM-integrated software and autonomous agents.
+    sources:
+      - https://genai.owasp.org/llm-top-10/
+  - jurisdiction: US
+    source_type: guidance
+    status: in_force
+    authority: "NIST AI Agent Hijacking Evaluation Guidance (2025); CISA AI Security Guidelines"
+    citation: >
+      Guidance for securing AI agents against indirect injection and context hijacking
+      when executing tools and external integrations.
+    effective: "2025-01-15"
+    review_by: "2027-03-31"
+    sources:
+      - https://www.nist.gov/itl/ai-risk-management-framework
+conflicts: []
+requires:
+  - obligation.ai.llm-appsec-baseline
+directives:
+  human: >
+    Treat all external text retrieved via web, RAG, database, email, or third-party
+    tools as untrusted data rather than system instructions. Scope tool execution
+    to an explicit minimal allowlist.
+  agent: >
+    NEVER execute external model inputs as unescaped shell or code execution.
+    Validate structured tool outputs against schemas. Gate irreversible or
+    state-modifying operations behind explicit human confirmation.
+related_sections:
+  - domain-prompt-injection
+
+# L0 prose-only: input-isolation review is design-level; shares its
+# automatable surface with ai/llm-appsec-baseline instead of its own gate.
+enforcement:
+  level: L0

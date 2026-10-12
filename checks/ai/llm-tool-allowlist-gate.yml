@@ -1,0 +1,64 @@
+# check gate for obligation.ai.llm-appsec-baseline
+# Contract: LLM/tool/agent code ships with bounded authority: a declared
+# tool allowlist, human confirmation before state-changing operations,
+# and schema validation of model output before execution. Level L2 =
+# hard release gate: any unbounded surface or missing approval gate
+# fails the job. Companion detection sketch: ai/llm-appsec-baseline.
+
+id: ai/llm-tool-allowlist-gate
+obligation: obligation.ai.llm-appsec-baseline
+level: L2
+tools:
+  - semgrep
+  - config review (tool allowlists, approval gates)
+
+code_sinks:
+  - "tool registrations granting filesystem/network/shell without a named allowlist reference"
+  - "subprocess.shell=True / os.system fed by model output"
+  - "eval/exec on strings derived from LLM responses"
+  - "agent loops with no max-iteration bound or approval hook"
+  - "system prompts assembled from untrusted input"
+  - "MCP server tool handlers performing writes/deletes/network calls with no approval check"
+
+config_sinks:
+  - "tool-call surface with no declared allowlist file or registry entry"
+  - "MCP server exposing destructive tools without an approval flag"
+  - "allowlist entry granting wildcard scope (fs:*, net:*, shell:*) to model-invokable tools"
+  - "destructive or externally-visible operation with no human-confirmation wiring"
+
+allowlist_surface: >
+  A declared allowlist names every model-invokable tool with its minimal
+  CRUD scope (e.g. TOOLS_ALLOWLIST.yml, a tool registry config, or an MCP
+  server manifest); each tool-call surface maps to an entry; unlisted
+  tools fail.
+
+approval_gate: >
+  A human-confirmation step (named approval function, flag, or UI hook)
+  sits before every destructive, irreversible, or externally-visible
+  operation; agent-loop configs name their max-iteration bound and
+  approval hook.
+
+exemptions:
+  - "read-only tools with no side effects"
+  - "tests/ fixtures demonstrating bad patterns with an explanatory comment"
+
+fixtures:
+  - tests/fixtures/llm_unbounded_tools.py   # must trigger
+  - tests/fixtures/llm_gated_tools.py       # must NOT trigger
+
+blocking: >
+  Release job fails on any unbounded tool surface or missing approval
+  gate; findings are reported per file+line. Suppression requires a
+  dated, reasoned ignore entry naming the compensating control and expiry.
+
+acceptance: >
+  Every tool-call surface maps to a declared allowlist entry with minimal
+  scope; destructive or irreversible operations route through a
+  human-approval step; model output reaching execution passes schema
+  validation first.
+
+fail_when:
+  - unbounded tool scope on an agent/MCP surface
+  - model output executed as shell without validation
+  - no approval gate before destructive operations
+  - tool-call surface with no allowlist entry

@@ -1,0 +1,63 @@
+version: 1
+id: obligation.ai.ml-bias-mitigation
+title: "Evaluate machine learning models for demographic bias, subgroup disparity, and proxy discrimination"
+category: ai
+modality: obligation
+severity: high
+summary: >
+  Pipelines that train, evaluate, or deploy machine learning models affecting
+  individuals must compute subgroup-specific performance metrics, audit
+  features for proxy discrimination, and require human review for high-stakes decisions.
+scope:
+  components: [model_training, evaluation_pipeline, data_pipeline, scoring_service]
+  data_types: [demographic_data, personal_data, feature_vector, prediction]
+  excludes: >
+    Models operating purely on non-human physical phenomena (e.g. weather forecasting,
+    fluid dynamics) where predictions do not classify or affect persons.
+groundings:
+  - jurisdiction: EU
+    source_type: regulation
+    status: in_force
+    authority: "EU AI Act, Regulation (EU) 2024/1689"
+    citation: >
+      Art. 10 — data governance requirements for high-risk AI systems, including
+      appropriate bias detection and correction metrics; Art. 14 — human oversight.
+    effective: "2026-08-02"
+    review_by: "2026-12-18"
+    applicability: >
+      Providers and deployers of high-risk AI systems operating in the EU.
+    sources:
+      - https://eur-lex.europa.eu/eli/reg/2024/1689/oj
+  - jurisdiction: US
+    source_type: guidance
+    status: in_force
+    authority: "Blueprint for an AI Bill of Rights (OSTP, 2022); EEOC Technical Assistance on Algorithmic Bias"
+    citation: >
+      Algorithmic Discrimination Protections principle: automated systems must be
+      proactively designed and continually tested to protect individuals from
+      unintended bias and disparate impact.
+    effective: "2022-10-04"
+    review_by: "2027-03-31"
+    applicability: >
+      Federal policy guidance and civil rights enforcement framework for employment,
+      credit, healthcare, and education automated decision systems.
+    sources:
+      - https://bidenwhitehouse.archives.gov/ostp/ai-bill-of-rights/
+conflicts: []
+requires: []
+directives:
+  human: >
+    Measure performance disparities across protected demographics rather than
+    relying solely on aggregate accuracy metrics. Removing direct protected
+    attributes does not eliminate proxy bias; test for feature correlation.
+  agent: >
+    NEVER evaluate a model classifying people using only aggregate accuracy.
+    Report performance metrics disaggregated across protected subgroups.
+    Ensure automated high-stakes classifications require human confirmation.
+related_sections:
+  - domain-ml-bias
+
+# L0 prose-only: disparity metrics need human-chosen cohorts and review;
+# no automatable check surface.
+enforcement:
+  level: L0

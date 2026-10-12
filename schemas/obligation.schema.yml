@@ -68,6 +68,8 @@ Each grounding is a single jurisdiction with a precise legal source.
 | `applicability` | string | no       | narrows who the source binds                                         |
 | `sources`       | list   | yes      | non-empty; every entry an `http(s)` URL                              |
 
+| `open_law`      | mapping| no       | `{source: <open-law source_id>, id: <source-native law id>}` e.g. `{source: jp, id: 415AC0000000057}`; `law-map check --sources` resolves it via `open_adapter(source).fetch(id)` for amendment detection |
+
 ## Validation rules (implemented in `src/law_map/model.py`)
 
 - `version` must equal 1.
@@ -80,6 +82,7 @@ Each grounding is a single jurisdiction with a precise legal source.
   `source_type` (enum), `status` (enum), `authority`, `citation`,
   `review_by` (ISO date), and a non-empty list of `http(s)` URLs in
   `sources`. `effective` must be an ISO date if present.
+- `open_law`, when present, must be a mapping with non-empty string `source` (an open-law source_id) and `id` (the source-native law id); amendment detection compares the fetched law's `modified` against the grounding's `effective`.
 - `subdivision` is only allowed for jurisdictions `US, CA, AU, DE, GB`;
   anywhere else it is a **warning**, not an error.
 - `enforcement.check_refs` entries must point to existing

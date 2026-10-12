@@ -36,7 +36,8 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help=(
             "path to a good-future-codex checkout; every related_sections id must "
-            "resolve to sections/<tier>/<slug>.md.jinja (errors on unresolved ids)"
+            "resolve to sections/<tier>/<slug>.md.jinja (errors on unresolved ids); "
+            "codex sections no obligation references become warnings"
         ),
     )
 
@@ -50,7 +51,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_check.add_argument(
         "--sources",
         action="store_true",
-        help="HEAD-check grounding source URLs (network access)",
+        help="HEAD-check grounding source URLs and resolve open_law refs via open-law (network access)",
     )
     p_check.add_argument(
         "--codex",
@@ -72,8 +73,8 @@ def main(argv: list[str] | None = None) -> int:
     from . import check as check_mod
     from . import export as export_mod
     from . import model as model_mod
+    corpus = model_mod.load_corpus(args.root, today=check_mod.today())
 
-    corpus = model_mod.load_corpus(args.root)
     checks_root = args.root.parent / "checks"
     codex_root = getattr(args, "codex", None)
     if codex_root is not None and not (codex_root / "sections").is_dir():
@@ -100,12 +101,15 @@ def main(argv: list[str] | None = None) -> int:
     raise AssertionError(f"unhandled command {args.command!r}")
 
 
+def _print_issues(prefix: str, issues: list[str]) -> None:
+    for issue in issues:
+        print(f"{prefix}: {issue}", file=sys.stderr)
+
+
 def _cmd_validate(args: argparse.Namespace, corpus: Any) -> int:
-    for issue in corpus.errors:
-        print(f"error: {issue}", file=sys.stderr)
+    _print_issues("error", corpus.errors)
     if args.warnings:
-        for issue in corpus.warnings:
-            print(f"warning: {issue}", file=sys.stderr)
+        _print_issues("warning", corpus.warnings)
     n = len(corpus.obligations)
     if corpus.ok():
         print(f"ok: {n} obligation(s), no errors")
@@ -136,10 +140,26 @@ def _cmd_show(args: argparse.Namespace, corpus: Any) -> int:
     return 0
 
 
+def _print_report(report: Any, check_mod: Any) -> None:
+    for e in report.expiry:
+        print(check_mod.format_expiry_line(e))
+    for p in report.probes:
+        line = check_mod.format_source_line(p)
+        if line is not None:
+            print(line)
+    if report.probes:
+        print(check_mod.format_source_summary(report.probes))
+    for p in report.open_law:
+        line = check_mod.format_open_law_line(p)
+        if line is not None:
+            print(line)
+    if report.open_law:
+        print(check_mod.format_open_law_summary(report.open_law))
+
+
 def _cmd_check(args: argparse.Namespace, corpus: Any, check_mod: Any) -> int:
     if getattr(args, "codex", None) is not None:
-        for issue in corpus.errors:
-            print(f"error: {issue}", file=sys.stderr)
+        _print_issues("error", corpus.errors)
         if corpus.errors:
             print(
                 f"check failed: {len(corpus.errors)} corpus error(s) with --codex — exit 1",
@@ -147,15 +167,7 @@ def _cmd_check(args: argparse.Namespace, corpus: Any, check_mod: Any) -> int:
             )
             return 1
     report = check_mod.run_check(corpus, today=check_mod.today(), days=args.days, sources=args.sources)
-    for e in report.expiry:
-        state = "EXPIRED" if e.expired else f"due by {e.review_by}"
-        print(f"[{state}] {e.obligation_id} ({e.jurisdiction}): {e.citation}")
-    for p in report.probes:
-        if p.problem is not None:
-            print(f"[source {p.problem}] {p.url}")
-    if report.probes:
-        flagged = sum(1 for p in report.probes if p.problem is not None)
-        print(f"source probes: {len(report.probes)} total, {flagged} flagged")
+    _print_report(report, check_mod)
     if report.expired:
         print(f"{len(report.expired)} grounding(s) expired — exit 1", file=sys.stderr)
         return 1

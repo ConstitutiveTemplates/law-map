@@ -1,0 +1,46 @@
+version: 1
+id: obligation.ai.contest-rules-compliance
+title: "Verify competitive programming platform and contest terms before generating submission solutions"
+category: ai
+modality: obligation
+severity: advisory
+summary: >
+  Code generation assistants operating in competitive programming and online judge
+  workspaces must consult current contest rules before producing submissions, adhering
+  to prohibitions against generative AI assistance during active contests.
+scope:
+  components: [solution_scaffold, contest_submission, judge_client]
+  data_types: [problem_statement, source_code, test_cases]
+  excludes: >
+    Offline practice problems explicitly designated for learning and open tool use.
+groundings:
+  - jurisdiction: JP
+    source_type: standard
+    status: in_force
+    authority: "AtCoder Rules on the Use of Generative AI (revised 2025-10-03)"
+    citation: >
+      Prohibits using generative AI to produce solution code, generate ideas, or
+      debug errors during active rated contests (ABC, ARC, AGC). Translation permitted
+      only with designated prompt template.
+    effective: "2025-10-03"
+    review_by: "2027-03-31"
+    applicability: >
+      All participants submitting code in rated AtCoder competitions.
+    sources:
+      - https://atcoder.jp/
+conflicts: []
+requires: []
+directives:
+  human: >
+    Check the rules of the specific online judge and contest before using AI code
+    generation or assistance. Contest rules take precedence over general tool availability.
+  agent: >
+    NEVER generate solution code for a contest whose rules prohibit generative AI.
+    When contest rules permit translation only, use only the approved prompt format.
+related_sections:
+  - domain-contest-rules
+
+# L0 prose-only: contest terms are venue-specific and need human lookup;
+# no automatable check surface.
+enforcement:
+  level: L0

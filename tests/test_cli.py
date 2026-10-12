@@ -174,3 +174,36 @@ def test_validate_codex_unresolved_section_exits_1(corpus_dir: str, tmp_path, ca
     (codex / "sections").mkdir(parents=True)
     assert cli.main(["--root", corpus_dir, "validate", "--codex", str(codex)]) == 1
     assert "does not resolve" in capsys.readouterr().err
+
+
+def test_validate_codex_warns_for_unreferenced_section(corpus_dir: str, tmp_path, capsys) -> None:
+    codex = tmp_path / "codex"
+    sections = codex / "sections" / "baseline"
+    sections.mkdir(parents=True)
+    (sections / "personal-data.md.jinja").write_text(
+        "{# ethics: id=baseline-personal-data #}\n", encoding="utf-8"
+    )
+    (sections / "orphan-topic.md.jinja").write_text(
+        "{# ethics: id=baseline-orphan-topic #}\n", encoding="utf-8"
+    )
+    assert cli.main(["--root", corpus_dir, "validate", "--codex", str(codex), "--warnings"]) == 0
+    err = capsys.readouterr().err
+    assert "baseline-orphan-topic" in err
+    assert "no referencing obligation" in err
+
+
+def test_check_sources_prints_skipped_count(tmp_path, monkeypatch, capsys) -> None:
+    """Without open-law installed, open_law refs surface as visible [skipped] lines."""
+    doc = yaml.safe_load(yaml.safe_dump(VALID_OBLIGATION))
+    grounding = doc["groundings"][0]
+    grounding["review_by"] = "2030-01-01"
+    grounding["open_law"] = {"source": "eu", "id": "32016R0679"}
+    root = tmp_path / "obligations"
+    root.mkdir()
+    (root / "ob0.yml").write_text(yaml.safe_dump(doc), encoding="utf-8")
+
+    monkeypatch.setattr(check_mod, "today", lambda: date(2026, 10, 4))
+    assert cli.main(["--root", str(root), "check", "--sources", "--days", "30"]) == 0
+    out = capsys.readouterr().out
+    assert "[skipped]" in out
+    assert "skipped: 1" in out

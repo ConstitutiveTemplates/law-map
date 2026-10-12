@@ -33,7 +33,7 @@ groundings:
       - https://genai.owasp.org/llm-top-10/
   - jurisdiction: EU
     source_type: regulation
-    status: scheduled
+    status: in_force
     authority: "EU AI Act, Regulation (EU) 2024/1689"
     citation: >
       High-risk and GPAI-model duties (transparency, human oversight
@@ -74,6 +74,7 @@ directives:
 related_sections:
   - domain-llm-appsec
 enforcement:
-  level: L1
+  level: L2
   check_refs:
     - ai/llm-appsec-baseline
+    - ai/llm-tool-allowlist-gate

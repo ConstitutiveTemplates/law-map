@@ -30,6 +30,9 @@ groundings:
     sources:
       - https://laws.e-gov.go.jp/document?lawid=345AC0000000048
       - https://www.cric.or.jp/english/clj/cl2.html
+    open_law:
+      source: jp
+      id: "345AC0000000048"
   - jurisdiction: EU
     source_type: regulation
     status: in_force
@@ -45,9 +48,12 @@ groundings:
       reserved; opt-out compliance is the operative duty.
     sources:
       - https://eur-lex.europa.eu/eli/dir/2019/790/oj
+    open_law:
+      source: eu
+      id: "32019L0790"
   - jurisdiction: EU
     source_type: regulation
-    status: scheduled
+    status: in_force
     authority: "Artificial Intelligence Act, Regulation (EU) 2024/1689"
     citation: >
       Art. 53(1)(c) — GPAI providers must comply with EU copyright law
@@ -68,6 +74,9 @@ groundings:
     review_by: "2026-12-31"
     sources:
       - https://www.legislation.gov.uk/ukpga/1988/48/section/29A
+    open_law:
+      source: uk
+      id: "ukpga/1988/48"
   - jurisdiction: US
     source_type: precedent
     status: in_force

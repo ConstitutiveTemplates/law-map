@@ -1,0 +1,78 @@
+# check gate for obligation.crypto.no-deprecated-algorithms
+# Contract: security-relevant code and transport config MUST NOT use
+# algorithms retired by NIST SP 800-131A / PCI DSS / CRYPTREC: MD5 and
+# SHA-1 for integrity or signatures, DES/3DES/RC4 ciphers, ECB mode,
+# RSA keys below 2048 bits, SSLv3/TLS 1.0/1.1 transport. Level L2 =
+# hard release gate: any non-exempt finding fails the job. Companion
+# detection sketch: crypto/no-deprecated-algorithms.
+
+id: crypto/deprecated-algorithms-prohibited
+obligation: obligation.crypto.no-deprecated-algorithms
+level: L2
+tools:
+  - semgrep
+  - TLS/cipher config scan (testssl.sh, sslyze, or openssl s_client probe)
+  - dependency metadata scan (e.g. weak-crypto linters)
+
+semgrep:
+  # Run with --config checks/crypto/deprecated-algorithms-prohibited.yml.
+  sinks:
+    # Deprecated hash APIs in integrity/signature contexts.
+    - hashlib.md5 / hashlib.sha1 (unless usedforsecurity=False)
+    - Node crypto.createHash('md5' | 'sha1') feeding sign/verify/HMAC paths
+    - Java MessageDigest.getInstance("MD5" | "SHA-1" | "SHA1")
+    - Go crypto/md5, crypto/sha1, crypto/des, crypto/rc4 imports and uses
+    - Ruby Digest::MD5 / Digest::SHA1 in signing contexts
+    - OpenSSL EVP_md5 / EVP_sha1 / EVP_des_* / EVP_rc4_* calls
+    # Deprecated ciphers and modes.
+    - Crypto.Cipher.DES / DES3 / ARC4 / ARC2 (PyCryptodome/Crypto)
+    - AES.MODE_ECB and any Cipher.getInstance(... "ECB" ...) string
+    - Node createCipher/createCipheriv with 'des', '3des', 'rc4', or '*ecb' algorithms
+    - javax.crypto Cipher.getInstance("DES" | "DESede" | "RC4" | ... "/ECB" ...)
+    - openssl CLI invocations with -md5 / -sha1 / -des / -rc4 / -ecb flags
+    # Weak keys and protocol floors.
+    - RSA key generation below 2048 bits (rsa.generate_private_key, generateKeyPair modulusLength, openssl genrsa, ssh-keygen -b)
+    - TLS floors below 1.2 (ssl.PROTOCOL_TLSv1(_1)?, TLSVersion.TLSv1(_1)?, minVersion 'TLSv1', nginx ssl_protocols with TLSv1/TLSv1.1)
+  sinks_ignore_when:
+    # ...a finding is exempt ONLY when one of these holds; anything else
+    # fails the gate even with a comment.
+    - call carries an adjacent `non-security` / `checksum-only` marker comment
+    - hashlib call passes usedforsecurity=False explicitly
+    - call site is under tests/ and the value comes from a fixtures/test-vector set
+    - legacy-read path isolated behind an explicitly named opt-in flag
+  taint_sources:
+    - signing/MAC/verification code paths
+    - TLS terminator and deploy configuration
+    - certificate issuance and key-generation scripts
+  result_format: sarif
+
+config_sinks:
+  - TLS minimum below 1.2 in server or CI deploy config (ssl_version, minVersion, nginx ssl_protocols)
+  - cipher-suite strings containing DES / 3DES / RC4 / MD5, or RSA key-exchange below 2048 bits
+  - certificate requests pinning sha1WithRSA signatures or 1024-bit RSA keys
+
+exemptions:
+  - comment-adjacent marker `non-security` / `checksum-only` on the call
+  - hashlib calls with explicit usedforsecurity=False
+  - fixtures and test vectors under tests/
+  - explicit legacy-import helpers gated behind a named flag
+
+fixtures:
+  - tests/fixtures/deprecated_crypto.py   # must trigger
+  - tests/fixtures/approved_crypto.py     # must NOT trigger
+
+blocking: >
+  Release job fails on any non-exempt finding; findings are reported per
+  file+line against the violated standard body (NIST SP 800-131A, PCI DSS
+  4.2.1, CRYPTREC list). Suppression requires a dated, reasoned ignore
+  entry naming the compensating control and expiry.
+
+acceptance: >
+  No non-exempt code or config sink remains; every exemption cites its
+  marker or flag; the SARIF artifact is attached to the release.
+
+fail_when:
+  - MD5/SHA-1 used for integrity, signatures, MACs, or certificates without exemption
+  - DES/3DES/RC4 cipher or ECB mode in security-relevant code without exemption
+  - RSA keys below 2048 bits generated or requested
+  - TLS below 1.2 or weak cipher suites configured

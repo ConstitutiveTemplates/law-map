@@ -25,7 +25,9 @@ groundings:
     applicability: "個人情報取扱事業者 — any business handling personal data"
     sources:
       - https://laws.e-gov.go.jp/document?lawid=415AC0000000057
-      - https://www.ppc.go.jp/personalinfo/legal/
+    open_law:
+      source: jp
+      id: "415AC0000000057"
   - jurisdiction: EU
     source_type: regulation
     status: in_force
@@ -36,6 +38,9 @@ groundings:
     applicability: "controllers and processors of personal data of data subjects in the Union"
     sources:
       - https://eur-lex.europa.eu/eli/reg/2016/679/oj
+    open_law:
+      source: eu
+      id: "32016R0679"
   - jurisdiction: UK
     source_type: statute
     status: in_force
@@ -83,6 +88,7 @@ directives:
 related_sections:
   - baseline-personal-data
 enforcement:
-  level: L1
+  level: L2
   check_refs:
     - privacy/no-cleartext-pii
+    - privacy/cleartext-pii-logging-prohibited

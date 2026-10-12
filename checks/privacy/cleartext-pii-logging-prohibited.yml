@@ -1,0 +1,66 @@
+# check gate for obligation.privacy.no-cleartext-pii-logging
+# Contract: application logs, error trackers, and telemetry pipelines
+# MUST NOT receive raw personal identifiers (emails, phone numbers, real
+# names, government IDs, full IP addresses, credentials). Mask, hash, or
+# drop before emitting. Level L2 = hard release gate: any non-exempt
+# finding fails the job. Companion detection sketch:
+# privacy/no-cleartext-pii.
+
+id: privacy/cleartext-pii-logging-prohibited
+obligation: obligation.privacy.no-cleartext-pii-logging
+level: L2
+tools:
+  - semgrep
+  - ruff
+
+semgrep:
+  # Run with --config checks/privacy/cleartext-pii-logging-prohibited.yml.
+  # Language-agnostic heuristic: any call whose name matches a sink set...
+  sinks:
+    - logger.info/warn/error/debug/exception
+    - print
+    - console.log
+    - telemetry.track_event
+    - sentry.capture_exception / capture_message
+    - Structlog/Loguru bound-style calls
+    - f-string interpolation into a sink
+    - whole request bodies or headers passed to a sink
+  sinks_ignore_when:
+    # ...is flagged UNLESS the payload is masked/hashed/scrubbed, or the
+    # call is inside a test file (canary strings allowed per obligation scope).
+    - payload contains mask/redact/hash/[REDACTED] markers
+    - payload passes through a named scrub/redact helper before the sink
+    - call site is under tests/ and value comes from a fixtures/canary set
+  taint_sources:
+    - request params / body fields mapped to scope.data_types (email, phone, person_name, ip_address, government_id, credential)
+    - user profile fields (email, phone, name, ip_address, government_id)
+    - Authorization headers, session tokens, cookies carrying identifiers
+    - any variable named *(password|token|secret|credential|api_key)*
+  result_format: sarif
+  # Exit 1 on any unignored finding; wired into CI as a release-blocking
+  # gate (level L2). Suppression requires a dated, reasoned ignore entry.
+
+ruff:
+  # Optional Python-specific complement: flag direct string interpolation
+  # into logging calls (flake8-logging-format class rules); no core ruff
+  # rule yet covers telemetry sinks, hence semgrep is the primary engine.
+
+fixtures:
+  - tests/fixtures/cleartext_logging_blocked.py   # must trigger
+  - tests/fixtures/masked_logging_ok.py           # must NOT trigger
+
+blocking: >
+  Release job fails on any non-exempt finding. Findings are reported per
+  file+line with the tainted identifier class. Suppression requires a
+  dated, reasoned ignore entry naming the lawful basis and expiry.
+
+acceptance: >
+  No raw personal identifier from scope.data_types reaches a logging,
+  telemetry, or error-reporting sink; every sink payload is masked,
+  hashed, dropped, or scrubbed; the SARIF artifact is attached to the
+  release.
+
+fail_when:
+  - raw email, phone, person name, government ID, full IP, or credential reaches a sink
+  - whole request body or headers emitted to logs or error reports without scrubbing
+  - telemetry event carries user identifiers with no masking step in the path
