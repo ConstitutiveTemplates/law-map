@@ -7,6 +7,8 @@
 id: ai/samd-clinical-evaluation
 obligation: obligation.ai.samd-clinical-evaluation
 level: L1
+triggers:
+  - (?i)\b(samd|pmda|fda|pccp|idaten|clinical|diagnos|medical|patient|mdr|ce\s?mark|medical\s?device)\b
 tools:
   - semgrep
   - file-presence gate in CI (clinical eval docs directory, eval harness)

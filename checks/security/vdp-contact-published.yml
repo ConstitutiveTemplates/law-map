@@ -6,6 +6,8 @@
 id: security/vdp-contact-published
 obligation: obligation.security.coordinated-vulnerability-disclosure
 level: L1
+triggers:
+  - (?i)\b(security\.md|security\.txt|vdp|vulnerability[- ]disclosure|coordinated[- ]disclosure|bug[- ]bounty|report[- ]a[- ]vulnerability)\b
 tools:
   - file-presence gate in CI
   - HTTP probe for web services

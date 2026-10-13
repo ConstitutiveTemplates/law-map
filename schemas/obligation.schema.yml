@@ -35,21 +35,6 @@ listed.
 | ------------- | ------ | -------- | ------------------------------------------- |
 | `components`  | list   | no       | string tags (logging, telemetry, ci, ...)    |
 | `data_types`  | list   | no       | string tags (email, phone, ip_address, ...)  |
-| `excludes`    | string | no       | what is out of scope                         |
-
-### directives
-
-| field  | type   | required | constraint          |
-| ------ | ------ | -------- | ------------------- |
-| `human`| string | rec.     | for human reviewers |
-| `agent`| string | rec.     | machine-imperative prose for agents/Vendored into templates |
-
-### enforcement
-
-| field       | type       | required | constraint                                                |
-| ----------- | ---------- | -------- | --------------------------------------------------------- |
-| `level`     | enum       | no       | `L0` prose \| `L1` detection \| `L2` hard gate           |
-| `check_refs`| list       | no       | each `domain/slug` must match `checks/<domain>/<slug>.yml` |
 
 ## Grounding (one entry in `groundings`)
 
@@ -92,3 +77,17 @@ Each grounding is a single jurisdiction with a precise legal source.
 - `groundings` must have `authority`, `citation`, `review_by` (ISO date).
 - Errors are collected (not raised); `law-map validate` exits non-zero if
   any error exists.
+
+## Check spec (`checks/<domain>/<slug>.yml`)
+
+Machine-check specs that the obligation documents point at through
+`enforcement.check_refs`. Validated by `src/law_map/checkspecs.py`
+(`law-map validate` fails on any violation); `law-lint --rules <checks-dir>`
+consumes the same files directly.
+
+| field        | type         | required | constraint                                                                 |
+| ------------ | ------------ | -------- | -------------------------------------------------------------------------- |
+| `id`         | string       | yes      | `domain/slug`; must match the file path `checks/<domain>/<slug>.yml`       |
+| `obligation` | string       | yes      | the obligation id this spec implements; must exist in the corpus            |
+| `level`      | enum         | yes      | `L0` prose \| `L1` detection \| `L2` hard gate (becomes rule enforcement)  |
+| `triggers`   | list of regex| no       | regex strings law-lint matches against code; every entry must compile       |

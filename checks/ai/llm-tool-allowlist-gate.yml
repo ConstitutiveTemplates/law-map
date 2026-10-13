@@ -8,6 +8,8 @@
 id: ai/llm-tool-allowlist-gate
 obligation: obligation.ai.llm-appsec-baseline
 level: L2
+triggers:
+  - (?i)\b(llm|prompt|agent|tool[_-]?call|mcp|openai|anthropic|chat|completion|system[_-]?prompt|guardrail)\b
 tools:
   - semgrep
   - config review (tool allowlists, approval gates)

@@ -6,6 +6,8 @@
 id: licensing/no-copyleft-contamination
 obligation: obligation.licensing.no-copyleft-contamination
 level: L1
+triggers:
+  - (?i)\b(licen[cs]e|bsl|busl|sspl|rsal|elv2|copyleft|gpl|agpl|lgpl|terraform|opentofu|elasticsearch|redis|source-available)\b
 tools:
   - licence scanner (pip-licenses, cargo-deny, licensee)
   - vendored-file scan for GPL headers

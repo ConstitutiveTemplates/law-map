@@ -6,6 +6,8 @@
 id: security/public-ntp-hygiene
 obligation: obligation.security.public-ntp-hygiene
 level: L1
+triggers:
+  - (?i)\b(ntp|chrony|133\.100\.9\.2|133\.100\.11\.8|clock\.nc\.fukuoka-u\.ac\.jp|fukuoka)\b
 tools:
   - grep/semgrep over NTP hostname and address literals
 

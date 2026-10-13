@@ -9,6 +9,8 @@
 id: crypto/deprecated-algorithms-prohibited
 obligation: obligation.crypto.no-deprecated-algorithms
 level: L2
+triggers:
+  - (?i)\b(md5|sha-?1(?!6|384|512)|(?<!3)des(?!c)|3des|triple-?des|rc4|sslv?3|tls\s?1\.[01]|sha1withrsa|rsa[_ /-]?1024)\b
 tools:
   - semgrep
   - TLS/cipher config scan (testssl.sh, sslyze, or openssl s_client probe)

@@ -5,6 +5,8 @@
 id: ai/biometric-identification-gated
 obligation: obligation.ai.biometric-identification-gated
 level: L1
+triggers:
+  - (?i)\b(face|facial|biometric|biometrics|faceid|face_id|liveness|deepfake|recognition|arcface|insightface|retinaface)\b
 tools:
   - semgrep
   - design review (consent flow, retention schedule)

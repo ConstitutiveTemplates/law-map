@@ -6,6 +6,8 @@
 id: privacy/external-transmission-declared
 obligation: obligation.privacy.external-transmission-declared
 level: L1
+triggers:
+  - (?i)\b(cookie|consent|gtm|gtag|analytics|opt-?out|tracker|advertis|sdk|tag manager)\b
 tools:
   - manifest diff (sdk registry vs declared list)
   - semgrep for SDK endpoint calls
@@ -23,10 +25,9 @@ sdk_sinks:
   - ad networks and tracking pixels embedded in shipped surfaces
 
 gate_checks:
-  - ePrivacy/TTDSG-targeted builds: non-essential sinks behind consent UI
-  - CCPA/GPC: honour opt-out signal before transmission
-  - JP TBA Art. 27-12: transmission register maps to opt-in / opt-out
-    notice / MIC filing / policy-disclosure basis
+  - "ePrivacy/TTDSG-targeted builds: non-essential sinks behind consent UI"
+  - "CCPA/GPC: honour opt-out signal before transmission"
+  - "JP TBA Art. 27-12: transmission register maps to opt-in / opt-out notice / MIC filing / policy-disclosure basis"
 
 fail_when:
   - transmission code exists with no registry entry

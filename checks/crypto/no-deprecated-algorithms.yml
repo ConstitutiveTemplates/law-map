@@ -5,6 +5,8 @@
 id: crypto/no-deprecated-algorithms
 obligation: obligation.crypto.no-deprecated-algorithms
 level: L1
+triggers:
+  - (?i)\b(md5|sha-?1(?!6|384|512)|(?<!3)des(?!c)|3des|triple-?des|rc4|sslv?3|tls\s?1\.[01]|sha1withrsa|rsa[_ /-]?1024)\b
 tools:
   - semgrep
   - dependency metadata scan (e.g. weak-crypto linters)

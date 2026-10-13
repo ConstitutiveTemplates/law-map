@@ -6,7 +6,7 @@ import argparse
 from pathlib import Path
 
 from . import check as check_mod
-from . import commands
+from . import checkspecs, commands
 from .loader import load_corpus
 from .refs import check_cross_references
 
@@ -85,6 +85,7 @@ def main(argv: list[str] | None = None) -> int:
         checks_root=checks_root if checks_root.is_dir() else None,
         codex_root=codex_root,
     )
+    checkspecs.validate_check_specs(checks_root, corpus)
 
     if args.command == "validate":
         return commands.cmd_validate(args, corpus)

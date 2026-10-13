@@ -8,6 +8,8 @@
 id: privacy/no-cleartext-pii
 obligation: obligation.privacy.no-cleartext-pii-logging
 level: L1
+triggers:
+  - (?i)\b(pii|personal[_ ]?data|personal[_ ]?information|gdpr|privacy|user[_ ]?data|deletion|right[_ ]?to[_ ]?erasure|consent|retention)\b
 tools:
   - semgrep
   - ruff

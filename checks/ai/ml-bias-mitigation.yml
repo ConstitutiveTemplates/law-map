@@ -7,6 +7,8 @@
 id: ai/ml-bias-mitigation
 obligation: obligation.ai.ml-bias-mitigation
 level: L1
+triggers:
+  - (?i)\b(fairness|bias|demographic|subgroup|shap|xai|explainab|protected|disparate|equalized|parity)\b
 tools:
   - semgrep
   - pytest (subgroup-metric assertions in the eval pipeline)

@@ -5,7 +5,8 @@ This module owns the shared building blocks only: the ``Obligation`` /
 modalities, severities, ...), ISO date parsing, and read-only grounding
 accessors.
 
-Single-file validation lives in :mod:`law_map.validate`, corpus discovery
+Single-file validation lives in :mod:`law_map.validate` (obligations) and
+:mod:`law_map.checkspecs` (check specs), corpus discovery
 in :mod:`law_map.loader`, cross-file links in :mod:`law_map.refs`, and
 codex linkage in :mod:`law_map.codex`.
 """

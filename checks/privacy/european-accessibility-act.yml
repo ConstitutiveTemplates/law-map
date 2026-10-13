@@ -13,6 +13,8 @@
 id: privacy/european-accessibility-act
 obligation: obligation.privacy.european-accessibility-act
 level: L1
+triggers:
+  - (?i)\b(accessib|aria|wcag|a11y|axe|alt=|tabindex|focus|screen[ -]reader|en[ -]301[ -]549)\b
 tools:
   - axe-core in CI (WCAG 2.1 AA / EN 301 549 audit)
   - pa11y in CI

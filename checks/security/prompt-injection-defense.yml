@@ -9,6 +9,8 @@
 id: security/prompt-injection-defense
 obligation: obligation.security.prompt-injection-defense
 level: L1
+triggers:
+  - (?i)\b(prompt[- ]?injection|jailbreak|indirect[- ]?injection|agent[- ]?hijack|system[- ]?prompt|tool[_-]?poisoning)\b
 tools:
   - semgrep rules on prompt-assembly sites
   - schema validation of structured tool outputs (allowlisted tool schemas)

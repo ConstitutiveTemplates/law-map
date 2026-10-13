@@ -375,3 +375,163 @@ def test_obligation_with_check_refs_is_quiet(tmp_path: Path) -> None:
     corpus = load_corpus(root, today=date(2026, 10, 4))
     assert corpus.ok(), corpus.errors
     assert not any("check_refs" in w for w in corpus.warnings), corpus.warnings
+
+
+def _write_checks(tmp_path: Path, *specs: tuple[str, dict]) -> Path:
+    """Write check specs as checks/<ref>.yml; returns the checks root."""
+    checks_root = tmp_path / "checks"
+    for ref, spec in specs:
+        target = checks_root / f"{ref}.yml"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(yaml.safe_dump(spec), encoding="utf-8")
+    return checks_root
+
+
+def _valid_spec(**overrides: object) -> dict:
+    """A minimal valid check spec for privacy/valid-fixture."""
+    spec: dict = {
+        "id": "privacy/valid-fixture",
+        "obligation": "obligation.privacy.valid-fixture",
+        "level": "L1",
+        "triggers": [r"(?i)\b(pii|privacy)\b"],
+    }
+    spec.update(overrides)
+    return spec
+
+
+def test_check_spec_valid_passes(tmp_path: Path) -> None:
+    from law_map.checkspecs import validate_check_spec
+
+    errors: list[str] = []
+    validate_check_spec(
+        _valid_spec(),
+        path=tmp_path / "checks" / "privacy" / "valid-fixture.yml",
+        errors=errors,
+        known_ids={"obligation.privacy.valid-fixture"},
+    )
+    assert errors == []
+
+
+def test_check_spec_triggers_optional(tmp_path: Path) -> None:
+    """A spec without triggers validates — static gates keep working."""
+    from law_map.checkspecs import validate_check_spec
+
+    spec = _valid_spec()
+    spec.pop("triggers")
+    errors: list[str] = []
+    validate_check_spec(
+        spec,
+        path=tmp_path / "checks" / "privacy" / "valid-fixture.yml",
+        errors=errors,
+        known_ids={"obligation.privacy.valid-fixture"},
+    )
+    assert errors == []
+
+
+def test_check_spec_bad_regex_is_error(tmp_path: Path) -> None:
+    from law_map.checkspecs import validate_check_spec
+
+    errors: list[str] = []
+    validate_check_spec(
+        _valid_spec(triggers=["([unclosed"]),
+        path=tmp_path / "checks" / "privacy" / "valid-fixture.yml",
+        errors=errors,
+        known_ids={"obligation.privacy.valid-fixture"},
+    )
+    assert any("not a valid regex" in e for e in errors), errors
+
+
+def test_check_spec_non_list_triggers_is_error(tmp_path: Path) -> None:
+    from law_map.checkspecs import validate_check_spec
+
+    errors: list[str] = []
+    validate_check_spec(
+        _valid_spec(triggers=r"(?i)\bpii\b"),
+        path=tmp_path / "checks" / "privacy" / "valid-fixture.yml",
+        errors=errors,
+        known_ids={"obligation.privacy.valid-fixture"},
+    )
+    assert any("must be a list" in e for e in errors), errors
+
+
+def test_check_spec_id_path_mismatch_is_error(tmp_path: Path) -> None:
+    from law_map.checkspecs import validate_check_spec
+
+    errors: list[str] = []
+    validate_check_spec(
+        _valid_spec(id="privacy/other"),
+        path=tmp_path / "checks" / "privacy" / "valid-fixture.yml",
+        errors=errors,
+        known_ids={"obligation.privacy.valid-fixture"},
+    )
+    assert any("does not match path" in e for e in errors), errors
+
+
+def test_check_spec_unknown_obligation_is_error(tmp_path: Path) -> None:
+    from law_map.checkspecs import validate_check_spec
+
+    errors: list[str] = []
+    validate_check_spec(
+        _valid_spec(obligation="obligation.privacy.missing"),
+        path=tmp_path / "checks" / "privacy" / "valid-fixture.yml",
+        errors=errors,
+        known_ids={"obligation.privacy.valid-fixture"},
+    )
+    assert any("does not match any id" in e for e in errors), errors
+
+
+def test_check_spec_bad_level_is_error(tmp_path: Path) -> None:
+    from law_map.checkspecs import validate_check_spec
+
+    errors: list[str] = []
+    validate_check_spec(
+        _valid_spec(level="L9"),
+        path=tmp_path / "checks" / "privacy" / "valid-fixture.yml",
+        errors=errors,
+        known_ids={"obligation.privacy.valid-fixture"},
+    )
+    assert any("level must be one of" in e for e in errors), errors
+
+
+def test_validate_check_specs_malformed_yaml_is_error(tmp_path: Path) -> None:
+    """Corpus-level: a broken spec file lands in corpus.errors, never raises."""
+    from law_map.checkspecs import validate_check_specs
+
+    root = write_corpus(tmp_path, VALID_OBLIGATION)
+    checks_root = _write_checks(tmp_path, ("privacy/valid-fixture", _valid_spec()))
+    (checks_root / "privacy" / "broken.yml").write_text("id: [unclosed\n", encoding="utf-8")
+    corpus = load_corpus(root)
+    validate_check_specs(checks_root, corpus)
+    assert any("invalid YAML" in e for e in corpus.errors), corpus.errors
+
+
+def test_validate_check_specs_skips_underscore_files(tmp_path: Path) -> None:
+    from law_map.checkspecs import validate_check_specs
+
+    root = write_corpus(tmp_path, VALID_OBLIGATION)
+    checks_root = _write_checks(tmp_path, ("privacy/valid-fixture", _valid_spec()))
+    (checks_root / "privacy" / "_draft.yml").write_text("not: a spec\n", encoding="utf-8")
+    corpus = load_corpus(root)
+    validate_check_specs(checks_root, corpus)
+    assert corpus.ok(), corpus.errors
+
+
+def test_repo_check_specs_pass_validation() -> None:
+    """Every shipped checks/**/*.yml validates (id/path, level, triggers compile)."""
+    from pathlib import Path as _Path
+
+    from law_map.checkspecs import validate_check_spec
+
+    checks_dir = _Path(__file__).resolve().parent.parent / "checks"
+    specs = sorted(checks_dir.rglob("*.yml"))
+    assert specs, "expected shipped check specs under checks/"
+    errors: list[str] = []
+    for path in specs:
+        if path.name.startswith("_"):
+            continue
+        import yaml as _yaml
+
+        data = _yaml.safe_load(path.read_text(encoding="utf-8"))
+        assert isinstance(data, dict), path
+        validate_check_spec(data, path=path, errors=errors, known_ids=set())
+    assert errors == [], errors

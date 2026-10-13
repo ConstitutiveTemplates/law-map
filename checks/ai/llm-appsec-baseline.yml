@@ -5,6 +5,8 @@
 id: ai/llm-appsec-baseline
 obligation: obligation.ai.llm-appsec-baseline
 level: L1
+triggers:
+  - (?i)\b(llm|prompt|agent|tool[_-]?call|mcp|openai|anthropic|chat|completion|system[_-]?prompt|guardrail)\b
 tools:
   - semgrep
   - config review (tool allowlists, approval gates)

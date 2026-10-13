@@ -5,6 +5,8 @@
 id: copyright/tdm-optout-respected
 obligation: obligation.copyright.ai-training-data-use
 level: L1
+triggers:
+  - (?i)\b(scrap|crawl|robots\.txt|rag|retrieval|fine-?tun|dataset|embedding|public[- ]domain|copyright)\b
 tools:
   - semgrep
   - provenance manifest inspection
