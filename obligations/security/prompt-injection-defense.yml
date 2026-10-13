@@ -54,7 +54,12 @@ directives:
 related_sections:
   - domain-prompt-injection
 
-# L0 prose-only: input-isolation review is design-level; shares its
-# automatable surface with ai/llm-appsec-baseline instead of its own gate.
+# L1 detection: injection-isolation sinks (raw untrusted input in
+# instruction channels, unmarked tool-output re-entry, secret
+# passthrough) are specified in
+# checks/security/prompt-injection-defense.yml. Authority gating
+# (allowlists, approval hooks) stays with ai/llm-appsec-baseline.
 enforcement:
-  level: L0
+  level: L1
+  check_refs:
+    - security/prompt-injection-defense

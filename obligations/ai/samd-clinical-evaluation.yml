@@ -54,7 +54,10 @@ directives:
 related_sections:
   - sector-samd-regulatory
 
-# L0 prose-only: change-control bounds and clinical oversight need human
-# regulatory review; no automatable check surface.
+# L1 detection: claim-without-evidence presence is machine-checkable;
+# PCCP bounds, clinical validity, and oversight sufficiency still need
+# human regulatory review.
 enforcement:
-  level: L0
+  level: L1
+  check_refs:
+    - ai/samd-clinical-evaluation

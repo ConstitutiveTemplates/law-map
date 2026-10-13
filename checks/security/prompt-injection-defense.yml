@@ -1,0 +1,35 @@
+# check stub for obligation.security.prompt-injection-defense
+# Contract: untrusted external text must never reach instruction
+# channels raw; tool outputs re-entering LLM calls need boundary
+# marking; tool-result passthrough must not leak secrets. L1 detection.
+# Relation: this spec covers injection isolation only; authority
+# gating (tool allowlists, approval hooks) is specified by
+# ai/llm-appsec-baseline (L1) and ai/llm-tool-allowlist-gate (L2).
+
+id: security/prompt-injection-defense
+obligation: obligation.security.prompt-injection-defense
+level: L1
+tools:
+  - semgrep rules on prompt-assembly sites
+  - schema validation of structured tool outputs (allowlisted tool schemas)
+
+code_sinks:
+  - "user/tool-controlled strings concatenated or interpolated raw into system prompts (f-strings, format, + concatenation into system/developer message content)"
+  - "retrieved documents, web content, or tool outputs fed into subsequent LLM calls with no delimiter or boundary marking"
+  - "secrets or credentials (API keys, tokens) interpolated into tool-result passthrough"
+  - "model output executed as shell or code (subprocess.shell=True, os.system, eval/exec on LLM-derived strings) without schema validation"
+
+config_sinks:
+  - "tool schemas absent where structured tool outputs reach LLM or execution surfaces"
+  - "state-modifying or irreversible tool operations with no human-approval wiring"
+
+exemptions:
+  - fully static prompts with no external interpolation
+  - tests/ fixtures demonstrating injection patterns with an explanatory comment
+
+result_format: sarif
+fail_when:
+  - untrusted input reaches a system/developer instruction channel without isolation
+  - tool output re-enters an LLM call without boundary marking
+  - secrets present in tool-result passthrough
+  - model output executed without schema validation or approval gate

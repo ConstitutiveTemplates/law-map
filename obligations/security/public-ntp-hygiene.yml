@@ -40,7 +40,10 @@ directives:
 related_sections:
   - region-kyushu-ntp
 
-# L0 prose-only: single-string config review; no automatable check
-# surface beyond reviewer judgment.
+# L1 detection: hardcoded single-institution NTP endpoints in shipped
+# client/firmware code and default config are specified in
+# checks/security/public-ntp-hygiene.yml.
 enforcement:
-  level: L0
+  level: L1
+  check_refs:
+    - security/public-ntp-hygiene

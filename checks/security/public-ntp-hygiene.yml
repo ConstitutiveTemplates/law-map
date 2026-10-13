@@ -1,0 +1,29 @@
+# check stub for obligation.security.public-ntp-hygiene
+# Contract: shipped client/firmware code and config must not hardcode
+# single-institution public NTP endpoints; time sync uses pool
+# infrastructure or user-configurable endpoints with backoff. L1 detection.
+
+id: security/public-ntp-hygiene
+obligation: obligation.security.public-ntp-hygiene
+level: L1
+tools:
+  - grep/semgrep over NTP hostname and address literals
+
+code_sinks:
+  - "hardcoded single-institution NTP hostnames in client or firmware code (e.g. clock.nc.fukuoka-u.ac.jp, ntp.nict.jp, university or corporate reference hosts)"
+  - "hardcoded NTP server IPv4/IPv6 literals in client or firmware code"
+
+config_sinks:
+  - "shipped default NTP config naming a single-institution endpoint with no user-override mechanism"
+  - "NTP client config with no retry backoff for failed queries"
+
+exemptions:
+  - fixtures and test harnesses under tests/
+  - documentation and comment-only references
+  - dedicated time-distribution infrastructure operating internal reference clocks
+  - pool defaults (e.g. *.pool.ntp.org) that are user-overridable and backed off
+
+result_format: sarif
+fail_when:
+  - single-institution NTP hostname or address literal in shipped client/firmware code or default config
+  - hardcoded NTP endpoint with no user-override or backoff wiring

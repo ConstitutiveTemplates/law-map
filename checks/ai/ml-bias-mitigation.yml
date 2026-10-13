@@ -1,0 +1,38 @@
+# check stub for obligation.ai.ml-bias-mitigation
+# Contract: ML pipelines classifying or affecting people must show
+# subgroup-disaggregated evaluation; aggregate-only accuracy is not
+# enough. L1 detection — cohort choice, threshold adequacy, and
+# human-review sufficiency still need human judgment.
+
+id: ai/ml-bias-mitigation
+obligation: obligation.ai.ml-bias-mitigation
+level: L1
+tools:
+  - semgrep
+  - pytest (subgroup-metric assertions in the eval pipeline)
+  - dataset schema review (demographic split recorded)
+
+code_sinks:
+  - "model evaluation asserting only aggregate accuracy with no subgroup-disaggregated metrics"
+  - "scoring/classification surfaces over persons with no fairness-metric reference"
+  - "feature sets retaining proxy-correlated attributes with no correlation-audit reference"
+
+config_sinks:
+  - "eval pipeline with no fairness or subgroup metric configured"
+  - "model card with no subgroup-metrics section"
+  - "dataset schema with no demographic train/test split recorded"
+
+exemptions:
+  - "models operating purely on non-human physical phenomena (e.g. weather forecasting, fluid dynamics)"
+  - "tests/ fixtures demonstrating bad patterns with an explanatory comment"
+
+result_format: sarif
+acceptance: >
+  Every model classifying or affecting people reports performance
+  metrics disaggregated across protected subgroups, records the
+  demographic train/test split, and routes high-stakes classifications
+  through human confirmation.
+fail_when:
+  - evaluation asserts only aggregate accuracy over a person-affecting model
+  - no fairness or subgroup metric present in the eval pipeline
+  - demographic train/test split not recorded for a person-affecting model

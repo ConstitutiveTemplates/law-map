@@ -49,7 +49,13 @@ directives:
 related_sections:
   - region-eu-eaa
 
-# L0 prose-only: WCAG conformance is audited with dedicated tooling
-# (e.g. axe-core), not a repo check surface.
+# L1 detection: the automatable WCAG 2.1 AA / EN 301 549 subset
+# (semantic HTML/ARIA sinks, CI audit presence, accessibility
+# statement/feedback surface) is specified in
+# checks/privacy/european-accessibility-act.yml. Full conformance
+# review (contrast judgment, keyboard operability, assistive-tech
+# usability) remains human audit and is out of scope for that gate.
 enforcement:
-  level: L0
+  level: L1
+  check_refs:
+    - privacy/european-accessibility-act

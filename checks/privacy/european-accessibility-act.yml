@@ -1,0 +1,42 @@
+# check stub for obligation.privacy.european-accessibility-act
+# Contract: consumer-facing UI must pass the automatable subset of
+# WCAG 2.1 AA / EN 301 549 in CI (axe-core/pa11y), and static sinks
+# catch missing semantic HTML/ARIA at authoring time. L1 detection.
+# Scope note: this spec covers only the automatable subset — missing
+# alt text and accessible names, tabindex traps, missing lang, an
+# absent CI audit, and an absent accessibility statement or feedback
+# surface. Full conformance (colour-contrast judgment, keyboard
+# operability review, usability testing with assistive technology
+# against EN 301 549 Clauses 9-11) still requires human audit and is
+# out of scope for this gate.
+
+id: privacy/european-accessibility-act
+obligation: obligation.privacy.european-accessibility-act
+level: L1
+tools:
+  - axe-core in CI (WCAG 2.1 AA / EN 301 549 audit)
+  - pa11y in CI
+  - semgrep for static markup sinks
+
+code_sinks:
+  - "img elements with no alt attribute in shipped UI templates/components"
+  - "button/a/input elements with no accessible name (no text content, aria-label, aria-labelledby, or associated label)"
+  - "positive tabindex values (tabindex > 0) creating focus-order traps"
+  - "form controls with no associated label element"
+  - "html root with no lang attribute in shipped pages"
+
+config_sinks:
+  - "no axe-core/pa11y job in CI for a repo shipping consumer-facing web UI"
+  - "no accessibility statement or feedback mechanism (ACCESSIBILITY.md, accessibility statement page, or feedback contact) for a shipped EU consumer surface"
+
+exemptions:
+  - decorative images with an explicit empty alt (`alt=""`)
+  - internal-only tooling with no EU consumer surface
+  - microenterprise services qualifying for the Directive (EU) 2019/882 Art. 4(5) statutory exemption
+  - fixtures and test pages under tests/
+
+result_format: sarif
+fail_when:
+  - non-exempt code sink triggers (missing alt/name, tabindex trap, unlabeled control, missing lang)
+  - no automated WCAG 2.1 AA audit in CI on a shipped consumer surface
+  - no accessibility statement or feedback mechanism discoverable for a shipped EU consumer surface

@@ -1,0 +1,34 @@
+# check stub for obligation.ai.samd-clinical-evaluation
+# Contract: diagnostic claims and clinical model swaps must be backed by
+# a visible evaluation harness and change-control evidence, not silent
+# code. L1 detection — PCCP bounds, clinical validity, and oversight
+# sufficiency still need human regulatory review.
+
+id: ai/samd-clinical-evaluation
+obligation: obligation.ai.samd-clinical-evaluation
+level: L1
+tools:
+  - semgrep
+  - file-presence gate in CI (clinical eval docs directory, eval harness)
+
+code_sinks:
+  - "diagnostic/diagnosis/screening outputs in clinical surfaces with no evaluation-harness reference"
+  - "clinical diagnostic model weight or hyperparameter swaps with no change-control bounds reference"
+
+config_sinks:
+  - "medical-device flag present with no clinical eval docs directory"
+  - "diagnostic claim in code/UI with no evaluation harness wired in CI"
+
+exemptions:
+  - "administrative, billing, or general wellness software with no diagnostic or therapeutic claim"
+  - "tests/ fixtures demonstrating bad patterns with an explanatory comment"
+
+result_format: sarif
+acceptance: >
+  Every diagnostic claim maps to an evaluation harness run in CI;
+  clinical model changes cite their change-control bounds; a clinical
+  eval docs directory exists and post-market surveillance is wired.
+fail_when:
+  - diagnostic claim in code/UI with no evaluation harness present
+  - medical-device flag with no clinical eval docs directory
+  - clinical model swap with no change-control bounds reference

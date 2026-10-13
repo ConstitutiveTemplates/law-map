@@ -57,7 +57,10 @@ directives:
 related_sections:
   - domain-ml-bias
 
-# L0 prose-only: disparity metrics need human-chosen cohorts and review;
-# no automatable check surface.
+# L1 detection: subgroup-metric presence is machine-checkable; cohort
+# choice, threshold adequacy, and human-review sufficiency still need
+# human judgment.
 enforcement:
-  level: L0
+  level: L1
+  check_refs:
+    - ai/ml-bias-mitigation
