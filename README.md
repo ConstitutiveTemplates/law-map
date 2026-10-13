@@ -74,12 +74,12 @@ citation, ISO `review_by`, non-empty http(s) `sources`, optional `open_law`
 `{source, id}` ref into open-law for amendment detection), and cross-references
 (`requires`/`conflicts` ids, `enforcement.check_refs` files). Files whose
 basename starts with `_` are excluded from the corpus (see
-`obligations/_example.yml`). Without `--codex`, unknown `related_sections` only
-warn; with `--codex <checkout>` they must resolve to
+`obligations/_example.yml`). `related_sections` ids (`<tier>-<slug>`) are
+resolved only with `--codex <checkout>`: then each must resolve to
 `sections/<tier>/<slug>.md.jinja` per the `<tier>-<slug>` naming rule, and an id
-not present becomes an error. With `--codex`, codex sections that no
-obligation's `related_sections` references are reported as warnings (reverse
-coverage), never errors.
+not present becomes an error, while codex sections that no obligation's
+`related_sections` references are reported as warnings (reverse coverage),
+never errors. Without `--codex` the ids are unchecked.
 
 ## Review freshness
 

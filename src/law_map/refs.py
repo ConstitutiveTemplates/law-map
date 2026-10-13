@@ -29,33 +29,22 @@ def check_cross_references(
 
     With ``codex_root`` (a good-future-codex checkout) every
     ``related_sections`` id must resolve to ``sections/<tier>/<slug>.md.jinja``
-    per the ``<tier>-<slug>`` naming rule — missing ids are errors and the
-    weak "referenced by no other obligation" warning is suppressed. Sections
+    per the ``<tier>-<slug>`` naming rule — missing ids are errors. Sections
     no obligation references become warnings via :func:`check_codex_coverage`.
-    Without it, the lenient offline warning behavior is kept.
+    Without it, ``related_sections`` ids are unchecked (the offline warning
+    behavior was retired: corpus ids are unique by construction, so a
+    singleton reference is the normal case, not a signal).
     """
     known_ids = {ob.id for ob in corpus.obligations if ob.id}
-    section_users = _count_section_users(corpus)
     for ob in corpus.obligations:
-        _check_obligation_links(ob, known_ids, section_users, corpus, checks_root, codex_root)
+        _check_obligation_links(ob, known_ids, corpus, checks_root, codex_root)
     if codex_root is not None:
         corpus.warnings.extend(check_codex_coverage(corpus, codex_root))
-
-
-def _count_section_users(corpus: Corpus) -> dict[str, int]:
-    """How many obligations reference each ``related_sections`` id."""
-    users: dict[str, int] = {}
-    for ob in corpus.obligations:
-        for section in ob.data.get("related_sections", []):
-            if isinstance(section, str):
-                users[section] = users.get(section, 0) + 1
-    return users
 
 
 def _check_obligation_links(
     ob: Obligation,
     known_ids: set[str],
-    section_users: dict[str, int],
     corpus: Corpus,
     checks_root: Path | None,
     codex_root: Path | None,
@@ -75,12 +64,6 @@ def _check_obligation_links(
                 target = codex_section_path(codex_root, section)
                 if target is None or not target.is_file():
                     corpus.errors.append(unresolved_section_error(ob.id, section))
-            elif section_users.get(section, 0) < 2:
-                corpus.warnings.append(
-                    f"{ob.id}: related_sections '{section}' is referenced by no other obligation "
-                    f"(possibly unknown to good-future-codex; run 'law-map check --codex <checkout>' "
-                    "for a definitive resolution check)"
-                )
     if checks_root is not None:
         enforcement = ob.data.get("enforcement")
         if isinstance(enforcement, dict):

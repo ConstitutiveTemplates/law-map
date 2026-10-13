@@ -195,7 +195,7 @@ def test_cross_reference_missing_requires_and_check_ref(tmp_path: Path) -> None:
     assert any("check_refs 'privacy/valid-fixture' does not match" in e for e in corpus.errors)
 
 
-def test_cross_reference_unknown_related_section_warns_only(tmp_path: Path) -> None:
+def test_cross_reference_singleton_related_section_is_quiet(tmp_path: Path) -> None:
     doc_a = yaml.safe_load(yaml.safe_dump(VALID_OBLIGATION))
     doc_a["related_sections"] = ["unknown-section", "shared-section"]
     doc_a["enforcement"]["check_refs"] = []
@@ -208,7 +208,7 @@ def test_cross_reference_unknown_related_section_warns_only(tmp_path: Path) -> N
     corpus = load_corpus(root)
     check_cross_references(corpus, checks_root=tmp_path / "checks")
     assert corpus.ok()
-    assert any("unknown-section" in w for w in corpus.warnings)
+    assert not any("unknown-section" in w for w in corpus.warnings)
     assert not any("shared-section" in w for w in corpus.warnings)
 
 

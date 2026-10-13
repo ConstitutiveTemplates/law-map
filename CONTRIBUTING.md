@@ -40,7 +40,8 @@ subset lives in `src/law_map/model.py`. What validation actually enforces:
   `checks/<domain>/<slug>.yml` files (error otherwise).
 - `requires` / `conflicts` must reference ids present in the corpus.
 - `related_sections` references good-future-codex section ids
-  (`<tier>-<slug>`); unknown ids warn, not error.
+  (`<tier>-<slug>`); verified with `law-map validate --codex <checkout>`
+  (offline `validate` leaves them unchecked).
 
 Cite the exact legal text — pinpoint article/section/case in `citation`, and
 the canonical instrument URL in `sources`. Do not rely on memory.
