@@ -36,14 +36,30 @@ groundings:
     status: in_force
     authority: "EU AI Act, Regulation (EU) 2024/1689"
     citation: >
-      High-risk and GPAI-model duties (transparency, human oversight
-      Art. 14, incident reporting); general applicability from
-      2026-08-02, high-risk in regulated products from 2027-08-02.
-    effective: "2026-08-02"
+      GPAI-model duties (Arts. 53, 55: documentation, evaluation and
+      adversarial testing, serious-incident reporting, cybersecurity for
+      models with systemic risk), applicable from 2025-08-02.
+    effective: "2025-08-02"
     review_by: "2026-12-18"
     applicability: >
-      Deployers of high-risk AI and providers of GPAI models with
-      systemic risk placing on the EU market.
+      Providers of GPAI models, and of GPAI models with systemic risk,
+      placing them on the EU market.
+    sources:
+      - https://eur-lex.europa.eu/eli/reg/2024/1689/oj
+  - jurisdiction: EU
+    source_type: regulation
+    status: scheduled
+    authority: "EU AI Act, Regulation (EU) 2024/1689, as amended by the AI Omnibus"
+    citation: >
+      High-risk duties (transparency, human oversight Art. 14, incident
+      reporting). Postponed by the AI Omnibus (in force 2026-07-27):
+      stand-alone (Annex III) high-risk from 2027-12-02, high-risk in
+      regulated products (Annex I) from 2028-08-02.
+    effective: "2027-12-02"
+    review_by: "2026-12-18"
+    applicability: >
+      Providers and deployers of high-risk AI systems placing on or using
+      in the EU market; Annex I product-embedded systems from 2028-08-02.
     sources:
       - https://eur-lex.europa.eu/eli/reg/2024/1689/oj
   - jurisdiction: US
