@@ -30,11 +30,16 @@ subset lives in `src/law_map/model.py`. What validation actually enforces:
   advisory, high, critical`).
 - `groundings` non-empty; every grounding needs `jurisdiction`,
   `source_type` (`statute, regulation, precedent, guidance, standard,
-  model_code`), `status` (`in_force, scheduled, proposed, superseded,
+  model_code, private_rule, incident_report`), `status` (`in_force, scheduled, proposed, superseded,
   withdrawn`),
   `authority`, `citation`, `review_by` (ISO `YYYY-MM-DD`), and a non-empty
-  list of `http(s)` URLs in `sources`. `effective` must be an ISO date if
-  present.
+  list of `http(s)` URLs in `sources`. `effective` and `reviewed_on` must
+  be ISO dates if present.
+- `private_rule` (a private body's rules, such as contest terms) and
+  `incident_report` (a documented incident whose lesson grounds the
+  practice) are not legal sources; never file them as `standard` or
+  `precedent`. An obligation grounded only in them lands in the
+  `community` pack (see "Packs" in the README).
 - `withdrawn` marks an instrument its authority has rescinded, revoked, or
   taken down (e.g. prior-administration guidance); a source on an archive
   site (`web.archive.org`, `*.archives.gov` subdomains) is a warning.
@@ -80,8 +85,25 @@ not go stale. The weekly `drift-watch` workflow runs
 `law-drift` issue. Never bump a `review_by` just to silence the check —
 bump it only after actually re-verifying the source is still current.
 
-## Not legal advice
+Record `reviewed_on: "YYYY-MM-DD"` on a grounding when you re-verify it
+against the instrument's current text. The weekly law-watch (`law-map
+watch`) compares that date with the instrument's latest amendment on
+EUR-Lex, e-Gov or legislation.gov.uk and files a `law-watch` issue when the
+law changed after it. After any corpus change, run `just stats` so the
+README scope tables stay in sync (CI checks them).
 
-law-map records what instruments say and where they are pinned; it does not
-interpret them for a specific situation. For an actual compliance
-determination, consult a qualified practitioner.
+## Disclaimer
+
+Not legal advice. Engineering guardrails with citations; ask a qualified
+professional for compliance decisions.
+
+法的助言ではありません。出典付きの技術的ガードレールです。コンプライアンスの判断は専門家にご相談ください。
+
+politeuma records what legal sources say and which engineering practices
+they support. It does not decide whether your product complies with any
+law, and using it does not make anything compliant. Sources can go out of
+date or be misread, so every rule shows its sources and the date it was last
+checked. Contributors and reviewers share their understanding in good faith;
+their contributions are not legal advice to you or anyone else.
+
+politeuma は、法令などの出典が何を定めているか、それがどの技術的な実践を支えるかを記録します。あなたの製品が法律に適合しているかを判断するものではなく、使っただけで適合するものでもありません。出典は古くなったり読み違えたりすることがあるため、すべてのルールに出典と最終確認日を示しています。貢献者やレビュアーは善意で理解を共有していますが、その内容はあなたや他の誰かへの法的助言ではありません。

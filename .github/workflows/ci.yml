@@ -28,6 +28,8 @@ jobs:
         run: uv run mypy src/law_map
       - name: Tests
         run: uv run pytest -q
+      - name: README scope tables match the corpus
+        run: uv run law-map stats --markdown --check README.md
       - name: Checkout kanon
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:

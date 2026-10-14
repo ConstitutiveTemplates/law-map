@@ -10,11 +10,11 @@ from __future__ import annotations
 import argparse
 import sys
 
-from . import check
+from . import check, stats, watch
 from .export import export_obligations
 from .model import Corpus
 
-__all__ = ["cmd_check", "cmd_export", "cmd_list", "cmd_show", "cmd_validate"]
+__all__ = ["cmd_check", "cmd_export", "cmd_list", "cmd_show", "cmd_stats", "cmd_validate", "cmd_watch"]
 
 
 def cmd_validate(args: argparse.Namespace, corpus: Corpus) -> int:
@@ -83,6 +83,50 @@ def cmd_export(args: argparse.Namespace, corpus: Corpus) -> int:
     return 0
 
 
+def cmd_stats(args: argparse.Namespace, corpus: Corpus) -> int:
+    if _report_empty_root(args, corpus):
+        return 1
+    if not args.markdown:
+        if args.check or args.write:
+            print("error: --check/--write need --markdown", file=sys.stderr)
+            return 2
+        print(stats.render_text(corpus), end="")
+        return 0
+    rendered = stats.render_markdown(corpus)
+    try:
+        if args.check is not None:
+            if stats.check_block(args.check, rendered):
+                print(f"ok: {args.check} stats block matches the corpus")
+                return 0
+            print(
+                f"error: {args.check} stats block is stale; run "
+                f"`law-map stats --markdown --write {args.check}`",
+                file=sys.stderr,
+            )
+            return 1
+        if args.write is not None:
+            changed = stats.replace_block(args.write, rendered)
+            print(f"{'updated' if changed else 'unchanged'}: {args.write}")
+            return 0
+    except (OSError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    print(rendered, end="")
+    return 0
+
+
+def cmd_watch(args: argparse.Namespace, corpus: Corpus) -> int:
+    if _report_empty_root(args, corpus):
+        return 1
+    probes = watch.watch_laws(corpus)
+    for probe in probes:
+        line = watch.format_watch_line(probe)
+        if line is not None:
+            print(line)
+    print(watch.format_watch_summary(probes))
+    return 1 if any(p.problem == "changed" for p in probes) else 0
+
+
 def print_check_report(report: check.CheckReport) -> None:
     for e in report.expiry:
         print(check.format_expiry_line(e))
@@ -108,6 +152,9 @@ def _report_empty_root(args: argparse.Namespace, corpus: Corpus) -> bool:
     root = args.root
     if not root.is_dir():
         problem = f"obligations root {root} does not exist"
+    elif not corpus.obligations and corpus.excluded:
+        print(f"error: no obligations in pack(s) {', '.join(args.packs)} under {root}", file=sys.stderr)
+        return True
     elif not corpus.obligations and not corpus.errors:
         problem = f"no obligations found under {root}"
     else:
