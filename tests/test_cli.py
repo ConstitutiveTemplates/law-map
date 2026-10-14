@@ -38,11 +38,24 @@ def test_validate_errors_on_bad_corpus(tmp_path, capsys) -> None:
     assert "error:" in capsys.readouterr().err
 
 
-def test_validate_empty_corpus(tmp_path, capsys) -> None:
+def test_validate_empty_corpus_fails(tmp_path, capsys) -> None:
     root = tmp_path / "obligations"
     root.mkdir()
-    assert cli.main(["--root", str(root), "validate"]) == 0
-    assert "ok: 0 obligation(s)" in capsys.readouterr().out
+    assert cli.main(["--root", str(root), "validate"]) == 1
+    captured = capsys.readouterr()
+    assert "no obligations found" in captured.err
+    assert "ok:" not in captured.out
+
+
+def test_validate_missing_root_fails(tmp_path, capsys) -> None:
+    root = tmp_path / "nowhere"
+    assert cli.main(["--root", str(root), "validate"]) == 1
+    assert "does not exist" in capsys.readouterr().err
+
+
+def test_check_missing_root_fails(tmp_path, capsys) -> None:
+    assert cli.main(["--root", str(tmp_path / "nowhere"), "check"]) == 1
+    assert "does not exist" in capsys.readouterr().err
 
 
 def test_validate_codex_unknown_section_errors(corpus_dir: str, tmp_path, capsys) -> None:

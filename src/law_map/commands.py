@@ -18,6 +18,8 @@ __all__ = ["cmd_check", "cmd_export", "cmd_list", "cmd_show", "cmd_validate"]
 
 
 def cmd_validate(args: argparse.Namespace, corpus: Corpus) -> int:
+    if _report_empty_root(args, corpus):
+        return 1
     _print_issues("error", corpus.errors)
     if args.warnings:
         _print_issues("warning", corpus.warnings)
@@ -52,6 +54,8 @@ def cmd_show(args: argparse.Namespace, corpus: Corpus) -> int:
 
 
 def cmd_check(args: argparse.Namespace, corpus: Corpus) -> int:
+    if _report_empty_root(args, corpus):
+        return 1
     if getattr(args, "kanon", None) is not None:
         _print_issues("error", corpus.errors)
         if corpus.errors:
@@ -94,6 +98,23 @@ def print_check_report(report: check.CheckReport) -> None:
             print(line)
     if report.open_law:
         print(check.format_open_law_summary(report.open_law))
+
+def _report_empty_root(args: argparse.Namespace, corpus: Corpus) -> bool:
+    """Print an error and return True when ``--root`` is missing or holds no obligations.
+
+    An installed wheel's default root points at a path that does not exist;
+    reporting "ok: 0 obligation(s)" there would pass CI on an empty corpus.
+    """
+    root = args.root
+    if not root.is_dir():
+        problem = f"obligations root {root} does not exist"
+    elif not corpus.obligations and not corpus.errors:
+        problem = f"no obligations found under {root}"
+    else:
+        return False
+    print(f"error: {problem}; pass --root <law-map checkout>/obligations", file=sys.stderr)
+    return True
+
 
 def _print_issues(prefix: str, issues: list[str]) -> None:
     for issue in issues:

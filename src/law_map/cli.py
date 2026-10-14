@@ -27,7 +27,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--root",
         type=Path,
         default=_default_root(),
-        help="obligations corpus directory (default: repo obligations/)",
+        help=(
+            "obligations corpus directory (default: obligations/ of the source checkout; "
+            "pass it explicitly when law-map is installed from a wheel)"
+        ),
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
