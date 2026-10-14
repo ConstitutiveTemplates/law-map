@@ -30,10 +30,14 @@ subset lives in `src/law_map/model.py`. What validation actually enforces:
   advisory, high, critical`).
 - `groundings` non-empty; every grounding needs `jurisdiction`,
   `source_type` (`statute, regulation, precedent, guidance, standard,
-  model_code`), `status` (`in_force, scheduled, proposed, superseded`),
+  model_code`), `status` (`in_force, scheduled, proposed, superseded,
+  withdrawn`),
   `authority`, `citation`, `review_by` (ISO `YYYY-MM-DD`), and a non-empty
   list of `http(s)` URLs in `sources`. `effective` must be an ISO date if
   present.
+- `withdrawn` marks an instrument its authority has rescinded, revoked, or
+  taken down (e.g. prior-administration guidance); a source on an archive
+  site (`web.archive.org`, `*.archives.gov` subdomains) is a warning.
 - `jurisdiction` must be an ISO 3166-1 alpha-2 code (`JP`, `US`, `GB`, ...);
   `EU` is the single documented exception. `UK` is rejected — use `GB`.
 - `subdivision` is only allowed for jurisdictions `US, CA, AU, DE, GB`;

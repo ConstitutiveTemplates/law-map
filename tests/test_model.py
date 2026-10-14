@@ -183,6 +183,34 @@ def test_subdivision_with_wrong_jurisdiction_warns(tmp_path: Path) -> None:
     assert any("subdivision only allowed" in w for w in corpus.warnings)
 
 
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://bidenwhitehouse.archives.gov/ostp/ai-bill-of-rights/",
+        "https://web.archive.org/web/2020/https://example.gov/guidance",
+    ],
+)
+def test_archive_source_warns(tmp_path: Path, url: str) -> None:
+    doc = yaml.safe_load(yaml.safe_dump(VALID_OBLIGATION))
+    doc["groundings"][0]["sources"] = [url]
+    corpus = load_corpus(write_corpus(tmp_path, doc))
+    assert corpus.ok()
+    assert any("cites archive site" in w and url in w for w in corpus.warnings), corpus.warnings
+
+
+def test_live_nara_source_does_not_warn(tmp_path: Path) -> None:
+    doc = yaml.safe_load(yaml.safe_dump(VALID_OBLIGATION))
+    doc["groundings"][0]["sources"] = ["https://www.archives.gov/founding-docs/constitution"]
+    corpus = load_corpus(write_corpus(tmp_path, doc))
+    assert not any("cites archive site" in w for w in corpus.warnings)
+
+
+def test_withdrawn_status_is_valid(tmp_path: Path) -> None:
+    doc = yaml.safe_load(yaml.safe_dump(VALID_OBLIGATION))
+    doc["groundings"][0]["status"] = "withdrawn"
+    assert load_corpus(write_corpus(tmp_path, doc)).ok()
+
+
 def test_bad_yaml_is_error_not_exception(tmp_path: Path) -> None:
     root = tmp_path / "obligations"
     root.mkdir()

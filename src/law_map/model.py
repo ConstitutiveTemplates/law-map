@@ -44,7 +44,10 @@ CATEGORIES = {"privacy", "security", "copyright", "ai", "licensing", "telemetry"
 MODALITIES = {"obligation", "prohibition", "permission"}
 SEVERITIES = {"info", "advisory", "high", "critical"}
 SOURCE_TYPES = {"statute", "regulation", "precedent", "guidance", "standard", "model_code"}
-STATUSES = {"in_force", "scheduled", "proposed", "superseded"}
+# withdrawn: no longer issued or endorsed by its authority (rescinded,
+# revoked, or taken down with a change of administration) — kept only as
+# historical context, never as a current basis for an obligation.
+STATUSES = {"in_force", "scheduled", "proposed", "superseded", "withdrawn"}
 ENFORCEMENT_LEVELS = {"L0", "L1", "L2"}
 SUBDIVISION_JURISDICTIONS = {"US", "CA", "AU", "DE", "GB"}
 # Grounding jurisdictions are ISO 3166-1 alpha-2 codes; EU (an ISO

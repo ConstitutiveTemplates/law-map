@@ -13,6 +13,7 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 from .model import (
     CATEGORIES,
@@ -48,6 +49,7 @@ def validate_obligation_document(
     _validate_directives(data, errors)
     _validate_enforcement(data, errors)
     _validate_related_sections(data, errors)
+    _warn_archive_sources(data, warnings)
     _warn_spec_gaps(data, warnings, today or date.today())
 
 
@@ -246,6 +248,37 @@ def _validate_related_sections(data: dict[str, Any], errors: list[str]) -> None:
     related = data.get("related_sections", [])
     if isinstance(related, list) and not all(isinstance(x, str) for x in related):
         errors.append("related_sections must contain only strings")
+
+
+def _is_archive_url(url: str) -> bool:
+    """True for web-archive snapshots and archived US government sites.
+
+    ``*.archives.gov`` subdomains hold frozen sites of past administrations
+    (e.g. ``bidenwhitehouse.archives.gov``); ``www.archives.gov`` is NARA's
+    own live site and is not flagged.
+    """
+    host = (urlparse(url).hostname or "").lower()
+    return host == "web.archive.org" or (host.endswith(".archives.gov") and host != "www.archives.gov")
+
+
+def _warn_archive_sources(data: dict[str, Any], warnings: list[str]) -> None:
+    """Warn on groundings sourced from an archive site: the instrument may be withdrawn."""
+    ob_id = data.get("id", "?")
+    groundings = data.get("groundings")
+    if not isinstance(groundings, list):
+        return
+    for i, g in enumerate(groundings):
+        sources = g.get("sources") if isinstance(g, dict) else None
+        if not isinstance(sources, list):
+            continue
+        for url in sources:
+            if not (isinstance(url, str) and _is_archive_url(url)):
+                continue
+            if g.get("status") == "withdrawn":
+                advice = "status 'withdrawn': historical context only, not a current basis"
+            else:
+                advice = "confirm the instrument is still current or mark it 'withdrawn'"
+            warnings.append(f"{ob_id}: groundings[{i}] cites archive site {url} — {advice}")
 
 
 def _warn_spec_gaps(data: dict[str, Any], warnings: list[str], today: date) -> None:

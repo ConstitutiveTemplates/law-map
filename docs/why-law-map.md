@@ -48,7 +48,7 @@ content for software companies lives in decisions like *FTC v. Wyndham*.
 Excluding precedent would silently drop the most enforceable common-law
 constraints from the graph. Guidance (NIST SSDF, ICO logging guidance, METI
 SBOM guides) is included with its status declared — *in_force, scheduled,
-proposed, superseded* — and is tagged so readers can weigh binding force
+proposed, superseded, withdrawn* — and is tagged so readers can weigh binding force
 without the graph pretending all sources carry equal weight. Scope,
 `applicability`, and `status` fields keep groundings honest about who is
 bound and how hard.

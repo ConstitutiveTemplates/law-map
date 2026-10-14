@@ -30,7 +30,7 @@ groundings:
       - https://eur-lex.europa.eu/eli/reg/2024/1689/oj
   - jurisdiction: US
     source_type: guidance
-    status: in_force
+    status: withdrawn
     authority: "Blueprint for an AI Bill of Rights (OSTP, 2022); EEOC Technical Assistance on Algorithmic Bias"
     citation: >
       Algorithmic Discrimination Protections principle: automated systems must be
@@ -39,8 +39,10 @@ groundings:
     effective: "2022-10-04"
     review_by: "2027-03-31"
     applicability: >
-      Federal policy guidance and civil rights enforcement framework for employment,
-      credit, healthcare, and education automated decision systems.
+      Withdrawn, non-binding prior-administration guidance: no longer current
+      US policy and only available on the archived bidenwhitehouse.archives.gov
+      site. Kept as historical context for the subgroup-testing practice, not
+      as a basis that binds anyone.
     sources:
       - https://bidenwhitehouse.archives.gov/ostp/ai-bill-of-rights/
 conflicts: []

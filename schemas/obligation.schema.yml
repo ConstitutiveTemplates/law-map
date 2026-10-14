@@ -45,7 +45,7 @@ Each grounding is a single jurisdiction with a precise legal source.
 | `jurisdiction`  | string | yes      | ISO 3166-1 alpha-2 (`JP`, `US`, `GB`, ...) or `EU` (the only exception; `UK` is rejected — use `GB`) |
 | `subdivision`   | string | no       | ISO 3166-2 suffix (`CA` for US); only allowed with US/CA/AU/DE/GB    |
 | `source_type`   | enum   | yes      | `statute, regulation, precedent, guidance, standard, model_code`    |
-| `status`        | enum   | yes      | `in_force, scheduled, proposed, superseded`                         |
+| `status`        | enum   | yes      | `in_force, scheduled, proposed, superseded, withdrawn` (`withdrawn`: rescinded/revoked or taken down by its authority; historical context only) |
 | `authority`     | string | yes      | issuing body / instrument name (native script allowed)             |
 | `citation`      | string | yes      | pinpoint: article/section/case, e.g. `第23条 (安全管理措置義務)`    |
 | `effective`     | date   | no       | ISO `YYYY-MM-DD`                                                    |
@@ -68,6 +68,10 @@ Each grounding is a single jurisdiction with a precise legal source.
   `review_by` (ISO date), and a non-empty list of `http(s)` URLs in
   `sources`. `effective` must be an ISO date if present.
 - `open_law`, when present, must be a mapping with non-empty string `source` (an open-law source_id) and `id` (the source-native law id); amendment detection compares the fetched law's `modified` against the grounding's `effective`.
+- A grounding source on an archive site (`web.archive.org`, a
+  `*.archives.gov` subdomain such as `bidenwhitehouse.archives.gov`) is a
+  **warning**: confirm the instrument is still current or mark it
+  `withdrawn`.
 - `jurisdiction` must be an ISO 3166-1 alpha-2 code (two uppercase
   letters) or `EU`, the single documented exception; `UK` is rejected in
   favour of `GB`.
