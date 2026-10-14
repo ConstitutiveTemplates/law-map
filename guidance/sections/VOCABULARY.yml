@@ -1,0 +1,63 @@
+# The `when` / `placement` / `status` vocabulary of the kanon sections.
+#
+# Hand-maintained source of truth. tools/manifest.py embeds it into the
+# generated sections/MANIFEST.yml and renders the vocabulary tables in
+# README.md and CONTRIBUTING.md, so edit it here and run `just manifest`.
+#
+# `when` conditions are abstract and consumer-agnostic: kanon names the
+# intent, a consumer maps each condition to its own gating. A section's
+# `when` is a condition or a list ("any of these").
+#
+# Core conditions sit on three axes. Niche conditions live in extension
+# packs: a consumer that does not opt into a pack can ignore its conditions
+# (and the sections gated only on them).
+
+general:
+  title: Unconditional
+  values:
+    always: every project that renders the sections
+    ai_assisted: AI coding agents work in the repository
+
+axes:
+  form:
+    title: Distribution form
+    values:
+      library: a library / API package
+      cli: a command-line / terminal tool
+      web_api: an HTTP API or web service
+      mcp: an MCP server or tool-calling agent code
+  data:
+    title: Data handled
+    values:
+      personal_data: processes personal data
+      face_recognition: performs biometric identification or verification
+      medtech: medical / SaMD software (clinical decisions or patient data)
+      scraping: fetches third-party web content
+      data_science: trains or evaluates models on datasets
+  market:
+    title: Market
+    values:
+      commercial: distributed commercially
+      eu_market: offered on the EU market
+      jp: offered in Japan / operates under Japanese law
+
+extensions:
+  competitive-programming:
+    title: Competitive programming and data competitions
+    values:
+      oj_code: code submitted to an online judge
+      kaggle: a data-competition (Kaggle-style) workspace
+  embedded:
+    title: Embedded devices
+    values:
+      embedded: embedded / microcontroller firmware
+
+placement:
+  agents_md: the AGENTS.md ethics appendix
+  charter: a CHARTER.md, for scraping projects
+  legal_md: a LEGAL.md checklist
+  standalone: its own file
+
+status:
+  draft: written but not yet reviewed; consumers should not render it
+  active: reviewed; consumers render it when `when` matches

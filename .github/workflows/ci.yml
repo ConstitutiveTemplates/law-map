@@ -30,11 +30,7 @@ jobs:
         run: uv run pytest -q
       - name: README scope tables match the corpus
         run: uv run law-map stats --markdown --check README.md
-      - name: Checkout kanon
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-        with:
-          repository: politeuma/kanon
-          path: kanon
-          persist-credentials: false
-      - name: Corpus validates against kanon sections
-        run: uv run law-map validate --kanon kanon
+      - name: Guidance MANIFEST matches section front matter
+        run: uv run law-map manifest --check
+      - name: Corpus validates against merged guidance sections
+        run: uv run law-map validate

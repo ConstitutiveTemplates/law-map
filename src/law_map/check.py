@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date
+from pathlib import Path
 
 from .freshness import DEFAULT_DAYS, Expiry, check_reviews, format_expiry_line
 from .model import Corpus
@@ -22,7 +23,13 @@ from .openlaw import (
     format_open_law_summary,
     probe_open_law,
 )
-from .sources import SourceProbe, format_source_line, format_source_summary, probe_sources
+from .sources import (
+    SourceProbe,
+    format_source_line,
+    format_source_summary,
+    guidance_section_urls,
+    probe_sources,
+)
 
 __all__ = [
     "DEFAULT_DAYS",
@@ -70,9 +77,11 @@ def run_check(
     days: int,
     sources: bool,
     open_law_fetch: OpenLawFetch | None = None,
+    guidance_root: Path | None = None,
 ) -> CheckReport:
     report = CheckReport(expiry=check_reviews(corpus, today, days))
     if sources:
-        report.probes = probe_sources(corpus)
+        extra = guidance_section_urls(guidance_root) if guidance_root is not None else []
+        report.probes = probe_sources(corpus, extra_urls=extra)
         report.open_law = probe_open_law(corpus, fetch=open_law_fetch)
     return report

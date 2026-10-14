@@ -1,8 +1,9 @@
 # law-map development tasks
-# `just check` = validate corpus + README stats sync + pytest + ruff + mypy + basedpyright
+# `just check` = validate corpus + manifest sync + README stats sync + pytest + ruff + mypy + basedpyright
 
 check:
     uv run law-map validate
+    uv run law-map manifest --check
     uv run law-map stats --markdown --check README.md
     uv run pytest -q
     uv run ruff check .
@@ -22,6 +23,10 @@ validate:
 # regenerate the README "Scope today" block from the corpus
 stats:
     uv run law-map stats --markdown --write README.md
+
+# regenerate guidance/sections/MANIFEST.yml from section front matter
+manifest:
+    uv run law-map manifest
 
 # pipeline: upstream→downstream order — validate corpus, then review-freshness check.
 pipeline:

@@ -29,7 +29,7 @@ listed.
 | `conflicts`      | list of id        | no       | ids this obligation can clash with; must exist in corpus         |
 | `requires`       | list of id        | no       | ids this obligation depends on; must exist in corpus             |
 | `directives`     | mapping           | no       | keys `human` and `agent` (both recommended)                      |
-| `related_sections` | list of string  | no       | kanon section ids; unknown ids warn, not error       |
+| `related_sections` | list of string  | no       | guidance section ids (`<tier>-<slug>` → `guidance/sections/<tier>/<slug>.md`); unresolved ids error |
 | `enforcement`    | mapping           | no       | see below                                                         |
 | `reviewed_by`    | mapping           | no       | `{handle, domain}` of the peer reviewer; with `reviewed_on` the obligation displays as `reviewed`, otherwise `draft` |
 | `reviewed_on`    | date              | no       | ISO `YYYY-MM-DD`; peer-review date; required together with `reviewed_by` |

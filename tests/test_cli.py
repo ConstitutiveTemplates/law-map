@@ -166,7 +166,7 @@ def test_check_codex_clean_exits_0(corpus_dir: str, tmp_path, capsys) -> None:
 def test_check_codex_broken_checkout_exits_1(corpus_dir: str, tmp_path, capsys) -> None:
     codex = tmp_path / "codex"  # no sections/ directory at all
     assert cli.main(["--root", corpus_dir, "check", "--codex", str(codex)]) == 1
-    assert "not a kanon checkout" in capsys.readouterr().err
+    assert "not a guidance checkout" in capsys.readouterr().err
 
 
 def test_check_codex_unresolved_section_exits_1(corpus_dir: str, tmp_path, capsys) -> None:
@@ -225,3 +225,16 @@ def test_check_sources_prints_skipped_count(tmp_path, monkeypatch, capsys) -> No
     out = capsys.readouterr().out
     assert "[skipped]" in out
     assert "skipped: 1" in out
+
+def test_manifest_reports_missing_guidance(tmp_path, capsys) -> None:
+    root = tmp_path / "obligations"
+    root.mkdir()
+    assert cli.main(["--root", str(root), "manifest", "--check"]) == 1
+    assert "no guidance sections" in capsys.readouterr().err
+
+
+def test_manifest_check_reports_sync(capsys) -> None:
+    from law_map.guidance_manifest import default_guidance_root, run_manifest
+
+    repo_root = Path(__file__).resolve().parent.parent
+    assert run_manifest(default_guidance_root(repo_root / "obligations"), check=True) == 0

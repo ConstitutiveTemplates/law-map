@@ -1,11 +1,11 @@
-"""kanon section linkage.
+"""Guidance section linkage (``guidance/sections/``).
 
 ``related_sections`` ids follow the ``<tier>-<slug>`` rule:
 ``baseline-personal-data`` resolves to
-``sections/baseline/personal-data.md.jinja`` inside a codex checkout.
+``guidance/sections/baseline/personal-data.md`` inside this repo.
 The forward check (:func:`check_codex_sections`) errors on ids that
 resolve nowhere; the reverse check (:func:`check_codex_coverage`) warns
-about codex sections no obligation references.
+about guidance sections no obligation references.
 """
 
 from __future__ import annotations
@@ -14,42 +14,49 @@ from pathlib import Path
 
 from .model import Corpus
 
+GUIDANCE_SECTIONS_DIR = Path("guidance") / "sections"
 CODEX_SECTIONS_DIR = "sections"
 
 
 def codex_section_path(codex_root: Path, section_id: str) -> Path | None:
-    """Map a ``related_sections`` id to its codex file per the ``<tier>-<slug>`` rule.
+    """Map a ``related_sections`` id to its guidance section file.
 
     ``baseline-personal-data`` resolves to
-    ``sections/baseline/personal-data.md.jinja``: the id's first segment is
-    the tier directory, the rest the slug. The tier segment must name an
-    existing directory under ``sections/`` — ids like ``personal-data``
-    (``personal`` is not a codex tier) resolve to None, as do ids with no
-    separator or an empty slug.
+    ``guidance/sections/baseline/personal-data.md``: the id's first segment is
+    the tier directory, the rest the slug. ``codex_root`` accepts the repo
+    root (merged ``guidance/`` tree) or a bare sections checkout; ids like
+    ``personal-data`` (``personal`` is not a tier) resolve to None, as do ids
+    with no separator or an empty slug.
     """
     tier, sep, slug = section_id.partition("-")
     if not sep or not tier or not slug:
         return None
-    tier_dir = Path(codex_root) / CODEX_SECTIONS_DIR / tier
-    if not tier_dir.is_dir():
-        return None
-    return tier_dir / f"{slug}.md.jinja"
+    root = Path(codex_root)
+    candidates = [root / GUIDANCE_SECTIONS_DIR / tier, root / CODEX_SECTIONS_DIR / tier]
+    for tier_dir in candidates:
+        if not tier_dir.is_dir():
+            continue
+        for suffix in (".md", ".md.jinja"):
+            candidate = tier_dir / f"{slug}{suffix}"
+            if candidate.is_file():
+                return candidate
+    return None
 
 
 def unresolved_section_error(ob_id: str, section: str) -> str:
     """Shared wording for a ``related_sections`` id that resolves nowhere."""
     return (
         f"{ob_id}: related_sections '{section}' does not resolve to a "
-        "kanon section (expected sections/<tier>/<slug>.md.jinja, "
-        "e.g. baseline-personal-data -> sections/baseline/personal-data.md.jinja)"
+        "guidance section (expected guidance/sections/<tier>/<slug>.md, "
+        "e.g. baseline-personal-data -> guidance/sections/baseline/personal-data.md)"
     )
 
 
 def check_codex_sections(corpus: Corpus, codex_root: Path) -> list[str]:
-    """Verify every ``related_sections`` id resolves inside a codex checkout.
+    """Verify every ``related_sections`` id resolves to a guidance section file.
 
     Per the ``<tier>-<slug>`` naming rule each id must map to an *existing*
-    ``sections/<tier>/<slug>.md.jinja`` in kanon; anything else
+    ``guidance/sections/<tier>/<slug>.md`` in this repo; anything else
     is an error, not a warning. Returns a list of error strings (empty when
     the corpus is consistent with the checkout). Never raises: a missing or
     wrong-shaped checkout surfaces as per-id errors.
@@ -70,11 +77,11 @@ def check_codex_sections(corpus: Corpus, codex_root: Path) -> list[str]:
 
 
 def check_codex_coverage(corpus: Corpus, codex_root: Path) -> list[str]:
-    """Warn for codex sections that no obligation references (reverse coverage).
+    """Warn for guidance sections that no obligation references (reverse coverage).
 
-    Enumerates ``sections/<tier>/<slug>.md.jinja`` per the ``<tier>-<slug>``
+    Enumerates ``guidance/sections/<tier>/<slug>.md`` per the ``<tier>-<slug>``
     naming rule and reports every id absent from all obligations'
-    ``related_sections``. Warnings only, never errors: the codex is
+    ``related_sections``. Warnings only, never errors: the guidance set is
     legitimately broader than the obligation graph. Never raises — a
     missing checkout yields no warnings (the forward check reports errors).
     """
@@ -86,14 +93,26 @@ def check_codex_coverage(corpus: Corpus, codex_root: Path) -> list[str]:
                 if isinstance(section, str):
                     referenced.add(section)
     warnings: list[str] = []
-    sections = Path(codex_root) / CODEX_SECTIONS_DIR
+    root = Path(codex_root)
+    sections = root / GUIDANCE_SECTIONS_DIR
+    if not sections.is_dir():
+        sections = root / CODEX_SECTIONS_DIR
     if not sections.is_dir():
         return warnings
     for tier_dir in sorted(p for p in sections.iterdir() if p.is_dir()):
-        for path in sorted(tier_dir.glob("*.md.jinja")):
+        seen: set[str] = set()
+        for path in sorted(tier_dir.glob("*.md*")):
             if path.name.startswith("_"):
                 continue
-            section_id = f"{tier_dir.name}-{path.name.removesuffix('.md.jinja')}"
+            stem = path.name
+            for suffix in (".md.jinja", ".jinja", ".md"):
+                if stem.endswith(suffix):
+                    stem = stem[: -len(suffix)]
+                    break
+            section_id = f"{tier_dir.name}-{stem}"
+            if section_id in seen:
+                continue  # `.md` and legacy `.md.jinja` for the same id: one warning max
+            seen.add(section_id)
             if section_id not in referenced:
                 warnings.append(
                     f"codex section '{section_id}' has no referencing obligation "

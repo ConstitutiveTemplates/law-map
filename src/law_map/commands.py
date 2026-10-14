@@ -10,8 +10,9 @@ from __future__ import annotations
 import argparse
 import sys
 
-from . import check, stats, watch
+from . import check, sources, stats, watch
 from .export import export_obligations
+from .guidance_manifest import default_guidance_root, run_manifest
 from .migrate import migrate_tree
 from .model import Corpus, grounding_review_status, obligation_review_status
 from .openlaw import apply_hash_updates, collect_hash_updates
@@ -20,6 +21,7 @@ __all__ = [
     "cmd_check",
     "cmd_export",
     "cmd_list",
+    "cmd_manifest",
     "cmd_migrate",
     "cmd_record_hashes",
     "cmd_show",
@@ -85,7 +87,10 @@ def cmd_check(args: argparse.Namespace, corpus: Corpus) -> int:
                 file=sys.stderr,
             )
             return 1
-    report = check.run_check(corpus, today=check.today(), days=args.days, sources=args.sources)
+    guidance_root = default_guidance_root(args.root) if args.sources else None
+    report = check.run_check(
+        corpus, today=check.today(), days=args.days, sources=args.sources, guidance_root=guidance_root
+    )
     print_check_report(report)
     if report.expired:
         print(f"{len(report.expired)} grounding(s) expired — exit 1", file=sys.stderr)
@@ -102,6 +107,10 @@ def cmd_export(args: argparse.Namespace, corpus: Corpus) -> int:
         print("nothing to export: corpus is empty", file=sys.stderr)
         return 1
     return 0
+
+
+def cmd_manifest(args: argparse.Namespace) -> int:
+    return run_manifest(default_guidance_root(args.root), check=args.check)
 
 
 def cmd_stats(args: argparse.Namespace, corpus: Corpus) -> int:
@@ -138,7 +147,9 @@ def cmd_stats(args: argparse.Namespace, corpus: Corpus) -> int:
 def cmd_watch(args: argparse.Namespace, corpus: Corpus) -> int:
     if _report_empty_root(args, corpus):
         return 1
-    probes = watch.watch_laws(corpus)
+    guidance_root = default_guidance_root(args.root)
+    section_refs = watch.collect_section_watch_refs(sources.guidance_section_refs(guidance_root))
+    probes = watch.watch_laws(corpus, section_refs=section_refs)
     for probe in probes:
         line = watch.format_watch_line(probe)
         if line is not None:
