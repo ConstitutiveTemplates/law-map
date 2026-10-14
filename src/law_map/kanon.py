@@ -100,10 +100,19 @@ def check_codex_coverage(corpus: Corpus, codex_root: Path) -> list[str]:
     if not sections.is_dir():
         return warnings
     for tier_dir in sorted(p for p in sections.iterdir() if p.is_dir()):
-        for path in sorted(tier_dir.glob("*.md")):
-            if path.name.startswith("_") or path.name.endswith(".jinja"):
+        seen: set[str] = set()
+        for path in sorted(tier_dir.glob("*.md*")):
+            if path.name.startswith("_"):
                 continue
-            section_id = f"{tier_dir.name}-{path.name.removesuffix('.md')}"
+            stem = path.name
+            for suffix in (".md.jinja", ".jinja", ".md"):
+                if stem.endswith(suffix):
+                    stem = stem[: -len(suffix)]
+                    break
+            section_id = f"{tier_dir.name}-{stem}"
+            if section_id in seen:
+                continue  # `.md` and legacy `.md.jinja` for the same id: one warning max
+            seen.add(section_id)
             if section_id not in referenced:
                 warnings.append(
                     f"codex section '{section_id}' has no referencing obligation "
