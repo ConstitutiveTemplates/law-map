@@ -5,7 +5,7 @@ status: draft
 placement: agents_md
 when: eu_market
 obligations:
-  - obligation.privacy.european-accessibility-act
+  - obligation.accessibility.european-accessibility-act
 triggers:
   keywords: ["accessibility", "wcag", "aria", "a11y", "axe", "keyboard"]
   pattern: '(?i)\b(accessib|aria|wcag|a11y|axe|alt=|tabindex|focus|screen[ -]reader|en[ -]301[ -]549)\b'
