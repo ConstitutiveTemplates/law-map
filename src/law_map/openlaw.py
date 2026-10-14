@@ -97,7 +97,7 @@ def _default_open_law_fetch() -> OpenLawFetch:
     Imported lazily so law-map works without open-law installed (callers get
     ``skipped`` probes instead). Raises ImportError when it is missing.
     """
-    from open_law.sources import open_adapter  # type: ignore[import-not-found]
+    from open_law.sources import open_adapter
 
     def _fetch(source: str, law_id: str) -> tuple[str | None, str | None]:
         adapter = open_adapter(source)
