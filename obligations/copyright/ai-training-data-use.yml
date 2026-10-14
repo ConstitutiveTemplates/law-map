@@ -1,4 +1,4 @@
-version: 1
+version: 2
 id: obligation.copyright.ai-training-data-use
 title: "Conditions under which copyrighted works may be used for AI training / text and data mining"
 category: copyright
@@ -19,6 +19,8 @@ scope:
 groundings:
   - jurisdiction: JP
     source_type: statute
+    source_kind: primary
+    strength: binding
     status: in_force
     authority: "著作権法 (Copyright Act of Japan)"
     citation: >
@@ -33,8 +35,11 @@ groundings:
     open_law:
       source: jp
       id: "345AC0000000048"
+    verified_text_sha256: "9bd8e66cfcd8a793040eece61ede6a9bc55a6422a52c6a32563c6025d4bfc6d0"
   - jurisdiction: EU
     source_type: regulation
+    source_kind: primary
+    strength: binding
     status: in_force
     authority: "Directive (EU) 2019/790 on copyright in the Digital Single Market"
     citation: >
@@ -53,6 +58,8 @@ groundings:
       id: "32019L0790"
   - jurisdiction: EU
     source_type: regulation
+    source_kind: primary
+    strength: binding
     status: in_force
     authority: "Artificial Intelligence Act, Regulation (EU) 2024/1689"
     citation: >
@@ -65,6 +72,8 @@ groundings:
       - https://eur-lex.europa.eu/eli/reg/2024/1689/oj
   - jurisdiction: GB
     source_type: statute
+    source_kind: primary
+    strength: binding
     status: in_force
     authority: "Copyright, Designs and Patents Act 1988"
     citation: >
@@ -77,8 +86,11 @@ groundings:
     open_law:
       source: uk
       id: "ukpga/1988/48"
+    verified_text_sha256: "3d30a053508a9ee0088ccefb468e660a2f80278e843769c852dfe4187bfb58f6"
   - jurisdiction: US
     source_type: precedent
+    source_kind: official-secondary
+    strength: binding
     status: in_force
     authority: "Copyright Act §107 fair use — unsettled for AI training as of 2026"
     citation: >

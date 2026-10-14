@@ -10,6 +10,7 @@ orchestration live in :mod:`law_map.model`.
 
 from __future__ import annotations
 
+import re
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -20,13 +21,17 @@ from .model import (
     ENFORCEMENT_LEVELS,
     IDENT_RE,
     JURISDICTION_ALIASES,
-    JURISDICTION_RE,
     MODALITIES,
+    SCHEMA_VERSION,
     SEVERITIES,
+    SOURCE_KINDS,
     SOURCE_TYPES,
     STATUSES,
-    SUBDIVISION_JURISDICTIONS,
+    STRENGTHS,
+    UNOFFICIAL_HOSTS,
     Corpus,
+    is_valid_jurisdiction,
+    is_valid_subdivision,
     parse_iso_date,
 )
 
@@ -45,11 +50,14 @@ def validate_obligation_document(
     _validate_identity(data, path, errors)
     _validate_scope(data, errors)
     _validate_groundings(data, errors, warnings)
+    _validate_primary_source(data, errors)
     _validate_relations(data, errors)
     _validate_directives(data, errors)
     _validate_enforcement(data, errors)
     _validate_related_sections(data, errors)
+    _validate_review(data, "", errors)
     _warn_archive_sources(data, warnings)
+    _warn_unofficial_kind_mismatch(data, warnings)
     _warn_spec_gaps(data, warnings, today or date.today())
 
 
@@ -80,9 +88,7 @@ def _require_text(data: dict[str, Any], key: str, errors: list[str]) -> bool:
     return True
 
 
-def _require_one_of(
-    data: dict[str, Any], key: str, allowed: set[str], errors: list[str], where: str = ""
-) -> None:
+def _require_one_of(data: dict[str, Any], key: str, allowed: set[str], errors: list[str], where: str = "") -> None:
     """Enum membership check with the shared ``must be one of [...]`` wording."""
     value = data.get(key)
     if not isinstance(value, str) or value not in allowed:
@@ -99,9 +105,7 @@ def _require_id_list(data: dict[str, Any], key: str, errors: list[str]) -> None:
         errors.append(f"{key} must contain only obligation ids")
 
 
-def _require_iso_date(
-    data: dict[str, Any], key: str, where: str, errors: list[str], detail: str
-) -> None:
+def _require_iso_date(data: dict[str, Any], key: str, where: str, errors: list[str], detail: str) -> None:
     """ISO date check for an optional grounding date field (skipped when absent)."""
     if key in data and parse_iso_date(data.get(key)) is None:
         errors.append(f"{where}.{key} must be {detail}, got {data.get(key)!r}")
@@ -136,12 +140,18 @@ def _validate_grounding(g: dict[str, Any], errors: list[str], index: int) -> Non
     for key in ("jurisdiction", "authority", "citation", "review_by"):
         _require_text(g, key, errors)
     _validate_jurisdiction(g.get("jurisdiction"), where, errors)
+    _validate_subdivision(g, where, errors)
     _require_iso_date(g, "review_by", where, errors, "an ISO date (YYYY-MM-DD)")
     _require_iso_date(g, "effective", where, errors, "an ISO date")
     _require_iso_date(g, "reviewed_on", where, errors, "an ISO date")
 
     _require_one_of(g, "source_type", SOURCE_TYPES, errors, where)
+    _require_one_of(g, "source_kind", SOURCE_KINDS, errors, where)
     _require_one_of(g, "status", STATUSES, errors, where)
+    _validate_grounding_scope(g, where, errors)
+    _validate_negative_history(g, where, errors)
+    _validate_verified_hash(g, where, errors)
+    _validate_review(g, where, errors)
 
     sources = g.get("sources")
     if not isinstance(sources, list) or not sources:
@@ -165,12 +175,102 @@ def _validate_jurisdiction(value: object, where: str, errors: list[str]) -> None
     if not isinstance(value, str) or not value.strip():
         return  # missing/empty is reported by _require_text
     if value in JURISDICTION_ALIASES:
+        errors.append(f"{where}.jurisdiction {value!r} is not ISO 3166-1; use {JURISDICTION_ALIASES[value]!r}")
+    elif not is_valid_jurisdiction(value):
+        errors.append(f"{where}.jurisdiction must be an ISO 3166-1 alpha-2 code or 'EU', got {value!r}")
+
+
+def _validate_subdivision(g: dict[str, Any], where: str, errors: list[str]) -> None:
+    """Subdivisions are ISO 3166-2 codes, checked via pycountry — not a hardcoded list."""
+    if not g.get("subdivision"):
+        return
+    subdivision = g.get("subdivision")
+    if not isinstance(subdivision, str) or not subdivision.strip():
+        errors.append(f"{where}.subdivision must be a non-empty string")
+        return
+    if not is_valid_subdivision(g.get("jurisdiction"), subdivision):
         errors.append(
-            f"{where}.jurisdiction {value!r} is not ISO 3166-1; use {JURISDICTION_ALIASES[value]!r}"
+            f"{where}.subdivision {subdivision!r} is not an ISO 3166-2 code for jurisdiction {g.get('jurisdiction')!r}"
         )
-    elif not JURISDICTION_RE.match(value):
+
+
+def _validate_grounding_scope(g: dict[str, Any], where: str, errors: list[str]) -> None:
+    """Optional functional-equivalence differences: who is bound, what is excepted, how hard it binds."""
+    for key in ("scope", "exceptions"):
+        if key in g and (not isinstance(g[key], str) or not g[key].strip()):
+            errors.append(f"{where}.{key} must be a non-empty string")
+    if "strength" in g and g["strength"] not in STRENGTHS:
+        errors.append(f"{where}.strength must be one of {sorted(STRENGTHS)}, got {g['strength']!r}")
+
+
+def _validate_negative_history(g: dict[str, Any], where: str, errors: list[str]) -> None:
+    """Optional adverse subsequent history (vacaturs, narrowings): holdings with dates, never silent."""
+    history = g.get("negative_history")
+    if history is None:
+        return
+    if not isinstance(history, list) or not history:
+        errors.append(f"{where}.negative_history must be a non-empty list")
+        return
+    for i, entry in enumerate(history):
+        entry_where = f"{where}.negative_history[{i}]"
+        if not isinstance(entry, dict):
+            errors.append(f"{entry_where} must be a mapping")
+            continue
+        if not isinstance(entry.get("holding"), str) or not entry["holding"].strip():
+            errors.append(f"{entry_where} must state a non-empty 'holding'")
+        if "date" in entry and parse_iso_date(entry.get("date")) is None:
+            errors.append(f"{entry_where}.date must be an ISO date (YYYY-MM-DD), got {entry.get('date')!r}")
+        if "court" in entry and (not isinstance(entry["court"], str) or not entry["court"].strip()):
+            errors.append(f"{entry_where}.court must be a non-empty string")
+        sources = entry.get("sources", [])
+        if not isinstance(sources, list) or not all(_is_valid_url(s) for s in sources):
+            errors.append(f"{entry_where}.sources must be a list of http/https URLs")
+
+
+def _validate_verified_hash(g: dict[str, Any], where: str, errors: list[str]) -> None:
+    """Optional pinned source-text hash, compared by ``law-map check --sources``."""
+    value = g.get("verified_text_sha256")
+    if value is None:
+        return
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
+        errors.append(f"{where}.verified_text_sha256 must be a 64-character lowercase hex sha256, got {value!r}")
+
+
+def _validate_review(data: dict[str, Any], where: str, errors: list[str]) -> None:
+    """Optional peer review shape check: malformed ``reviewed_by``/``reviewed_on`` is an error.
+
+    Missing review is not an error — the obligation or grounding simply
+    displays as ``draft`` (see :func:`law_map.model.obligation_review_status`).
+    A lone ``reviewed_on`` (e.g. a grounding verification timestamp without
+    a recorded reviewer) is also draft, not an error.
+    """
+    has_by = "reviewed_by" in data
+    has_on = "reviewed_on" in data
+    if not has_by and not has_on:
+        return
+    prefix = f"{where}." if where else ""
+    if has_by:
+        reviewed_by = data.get("reviewed_by")
+        if not isinstance(reviewed_by, dict):
+            errors.append(f"{prefix}reviewed_by must be a mapping with 'handle' and 'domain'")
+        else:
+            for key in ("handle", "domain"):
+                value = reviewed_by.get(key)
+                if not isinstance(value, str) or not value.strip():
+                    errors.append(f"{prefix}reviewed_by.{key} must be a non-empty string")
+    if has_on and parse_iso_date(data.get("reviewed_on")) is None:
+        errors.append(f"{prefix}reviewed_on must be an ISO date (YYYY-MM-DD), got {data.get('reviewed_on')!r}")
+
+
+def _validate_primary_source(data: dict[str, Any], errors: list[str]) -> None:
+    """Every obligation needs at least one ``primary`` grounding (LM-1)."""
+    groundings = data.get("groundings")
+    if not isinstance(groundings, list) or not groundings:
+        return  # missing/empty is reported by _validate_groundings
+    if not any(isinstance(g, dict) and g.get("source_kind") == "primary" for g in groundings):
         errors.append(
-            f"{where}.jurisdiction must be an ISO 3166-1 alpha-2 code or 'EU', got {value!r}"
+            f"{data.get('id', '?')}: at least one grounding must have "
+            "source_kind 'primary' (the instrument from its publisher)"
         )
 
 
@@ -200,8 +300,16 @@ def _validate_enforcement(data: dict[str, Any], errors: list[str]) -> None:
 
 
 def _validate_identity(data: dict[str, Any], path: Path, errors: list[str]) -> None:
-    if data.get("version") != 1:
-        errors.append("version must be 1 (got {!r})".format(data.get("version")))
+    version = data.get("version")
+    if version != SCHEMA_VERSION:
+        if version == 1:
+            errors.append(
+                "schema version 1 is retired: run "
+                "`law-map migrate --root <v1-obligations> --out <dir>` "
+                "to convert this file to schema version 2"
+            )
+        else:
+            errors.append(f"version must be {SCHEMA_VERSION} (got {version!r})")
     _validate_obligation_id(data, errors)
     _validate_id_directory(data, path, errors)
     for key in ("title", "summary"):
@@ -230,13 +338,6 @@ def _validate_groundings(data: dict[str, Any], errors: list[str], warnings: list
         if not isinstance(g, dict):
             errors.append(f"groundings[{i}] must be a mapping")
             continue
-        if g.get("subdivision"):
-            jurisdiction = g.get("jurisdiction")
-            if not isinstance(jurisdiction, str) or jurisdiction not in SUBDIVISION_JURISDICTIONS:
-                warnings.append(
-                    f"groundings[{i}].subdivision only allowed for "
-                    f"{sorted(SUBDIVISION_JURISDICTIONS)}; got jurisdiction {jurisdiction!r}"
-                )
         _validate_grounding(g, errors, i)
 
 
@@ -280,6 +381,35 @@ def _warn_archive_sources(data: dict[str, Any], warnings: list[str]) -> None:
             else:
                 advice = "confirm the instrument is still current or mark it 'withdrawn'"
             warnings.append(f"{ob_id}: groundings[{i}] cites archive site {url} — {advice}")
+
+
+def _is_unofficial_host(url: str) -> bool:
+    """True for hosts whose copies are never the instrument itself."""
+    host = (urlparse(url).hostname or "").lower()
+    if host in UNOFFICIAL_HOSTS:
+        return True
+    return host.endswith(".archives.gov") and host != "www.archives.gov"
+
+
+def _warn_unofficial_kind_mismatch(data: dict[str, Any], warnings: list[str]) -> None:
+    """Warn when a grounding citing an unofficial host claims a loftier ``source_kind``."""
+    ob_id = data.get("id", "?")
+    groundings = data.get("groundings")
+    if not isinstance(groundings, list):
+        return
+    for i, g in enumerate(groundings):
+        if not isinstance(g, dict) or g.get("source_kind") == "unofficial":
+            continue
+        sources = g.get("sources")
+        if not isinstance(sources, list):
+            continue
+        for url in sources:
+            if isinstance(url, str) and _is_unofficial_host(url):
+                warnings.append(
+                    f"{ob_id}: groundings[{i}] cites {url} but claims "
+                    f"source_kind {g.get('source_kind')!r} — mark it 'unofficial'"
+                )
+                break
 
 
 def _warn_spec_gaps(data: dict[str, Any], warnings: list[str], today: date) -> None:

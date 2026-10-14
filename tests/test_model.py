@@ -12,7 +12,7 @@ from law_map.loader import load_corpus
 from law_map.refs import check_cross_references
 
 VALID_OBLIGATION: dict = {
-    "version": 1,
+    "version": 2,
     "id": "obligation.privacy.valid-fixture",
     "title": "Valid fixture obligation",
     "category": "privacy",
@@ -28,6 +28,7 @@ VALID_OBLIGATION: dict = {
         {
             "jurisdiction": "JP",
             "source_type": "statute",
+            "source_kind": "primary",
             "status": "in_force",
             "authority": "APPI",
             "citation": "第23条",
@@ -83,7 +84,8 @@ def test_empty_or_missing_corpus() -> None:
 @pytest.mark.parametrize(
     ("mutate", "needle"),
     [
-        (lambda d: d.__setitem__("version", 2), "version must be 1"),
+        (lambda d: d.__setitem__("version", 1), "schema version 1 is retired"),
+        (lambda d: d.__setitem__("version", 3), "version must be 2"),
         (lambda d: d.__setitem__("id", "not-an-id"), "does not match pattern"),
         (lambda d: d.pop("title"), "missing required field 'title'"),
         (lambda d: d.pop("summary"), "missing required field 'summary'"),
@@ -170,13 +172,20 @@ def test_id_domain_must_match_directory(tmp_path: Path) -> None:
     assert any("does not match directory" in err for err in corpus.errors)
 
 
-def test_subdivision_with_wrong_jurisdiction_warns(tmp_path: Path) -> None:
+def test_subdivision_with_unknown_code_errors(tmp_path: Path) -> None:
     doc = yaml.safe_load(yaml.safe_dump(VALID_OBLIGATION))
     doc["groundings"][0]["subdivision"] = "ZZ"
     root = write_corpus(tmp_path, doc)
     corpus = load_corpus(root)
-    assert corpus.ok()
-    assert any("subdivision only allowed" in w for w in corpus.warnings)
+    assert any("not an ISO 3166-2 code" in e for e in corpus.errors), corpus.errors
+
+
+def test_valid_subdivision_passes(tmp_path: Path) -> None:
+    doc = yaml.safe_load(yaml.safe_dump(VALID_OBLIGATION))
+    doc["groundings"][0]["jurisdiction"] = "US"
+    doc["groundings"][0]["subdivision"] = "CA"
+    root = write_corpus(tmp_path, doc)
+    assert load_corpus(root).ok()
 
 
 @pytest.mark.parametrize(

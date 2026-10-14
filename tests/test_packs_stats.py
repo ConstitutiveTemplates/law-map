@@ -88,7 +88,7 @@ def test_markdown_counts_binding_levels_and_gaps(tmp_path: Path) -> None:
     assert "**2 obligations, 3 groundings, 2 jurisdictions.**" in out
     assert "| Japan (JP) | 2 | 1 | 0 | 1 | 0 | 2026-10-01 | 2027-03-31 |" in out
     assert "| South Korea (KR) | 1 | 0 | 0 | 0 | 1 | — | 2027-03-31 |" in out
-    assert "| Japan (JP) | — | — | — | — | 1 | — | — |" in out
+    assert "| Japan (JP) | — | — | — | — | — | 1 | — | — |" in out
     assert "| `community` | 1 | 1 |" in out
 
 

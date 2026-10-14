@@ -1,4 +1,4 @@
-version: 1
+version: 2
 id: obligation.security.public-ntp-hygiene
 title: "Do not hardcode single institutional NTP servers; use pool or client-configurable time sync"
 category: security
@@ -14,18 +14,36 @@ scope:
   excludes: >
     Dedicated time-distribution infrastructure operating internal reference clocks.
 groundings:
+  - jurisdiction: US
+    source_type: standard
+    source_kind: primary
+    status: in_force
+    authority: "RFC 8633 — Network Time Protocol Best Current Practices"
+    citation: >
+      Best current practices for NTP client configuration, including pool
+      use instead of single-server dependence in distributed products.
+    effective: "2019-07-01"
+    review_by: "2027-03-31"
+    applicability: >
+      Firmware, IoT devices, embedded systems, and distributed client software synchronizing time.
+    strength: persuasive
+    sources:
+      - https://www.rfc-editor.org/rfc/rfc8633.html
   - jurisdiction: JP
     source_type: incident_report
+    source_kind: unofficial
     status: in_force
-    authority: "Fukuoka University NTP Traffic Incident (NICT / JPNIC technical report)"
+    authority: "APRICOT 2017 presentation — Fukuoka University public NTP service traffic-concentration incident (Fujimura / Tanizaki)"
     citation: >
-      Technical report documenting massive traffic concentration and service degradation
-      caused by consumer routers hardcoding clock.nc.fukuoka-u.ac.jp; establishes design
-      rule against static institutional NTP endpoints in distributed products.
+      Conference slides documenting massive traffic concentration and service
+      degradation caused by consumer routers hardcoding
+      clock.nc.fukuoka-u.ac.jp; establishes the design rule against static
+      institutional NTP endpoints in distributed products.
     effective: "2006-03-01"
     review_by: "2027-03-31"
     applicability: >
       Firmware, IoT devices, embedded systems, and distributed client software synchronizing time.
+    strength: background
     sources:
       - https://2017.apricot.net/assets/files/APIC674/apricot2017-20170222-01-english-presentation_1487892982.pdf
 conflicts: []

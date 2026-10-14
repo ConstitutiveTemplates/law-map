@@ -51,7 +51,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_validate = sub.add_parser("validate", help="validate the corpus against the schema rules")
     p_validate.add_argument("--warnings", action="store_true", help="also print non-fatal warnings")
     p_validate.add_argument(
-        "--kanon", "--codex",
+        "--kanon",
+        "--codex",
         type=Path,
         default=None,
         help=(
@@ -74,7 +75,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="HEAD-check grounding source URLs and resolve open_law refs via open-law (network access)",
     )
     p_check.add_argument(
-        "--kanon", "--codex",
+        "--kanon",
+        "--codex",
         type=Path,
         default=None,
         help=(
@@ -107,11 +109,36 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_export = sub.add_parser("export", help="render obligations as .md.jinja kanon sections")
     p_export.add_argument("--out", type=Path, default=Path("out"), help="output directory")
+
+    p_migrate = sub.add_parser(
+        "migrate", help="convert schema-v1 obligations to v2 (mechanical part; expert fields stay for review)"
+    )
+    p_migrate.add_argument(
+        "--in",
+        dest="migrate_in",
+        type=Path,
+        required=True,
+        help="v1 obligations directory to read",
+    )
+    p_migrate.add_argument("--out", type=Path, required=True, help="directory to write migrated v2 files into")
+
+    p_hashes = sub.add_parser(
+        "record-hashes",
+        help="fetch open_law texts and record verified_text_sha256 per grounding (network)",
+    )
+    p_hashes.add_argument(
+        "--write",
+        action="store_true",
+        help="patch the obligation files (default is a dry run printing the hashes)",
+    )
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.command == "migrate":
+        # v1 input cannot pass v2 validation, so migrate runs on raw files.
+        return commands.cmd_migrate(args)
     corpus = load_corpus(args.root, today=check_mod.today(), packs=args.packs)
 
     checks_root = args.root.parent / "checks"
@@ -140,6 +167,8 @@ def main(argv: list[str] | None = None) -> int:
         return commands.cmd_watch(args, corpus)
     if args.command == "export":
         return commands.cmd_export(args, corpus)
+    if args.command == "record-hashes":
+        return commands.cmd_record_hashes(args, corpus)
     raise AssertionError(f"unhandled command {args.command!r}")
 
 

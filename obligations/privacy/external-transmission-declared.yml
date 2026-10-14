@@ -1,4 +1,4 @@
-version: 1
+version: 2
 id: obligation.privacy.external-transmission-declared
 title: "External transmission of user data must be declared and controlled"
 category: privacy
@@ -19,6 +19,8 @@ scope:
 groundings:
   - jurisdiction: JP
     source_type: statute
+    source_kind: primary
+    strength: binding
     status: in_force
     authority: "電気通信事業法 (Telecommunications Business Act)"
     citation: >
@@ -36,6 +38,8 @@ groundings:
       - https://www.soumu.go.jp/main_sosiki/joho_tsusin/d_syohi/gaibusoushin_kiritsu_00001.html
   - jurisdiction: EU
     source_type: regulation
+    source_kind: primary
+    strength: binding
     status: in_force
     authority: "ePrivacy Directive 2002/58/EC (as amended); GDPR where identifiers are personal data"
     citation: >
@@ -52,6 +56,8 @@ groundings:
       id: "32016R0679"
   - jurisdiction: DE
     source_type: statute
+    source_kind: unofficial
+    strength: binding
     status: in_force
     authority: "TDDDG (Telekommunikation-Digitale-Dienste-Datenschutz-Gesetz)"
     citation: "§ 25 TDDDG — consent for storing or accessing information in the user's terminal equipment"
@@ -63,6 +69,8 @@ groundings:
   - jurisdiction: US
     subdivision: CA
     source_type: statute
+    source_kind: official-secondary
+    strength: binding
     status: in_force
     authority: "California Consumer Privacy Act as amended by CPRA"
     citation: >

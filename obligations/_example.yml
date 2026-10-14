@@ -1,7 +1,7 @@
 # _example.yml — corpus-excluded demonstration of every field.
 # Leading underscore in the basename: this file is NOT part of the corpus
 # (see model.py). It exists so reviewers can see the full documented shape.
-version: 1
+version: 2
 id: obligation.privacy.example-with-every-field
 title: "Example obligation showing every documented field"
 category: privacy
@@ -15,42 +15,61 @@ scope:
 groundings:
   - jurisdiction: JP
     source_type: statute
+    source_kind: primary
     status: in_force
     authority: "個人情報の保護に関する法律 (APPI)"
     citation: "第23条 (安全管理措置義務)"
     effective: "2022-04-01"
     review_by: "2027-03-31"
+    reviewed_on: "2026-10-15"
+    reviewed_by:
+      handle: "@example-reviewer"
+      domain: "JP data protection"
     applicability: "personal information handlers"
+    scope: "personal-information handlers, with no size threshold"
+    strength: binding
     sources:
       - https://www.ppc.go.jp/personalinfo/legal/
     open_law:
       source: jp
       id: "415AC0000000057"
+    verified_text_sha256: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
   - jurisdiction: US
     subdivision: CA
     source_type: precedent
+    source_kind: official-secondary
     status: in_force
     authority: "FTC Act Section 5 enforcement"
-    citation: "In re LabMD, 11th Cir. 2018"
+    citation: "In re LabMD (order vacated — see negative_history)"
     review_by: "2027-03-31"
     sources:
       - https://www.ftc.gov/legal-library/browse/cases-proceedings
+    negative_history:
+      - date: "2018-06-06"
+        court: "11th Cir."
+        holding: "Vacated the FTC order as unenforceably vague (894 F.3d 1304)."
+    strength: binding
   - jurisdiction: EU
     source_type: regulation
+    source_kind: primary
     status: scheduled
     authority: "Cyber Resilience Act"
     citation: "Regulation (EU) 2024/2847, Annex I"
     effective: "2027-12-11"
     review_by: "2027-01-31"
+    exceptions: "products outside the numeric thresholds in Art. 2"
+    strength: binding
     sources:
       - https://eur-lex.europa.eu/eli/reg/2024/2847/oj
   - jurisdiction: GB
     subdivision: ENG
     source_type: guidance
+    source_kind: official-secondary
     status: proposed
     authority: "ICO draft guidance"
     citation: "proposed data protection guidance"
     review_by: "2028-01-01"
+    strength: persuasive
     sources:
       - https://ico.org.uk/
 conflicts:
@@ -64,6 +83,10 @@ directives:
 related_sections:
   - baseline-personal-data
   - some-unknown-section   # unknown ids warn, not error
+reviewed_by:
+  handle: "@example-reviewer"
+  domain: "example domain"
+reviewed_on: "2026-10-15"
 enforcement:
   level: L1
   check_refs:

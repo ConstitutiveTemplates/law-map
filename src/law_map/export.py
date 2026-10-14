@@ -16,7 +16,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from .model import Obligation, obligation_groundings
+from .model import Obligation, obligation_groundings, obligation_review_status
 
 _PLACEHOLDER_HEADINGS = ("禁止パターン", "推奨設定", "運用チェック")
 
@@ -28,10 +28,13 @@ def render_obligation(ob: Obligation, today: date | None = None) -> str:
     slug = _obligation_slug(ob)
     version = (today or date.today()).isoformat()
     triggers = ", ".join(_section_triggers(ob))
+    # Unreviewed obligations display as draft; peer-reviewed ones (reviewed_by
+    # handle+domain plus reviewed_on) as reviewed.
+    status = obligation_review_status(ob)
     lines: list[str] = []
     _append_block(
         lines,
-        f"{{# ethics: id={slug} version={version}.1 status=draft triggers=[{triggers}] #}}",
+        f"{{# ethics: id={slug} version={version}.1 status={status} triggers=[{triggers}] #}}",
         f"# {ob.data.get('title', ob.id)}",
         f"> 要約: {ob.data.get('summary', '').strip()}",
     )

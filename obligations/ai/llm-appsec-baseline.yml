@@ -1,4 +1,4 @@
-version: 1
+version: 2
 id: obligation.ai.llm-appsec-baseline
 title: "LLM applications and agents ship with least-privilege tools, human approval, and output validation"
 category: ai
@@ -18,6 +18,8 @@ scope:
 groundings:
   - jurisdiction: US
     source_type: standard
+    source_kind: unofficial
+    strength: background
     status: in_force
     authority: "OWASP Top 10 for LLM Applications (2025)"
     citation: >
@@ -33,6 +35,8 @@ groundings:
       - https://genai.owasp.org/llm-top-10/
   - jurisdiction: EU
     source_type: regulation
+    source_kind: primary
+    strength: binding
     status: in_force
     authority: "EU AI Act, Regulation (EU) 2024/1689"
     citation: >
@@ -49,6 +53,8 @@ groundings:
       - https://eur-lex.europa.eu/eli/reg/2024/1689/oj
   - jurisdiction: EU
     source_type: regulation
+    source_kind: primary
+    strength: binding
     status: scheduled
     authority: "EU AI Act, Regulation (EU) 2024/1689, as amended by the AI Omnibus"
     citation: >
@@ -66,6 +72,8 @@ groundings:
       - https://eur-lex.europa.eu/eli/reg/2024/1689/oj
   - jurisdiction: US
     source_type: standard
+    source_kind: official-secondary
+    strength: persuasive
     status: in_force
     authority: "NIST AI Risk Management Framework 1.0; NIST AI 600-1 (GenAI profile)"
     citation: >
@@ -94,5 +102,4 @@ related_sections:
 enforcement:
   level: L2
   check_refs:
-    - ai/llm-appsec-baseline
     - ai/llm-tool-allowlist-gate

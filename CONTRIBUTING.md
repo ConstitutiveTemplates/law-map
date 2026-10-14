@@ -20,39 +20,51 @@ per file; basenames starting with `_` are excluded from the corpus).
 `schemas/obligation.schema.yml` is the field reference; the enforceable
 subset lives in `src/law_map/model.py`. What validation actually enforces:
 
-- `version` must equal `1`.
+- `version` must equal `2` (v1 files are rejected with a `law-map migrate` prompt).
 - `id` must match `obligation.<domain>.<slug>` (lowercase alphanumeric
   segments, hyphens allowed), be unique across the corpus, and the domain in
   the id must match the directory the file lives in.
 - `title` and `summary` non-empty; `category`, `modality`, `severity` must
   be valid enum values (`privacy, security, copyright, ai, licensing,
-  telemetry, crypto` / `obligation, prohibition, permission` / `info,
-  advisory, high, critical`).
-- `groundings` non-empty; every grounding needs `jurisdiction`,
+  telemetry, crypto, accessibility` — accessibility law (e.g. the European
+  Accessibility Act) has its own category, never `privacy` / `obligation,
+  prohibition, permission` / `info, advisory, high, critical`).
+- `groundings` non-empty, with at least one `source_kind: primary`;
+  every grounding needs `jurisdiction`,
   `source_type` (`statute, regulation, precedent, guidance, standard,
-  model_code, private_rule, incident_report`), `status` (`in_force, scheduled, proposed, superseded,
-  withdrawn`),
+  model_code, private_rule, incident_report`),
+  `source_kind` (`primary, official-secondary, unofficial`),
+  `status` (`in_force, scheduled, proposed, superseded, withdrawn`),
   `authority`, `citation`, `review_by` (ISO `YYYY-MM-DD`), and a non-empty
   list of `http(s)` URLs in `sources`. `effective` and `reviewed_on` must
   be ISO dates if present.
+- `primary` means the instrument from its publisher (gazette, EUR-Lex ELI
+  URL, slip opinion). Third-party copies (`dsgvo-gesetz.de`,
+  `law.justia.com`), archive snapshots (`web.archive.org`, `*.archives.gov`),
+  and write-ups are `unofficial` — claiming otherwise warns.
 - `private_rule` (a private body's rules, such as contest terms) and
   `incident_report` (a documented incident whose lesson grounds the
   practice) are not legal sources; never file them as `standard` or
   `precedent`. An obligation grounded only in them lands in the
   `community` pack (see "Packs" in the README).
+- Record functional-equivalence differences on the grounding: `scope` (who
+  is bound), `exceptions` (carve-outs), `strength` (`binding, persuasive,
+  background`), and adverse subsequent history in `negative_history`
+  (e.g. the 11th Cir.'s 2018 vacatur of the LabMD order).
+- Peer review (`reviewed_by` handle+domain with `reviewed_on`, on the
+  obligation and per grounding) is optional; anything lacking it displays
+  as `draft`.
 - `withdrawn` marks an instrument its authority has rescinded, revoked, or
   taken down (e.g. prior-administration guidance); a source on an archive
   site (`web.archive.org`, `*.archives.gov` subdomains) is a warning.
 - `jurisdiction` must be an ISO 3166-1 alpha-2 code (`JP`, `US`, `GB`, ...);
   `EU` is the single documented exception. `UK` is rejected — use `GB`.
-- `subdivision` is only allowed for jurisdictions `US, CA, AU, DE, GB`;
-  anywhere else it is a warning, not an error.
+- `subdivision` must be an ISO 3166-2 code for its jurisdiction
+  (`CA` for `US-CA`), checked via pycountry — not a hardcoded list.
+- `L2` check specs need an executable `blocking` rule and existing
+  `fixtures`; one obligation, one spec (merge duplicate L1/L2 specs).
 - `enforcement.check_refs` entries must point to existing
   `checks/<domain>/<slug>.yml` files (error otherwise).
-- `requires` / `conflicts` must reference ids present in the corpus.
-- `related_sections` references kanon section ids
-  (`<tier>-<slug>`); verified with `law-map validate --kanon <checkout>`
-  (offline `validate` leaves them unchecked).
 
 Cite the exact legal text — pinpoint article/section/case in `citation`, and
 the canonical instrument URL in `sources`. Do not rely on memory.

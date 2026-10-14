@@ -12,7 +12,15 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from .model import CATEGORIES, PACKS, Corpus, obligation_groundings, obligation_pack, parse_iso_date
+from .model import (
+    CATEGORIES,
+    PACKS,
+    Corpus,
+    obligation_groundings,
+    obligation_pack,
+    obligation_review_status,
+    parse_iso_date,
+)
 
 __all__ = ["BEGIN_MARKER", "END_MARKER", "check_block", "render_markdown", "render_text", "replace_block"]
 
@@ -145,8 +153,12 @@ def render_markdown(corpus: Corpus) -> str:
     """The README scope block: totals, binding levels, jurisdiction x category, packs."""
     jurisdictions = _jurisdictions(corpus)
     n_groundings = sum(len(obligation_groundings(ob)) for ob in corpus.obligations)
+    n_reviewed = sum(1 for ob in corpus.obligations if obligation_review_status(ob) == "reviewed")
     lines = [
         f"**{len(corpus.obligations)} obligations, {n_groundings} groundings, {len(jurisdictions)} jurisdictions.**",
+        "",
+        f"Peer review: {n_reviewed} of {len(corpus.obligations)} obligations reviewed "
+        "(reviewed_by handle+domain and reviewed_on recorded); the rest display as draft.",
         "",
         "Groundings by binding level. *Last checked* is the latest `reviewed_on`",
         "(— when none is recorded yet); *next review due* is the earliest `review_by`.",

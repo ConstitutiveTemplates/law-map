@@ -1,4 +1,4 @@
-version: 1
+version: 2
 id: obligation.ai.ml-bias-mitigation
 title: "Evaluate machine learning models for demographic bias, subgroup disparity, and proxy discrimination"
 category: ai
@@ -17,6 +17,8 @@ scope:
 groundings:
   - jurisdiction: EU
     source_type: regulation
+    source_kind: primary
+    strength: binding
     status: scheduled
     authority: "EU AI Act, Regulation (EU) 2024/1689, as amended by the AI Omnibus"
     citation: >
@@ -35,6 +37,8 @@ groundings:
       - https://eur-lex.europa.eu/eli/reg/2024/1689/oj
   - jurisdiction: US
     source_type: guidance
+    source_kind: unofficial
+    strength: background
     status: withdrawn
     authority: "Blueprint for an AI Bill of Rights (OSTP, 2022); EEOC Technical Assistance on Algorithmic Bias"
     citation: >

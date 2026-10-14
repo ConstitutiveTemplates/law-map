@@ -1,6 +1,10 @@
-# check stub for obligation.security.sbom-and-vulnerability-handling
-# Contract: an SBOM artifact must exist per release, and a SECURITY.md
-# intake channel must be reachable. Level L2 = hard release gate.
+# check gate for obligation.security.sbom-and-vulnerability-handling
+# Contract: every release ships an SBOM artifact with no unremediated
+# known-exploitable vulnerability, and the repo exposes a SECURITY.md
+# intake channel. Level L2 = hard release gate: a missing SBOM, a missing
+# contact, or an unremediated CVE fails the job. Merged from the former
+# security/sbom-present and security/no-known-cve specs (one spec per
+# obligation).
 
 id: security/sbom-present
 obligation: obligation.security.sbom-and-vulnerability-handling
@@ -9,6 +13,8 @@ triggers:
   - (?i)\b(cra|sbom|cyclonedx|vulnerability|vulnerabilities|cve|incident[_ ]?report|resilience|enisa)\b
 tools:
   - cyclonedx-bom   # or syft
+  - pip-audit       # or osv-scanner for the consumer's language
+  - cisa-kev cross-reference
   - file-presence gate in CI
 
 sbom:
@@ -18,8 +24,34 @@ sbom:
     Release pipeline produces an SBOM artifact adjacent to build outputs and
     records its digest; job fails when absent.
 
+audit:
+  trigger: "release job and weekly schedule"
+  kev_escalation: >
+    Any CVE on CISA's Known Exploited Vulnerabilities catalog is a release
+    blocker regardless of configured severity threshold (CRA Annex I
+    "known exploitable vulnerabilities").
+
 security_contact:
   path: SECURITY.md
   acceptance: >
     Repo root SECURITY.md names a monitored intake channel (CRA Art. 14
     coordinated disclosure; SSDF RV.3).
+
+fixtures:
+  - tests/fixtures/sbom.example.cdx.json   # minimal CycloneDX SBOM proving the artifact shape
+
+blocking: >
+  Release job fails when the SBOM artifact is absent, SECURITY.md names no
+  monitored intake channel, or the dependency audit reports an
+  unremediated exploitable CVE. Suppression requires a dated, reasoned
+  ignore entry naming the compensating control and expiry.
+
+acceptance: >
+  Every release carries an SBOM artifact with a recorded digest, a
+  reachable vulnerability intake, and no unremediated known-exploitable
+  CVE; the audit artifact is attached to the release.
+
+fail_when:
+  - no SBOM artifact adjacent to the release build outputs
+  - SECURITY.md absent or naming no reachable intake channel
+  - an exploitable CVE unremediated in the shipped dependency set

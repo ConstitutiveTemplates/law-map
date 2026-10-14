@@ -50,7 +50,7 @@ jobs:
       - name: Source liveness and open-law amendment probes
         run: |
           uv run law-map check --sources --days 30 >> drift.txt 2>&1 || true
-          if grep -Eq "\[source |\[open-law (amended|unreachable)\]|\[skipped\]" drift.txt; then
+          if grep -Eq "\[source |\[open-law (amended|changed|unreachable)\]|\[skipped\]" drift.txt; then
             echo "FOUND=1" >> "$GITHUB_ENV"
           fi
           # [skipped] means open-law was not importable: amendment detection

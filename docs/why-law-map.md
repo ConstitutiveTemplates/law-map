@@ -51,7 +51,11 @@ SBOM guides) is included with its status declared — *in_force, scheduled,
 proposed, superseded, withdrawn* — and is tagged so readers can weigh binding force
 without the graph pretending all sources carry equal weight. Scope,
 `applicability`, and `status` fields keep groundings honest about who is
-bound and how hard.
+bound and how hard. Each grounding also records *where it differs* from its
+siblings — `scope`, `exceptions`, and `strength` (`binding, persuasive,
+background`) — plus adverse history in `negative_history` and its
+provenance in `source_kind` (`primary, official-secondary, unofficial`),
+so functional equivalence never hides the ways the laws diverge.
 
 ## The pipeline
 

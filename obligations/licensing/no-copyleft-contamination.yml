@@ -1,4 +1,4 @@
-version: 1
+version: 2
 id: obligation.licensing.no-copyleft-contamination
 title: "No unreviewed copyleft material linked or shipped into the product"
 category: licensing
@@ -20,6 +20,8 @@ scope:
 groundings:
   - jurisdiction: US
     source_type: precedent
+    source_kind: unofficial
+    strength: binding
     status: in_force
     authority: "Copyright Act, 17 USC"
     citation: >
@@ -32,6 +34,8 @@ groundings:
       - https://law.justia.com/cases/federal/appellate-courts/cafc/08-1001/08-1001-2011-03-14.html
   - jurisdiction: EU
     source_type: statute
+    source_kind: primary
+    strength: binding
     status: in_force
     authority: "Information Society Directive 2001/29/EC"
     citation: "Art. 2 reproduction right and Art. 4 distribution right — licence conditions attach at copying/distribution."
@@ -41,6 +45,8 @@ groundings:
       - https://eur-lex.europa.eu/eli/dir/2001/29/oj
   - jurisdiction: DE
     source_type: precedent
+    source_kind: unofficial
+    strength: binding
     status: in_force
     authority: "GPL enforcement in German courts"
     citation: "Welte v. Sitecom, OLG München / Landgericht München I (2004, 2006) — GPL conditions enforceable via injunction in copyright proceedings."
@@ -51,6 +57,8 @@ groundings:
       - https://www.ifross.org/Fremdartikel/judgment_dc_munich_gpl.pdf
   - jurisdiction: JP
     source_type: statute
+    source_kind: primary
+    strength: binding
     status: in_force
     authority: "著作権法 (Copyright Act)"
     citation: "第21条・第26条 — reproduction and transfer rights; licence violations actionable as infringement."

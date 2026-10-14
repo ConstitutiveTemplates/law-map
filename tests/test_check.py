@@ -141,9 +141,9 @@ def test_probe_open_law_unavailable_and_unreachable(tmp_path: Path) -> None:
     assert by_id["broken-id"].problem == "unreachable"
 
 
-def test_probe_open_law_dedups_and_ignores_malformed(tmp_path: Path) -> None:
+def test_probe_open_law_fetches_once_but_probes_every_grounding(tmp_path: Path) -> None:
     doc = _open_law_doc()
-    doc["groundings"].append(dict(doc["groundings"][0]))  # same (source, id): probe once
+    doc["groundings"].append(dict(doc["groundings"][0]))  # same (source, id): fetch once, probe twice
     doc["groundings"].append(
         {
             "jurisdiction": "JP",
@@ -166,7 +166,8 @@ def test_probe_open_law_dedups_and_ignores_malformed(tmp_path: Path) -> None:
 
     probes = probe_open_law(corpus, fetch=fake)
     assert calls == [("eu", "32016R0679")]
-    assert len(probes) == 1
+    assert len(probes) == 2
+    assert [p.grounding_index for p in probes] == [0, 1]
 
 
 def test_run_check_wires_open_law_fetch_without_url_probes(tmp_path: Path, monkeypatch) -> None:

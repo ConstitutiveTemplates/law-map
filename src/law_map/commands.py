@@ -12,9 +12,21 @@ import sys
 
 from . import check, stats, watch
 from .export import export_obligations
-from .model import Corpus
+from .migrate import migrate_tree
+from .model import Corpus, grounding_review_status, obligation_review_status
+from .openlaw import apply_hash_updates, collect_hash_updates
 
-__all__ = ["cmd_check", "cmd_export", "cmd_list", "cmd_show", "cmd_stats", "cmd_validate", "cmd_watch"]
+__all__ = [
+    "cmd_check",
+    "cmd_export",
+    "cmd_list",
+    "cmd_migrate",
+    "cmd_record_hashes",
+    "cmd_show",
+    "cmd_stats",
+    "cmd_validate",
+    "cmd_watch",
+]
 
 
 def cmd_validate(args: argparse.Namespace, corpus: Corpus) -> int:
@@ -50,6 +62,15 @@ def cmd_show(args: argparse.Namespace, corpus: Corpus) -> int:
 
     data = {k: v for k, v in match[0].data.items() if not k.startswith("_")}
     print(yaml.safe_dump(data, sort_keys=False, allow_unicode=True).rstrip())
+    print(f"review: {obligation_review_status(match[0])}", end="")
+    reviewed_by = match[0].data.get("reviewed_by")
+    if isinstance(reviewed_by, dict):
+        print(f" by {reviewed_by.get('handle')} ({reviewed_by.get('domain')}) on {match[0].data.get('reviewed_on')}")
+    else:
+        print(" (no reviewed_by/reviewed_on recorded)")
+    groundings = [g for g in match[0].data.get("groundings", []) if isinstance(g, dict)]
+    n_reviewed = sum(1 for g in groundings if grounding_review_status(g) == "reviewed")
+    print(f"groundings reviewed: {n_reviewed}/{len(groundings)}")
     return 0
 
 
@@ -99,8 +120,7 @@ def cmd_stats(args: argparse.Namespace, corpus: Corpus) -> int:
                 print(f"ok: {args.check} stats block matches the corpus")
                 return 0
             print(
-                f"error: {args.check} stats block is stale; run "
-                f"`law-map stats --markdown --write {args.check}`",
+                f"error: {args.check} stats block is stale; run `law-map stats --markdown --write {args.check}`",
                 file=sys.stderr,
             )
             return 1
@@ -127,6 +147,58 @@ def cmd_watch(args: argparse.Namespace, corpus: Corpus) -> int:
     return 1 if any(p.problem == "changed" for p in probes) else 0
 
 
+def cmd_migrate(args: argparse.Namespace) -> int:
+    try:
+        report = migrate_tree(args.migrate_in, args.out)
+    except (OSError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    if not report:
+        print(f"error: no obligation files found under {args.migrate_in}", file=sys.stderr)
+        return 1
+    for rel in sorted(report):
+        print(f"migrated {rel}")
+        for note in report[rel]:
+            print(f"  - {note}")
+    print(
+        "review every inferred source_kind, then record negative_history, "
+        "scope/exceptions/strength, peer review, and verified_text_sha256 "
+        "(law-map record-hashes --write)"
+    )
+    return 0
+
+
+def cmd_record_hashes(args: argparse.Namespace, corpus: Corpus) -> int:
+    try:
+        from .openlaw import _default_open_law_fetch
+
+        fetch = _default_open_law_fetch()
+    except ImportError:
+        print("error: record-hashes needs the openlaw extra (open-law is not installed)", file=sys.stderr)
+        return 1
+    updates = collect_hash_updates(corpus, fetch)
+    if not updates:
+        print("no open_law texts fetched; nothing to record")
+        return 0
+    print(
+        "note: EU CELLAR texts are search metadata, not article text — "
+        "recorded hashes are provisional until open-law serves full text"
+    )
+    if not args.write:
+        for update in updates:
+            print(f"{update.path} groundings[{update.grounding_index}] verified_text_sha256={update.sha256}")
+        print("dry run: pass --write to patch the obligation files")
+        return 0
+    try:
+        counts = apply_hash_updates(updates)
+    except (OSError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    for path in sorted(counts):
+        print(f"recorded {counts[path]} hash(es) in {path}")
+    return 0
+
+
 def print_check_report(report: check.CheckReport) -> None:
     for e in report.expiry:
         print(check.format_expiry_line(e))
@@ -142,6 +214,7 @@ def print_check_report(report: check.CheckReport) -> None:
             print(line)
     if report.open_law:
         print(check.format_open_law_summary(report.open_law))
+
 
 def _report_empty_root(args: argparse.Namespace, corpus: Corpus) -> bool:
     """Print an error and return True when ``--root`` is missing or holds no obligations.

@@ -2,8 +2,8 @@
 
 This module owns the shared building blocks only: the ``Obligation`` /
 ``Corpus`` dataclasses, the controlled vocabularies (categories,
-modalities, severities, ...), ISO date parsing, and read-only grounding
-accessors.
+modalities, severities, ...), ISO date parsing, ISO 3166 jurisdiction /
+subdivision checks (via pycountry), and read-only grounding accessors.
 
 Single-file validation lives in :mod:`law_map.validate` (obligations) and
 :mod:`law_map.checkspecs` (check specs), corpus discovery
@@ -20,6 +20,8 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+import pycountry
+
 __all__ = [
     "CATEGORIES",
     "ENFORCEMENT_LEVELS",
@@ -28,22 +30,37 @@ __all__ = [
     "JURISDICTION_RE",
     "MODALITIES",
     "PACKS",
+    "SCHEMA_VERSION",
     "SEVERITIES",
+    "SOURCE_KINDS",
     "SOURCE_TYPE_PACK",
     "SOURCE_TYPES",
     "STATUSES",
-    "SUBDIVISION_JURISDICTIONS",
+    "STRENGTHS",
+    "UNOFFICIAL_HOSTS",
     "Corpus",
     "Obligation",
+    "grounding_review_status",
+    "is_valid_jurisdiction",
+    "is_valid_subdivision",
     "iter_groundings",
     "obligation_groundings",
     "obligation_pack",
+    "obligation_review_status",
     "parse_iso_date",
 ]
 
 IDENT_RE = re.compile(r"^obligation\.([a-z0-9]+(-[a-z0-9]+)*)\.([a-z0-9]+(-[a-z0-9]+)*)$")
 
-CATEGORIES = {"privacy", "security", "copyright", "ai", "licensing", "telemetry", "crypto"}
+# Schema version of the obligation documents this code validates.
+# ``law-map validate`` rejects anything else with a migrate prompt.
+SCHEMA_VERSION = 2
+
+# The category vocabulary is defined once, here. ``schemas/obligation.schema.yml``
+# documents it; ``stats`` renders it. ``accessibility`` covers obligations
+# grounded in accessibility law (e.g. the European Accessibility Act), which
+# must not be filed under ``privacy``.
+CATEGORIES = {"privacy", "security", "copyright", "ai", "licensing", "telemetry", "crypto", "accessibility"}
 MODALITIES = {"obligation", "prohibition", "permission"}
 SEVERITIES = {"info", "advisory", "high", "critical"}
 SOURCE_TYPES = {
@@ -58,6 +75,17 @@ SOURCE_TYPES = {
     "private_rule",
     "incident_report",
 }
+# How close a grounding's sources are to the instrument itself. ``primary``
+# is the instrument from its publisher (gazette, EUR-Lex ELI URL, slip
+# opinion); ``official-secondary`` is an authority's own commentary or
+# guidance page about it; ``unofficial`` is any third-party copy, archive
+# snapshot, or write-up. Every obligation needs at least one ``primary``
+# grounding (see :mod:`law_map.validate`).
+SOURCE_KINDS = {"primary", "official-secondary", "unofficial"}
+# Hosts whose copies are never the instrument itself: mark groundings citing
+# them ``unofficial``. Used by ``law-map migrate`` and as a validation
+# warning when paired with a loftier ``source_kind``.
+UNOFFICIAL_HOSTS = ("web.archive.org", "dsgvo-gesetz.de", "law.justia.com")
 # Corpus packs by binding level, strongest first. ``core`` holds binding law
 # (statutes, regulations, case law), ``guidance`` official guidance and
 # standards, ``community`` private rules and incident lessons.
@@ -77,7 +105,11 @@ SOURCE_TYPE_PACK = {
 # historical context, never as a current basis for an obligation.
 STATUSES = {"in_force", "scheduled", "proposed", "superseded", "withdrawn"}
 ENFORCEMENT_LEVELS = {"L0", "L1", "L2"}
-SUBDIVISION_JURISDICTIONS = {"US", "CA", "AU", "DE", "GB"}
+# How hard a grounding binds, for functional-equivalence honesty: ``binding``
+# (statute/regulation/case law in force), ``persuasive`` (official guidance
+# and standards), ``background`` (withdrawn context, incident lessons, and
+# other non-binding material). Optional per grounding.
+STRENGTHS = {"binding", "persuasive", "background"}
 # Grounding jurisdictions are ISO 3166-1 alpha-2 codes; EU (an ISO
 # "exceptionally reserved" code) is the one documented non-country
 # exception. Common non-ISO aliases are rejected with the ISO code to use.
@@ -146,6 +178,51 @@ def iter_groundings(corpus: Corpus) -> Iterator[dict[str, Any]]:
     """Every mapping grounding in the corpus, in obligation order."""
     for ob in corpus.obligations:
         yield from obligation_groundings(ob)
+
+
+def is_valid_jurisdiction(code: object) -> bool:
+    """True for ISO 3166-1 alpha-2 codes plus the single ``EU`` exception."""
+    if not isinstance(code, str) or not JURISDICTION_RE.match(code):
+        return False
+    if code == "EU":
+        return True
+    return pycountry.countries.get(alpha_2=code) is not None
+
+
+def is_valid_subdivision(jurisdiction: object, subdivision: object) -> bool:
+    """True when ``{jurisdiction}-{subdivision}`` is an ISO 3166-2 code."""
+    if not isinstance(jurisdiction, str) or not isinstance(subdivision, str):
+        return False
+    if not subdivision.strip():
+        return False
+    return pycountry.subdivisions.get(code=f"{jurisdiction}-{subdivision}") is not None  # type: ignore[no-untyped-call]
+
+
+def _review_complete(reviewed_by: object, reviewed_on: object) -> bool:
+    """True when a ``reviewed_by`` handle+domain mapping and an ISO ``reviewed_on`` date are both present."""
+    if not isinstance(reviewed_by, dict):
+        return False
+    handle = reviewed_by.get("handle")
+    domain = reviewed_by.get("domain")
+    if not isinstance(handle, str) or not handle.strip():
+        return False
+    if not isinstance(domain, str) or not domain.strip():
+        return False
+    return parse_iso_date(reviewed_on) is not None
+
+
+def obligation_review_status(ob: Obligation) -> str:
+    """``reviewed`` when the obligation records a reviewer and a review date, else ``draft``."""
+    if _review_complete(ob.data.get("reviewed_by"), ob.data.get("reviewed_on")):
+        return "reviewed"
+    return "draft"
+
+
+def grounding_review_status(g: dict[str, Any]) -> str:
+    """``reviewed`` when the grounding records a reviewer and a review date, else ``draft``."""
+    if _review_complete(g.get("reviewed_by"), g.get("reviewed_on")):
+        return "reviewed"
+    return "draft"
 
 
 _COMPAT_EXPORTS: dict[str, str] = {

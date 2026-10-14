@@ -1,4 +1,4 @@
-version: 1
+version: 2
 id: obligation.ai.contest-rules-compliance
 title: "Verify competitive programming platform and contest terms before generating submission solutions"
 category: ai
@@ -16,6 +16,7 @@ scope:
 groundings:
   - jurisdiction: JP
     source_type: private_rule
+    source_kind: primary
     status: in_force
     authority: "AtCoder Rules on the Use of Generative AI (revised 2025-10-03)"
     citation: >
@@ -26,8 +27,9 @@ groundings:
     review_by: "2027-03-31"
     applicability: >
       All participants submitting code in rated AtCoder competitions.
+    strength: background
     sources:
-      - https://atcoder.jp/
+      - https://info.atcoder.jp/entry/llm-rules-en
 conflicts: []
 requires: []
 directives:

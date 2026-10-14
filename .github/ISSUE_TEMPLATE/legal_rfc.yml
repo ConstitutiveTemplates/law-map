@@ -29,6 +29,19 @@ body:
         - guidance
         - standard
         - model_code
+        - private_rule
+        - incident_report
+    validations:
+      required: true
+  - type: dropdown
+    id: source_kind
+    attributes:
+      label: Source kind
+      description: How close is the cited source to the instrument itself?
+      options:
+        - primary
+        - official-secondary
+        - unofficial
     validations:
       required: true
   - type: input

@@ -1,4 +1,4 @@
-version: 1
+version: 2
 id: obligation.ai.samd-clinical-evaluation
 title: "Maintain validated boundaries for machine learning software as a medical device"
 category: ai
@@ -17,6 +17,8 @@ scope:
 groundings:
   - jurisdiction: US
     source_type: guidance
+    source_kind: official-secondary
+    strength: persuasive
     status: in_force
     authority: "FDA Final Guidance: Marketing Submission Recommendations for a Predetermined Change Control Plan for AI-Enabled Device Software Functions"
     citation: >
@@ -30,6 +32,8 @@ groundings:
       - https://www.fda.gov/regulatory-information/search-fda-guidance-documents/marketing-submission-recommendations-predetermined-change-control-plan-artificial-intelligence
   - jurisdiction: EU
     source_type: regulation
+    source_kind: primary
+    strength: binding
     status: in_force
     authority: "EU Medical Device Regulation (MDR), Regulation (EU) 2017/745"
     citation: >

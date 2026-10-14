@@ -1,7 +1,7 @@
-version: 1
-id: obligation.privacy.european-accessibility-act
+version: 2
+id: obligation.accessibility.european-accessibility-act
 title: "Conform consumer-facing digital services and e-commerce UI to accessibility standards under EAA"
-category: privacy
+category: accessibility
 modality: obligation
 severity: high
 summary: >
@@ -15,6 +15,7 @@ scope:
 groundings:
   - jurisdiction: EU
     source_type: regulation
+    source_kind: primary
     status: in_force
     authority: "European Accessibility Act (EAA), Directive (EU) 2019/882"
     citation: >
@@ -24,10 +25,13 @@ groundings:
     review_by: "2027-01-31"
     applicability: >
       Economic operators placing designated consumer digital products and services on the EU market.
+    exceptions: "microenterprises qualifying for the Directive (EU) 2019/882 Art. 4(5) statutory exemption"
+    strength: binding
     sources:
       - https://eur-lex.europa.eu/eli/dir/2019/882/oj
   - jurisdiction: EU
     source_type: standard
+    source_kind: primary
     status: in_force
     authority: "Harmonised European Standard EN 301 549 (Accessibility requirements for ICT products and services)"
     citation: >
@@ -52,10 +56,10 @@ related_sections:
 # L1 detection: the automatable WCAG 2.1 AA / EN 301 549 subset
 # (semantic HTML/ARIA sinks, CI audit presence, accessibility
 # statement/feedback surface) is specified in
-# checks/privacy/european-accessibility-act.yml. Full conformance
+# checks/accessibility/european-accessibility-act.yml. Full conformance
 # review (contrast judgment, keyboard operability, assistive-tech
 # usability) remains human audit and is out of scope for that gate.
 enforcement:
   level: L1
   check_refs:
-    - privacy/european-accessibility-act
+    - accessibility/european-accessibility-act

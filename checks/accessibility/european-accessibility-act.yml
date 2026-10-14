@@ -1,4 +1,4 @@
-# check stub for obligation.privacy.european-accessibility-act
+# check stub for obligation.accessibility.european-accessibility-act
 # Contract: consumer-facing UI must pass the automatable subset of
 # WCAG 2.1 AA / EN 301 549 in CI (axe-core/pa11y), and static sinks
 # catch missing semantic HTML/ARIA at authoring time. L1 detection.
@@ -10,8 +10,8 @@
 # against EN 301 549 Clauses 9-11) still requires human audit and is
 # out of scope for this gate.
 
-id: privacy/european-accessibility-act
-obligation: obligation.privacy.european-accessibility-act
+id: accessibility/european-accessibility-act
+obligation: obligation.accessibility.european-accessibility-act
 level: L1
 triggers:
   - (?i)\b(accessib|aria|wcag|a11y|axe|alt=|tabindex|focus|screen[ -]reader|en[ -]301[ -]549)\b

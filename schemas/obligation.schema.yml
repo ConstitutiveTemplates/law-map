@@ -1,9 +1,12 @@
-# obligation.schema.yml — field reference
+# obligation.schema.yml — field reference for schema version 2
 
 Human-readable (and machine-checkable) documentation of the obligation
 document format. This file is a **reference spec**, not a jsonschema
 dependency; `src/law_map/model.py` implements the enforceable subset
-exactly, and it is the source of truth for validation.
+exactly, and it is the source of truth for validation. The controlled
+vocabularies (categories, modalities, severities, source types/kinds,
+statuses, strengths) are defined once in `model.py`; this file documents
+them.
 
 Every obligation lives in `obligations/<domain>/<slug>.yml`. One obligation
 per file. Files whose basename starts with `_` are excluded from the corpus
@@ -14,20 +17,22 @@ listed.
 
 | field            | type              | required | constraint                                                        |
 | ---------------- | ----------------- | -------- | ----------------------------------------------------------------- |
-| `version`        | int               | yes      | must equal `1`                                                    |
+| `version`        | int               | yes      | must equal `2` (v1 files are rejected with a `law-map migrate` prompt) |
 | `id`             | string            | yes      | `obligation.<domain>.<slug>`; lowercase alnum segments, unique     |
 | `title`          | string            | yes      | non-empty                                                         |
-| `category`       | enum              | yes      | one of `privacy, security, copyright, ai, licensing, telemetry, crypto` |
-| `modality`       | enum              | yes      | one of `obligation, prohibition, permission`                      |
+| `category`       | enum              | yes      | one of `privacy, security, copyright, ai, licensing, telemetry, crypto, accessibility` |
+| `modality`       | enum              | yes      | one of `obligation, prohibition, permission` (LegalRuleML: Obligation, Prohibition, Permission) |
 | `severity`       | enum              | yes      | one of `info, advisory, high, critical`                           |
 | `summary`        | string            | yes      | one sentence                                                      |
 | `scope`          | mapping           | yes      | see below                                                         |
-| `groundings`     | list              | yes      | non-empty; see Grounding                                          |
+| `groundings`     | list              | yes      | non-empty; at least one grounding with `source_kind: primary`; see Grounding |
 | `conflicts`      | list of id        | no       | ids this obligation can clash with; must exist in corpus         |
 | `requires`       | list of id        | no       | ids this obligation depends on; must exist in corpus             |
 | `directives`     | mapping           | no       | keys `human` and `agent` (both recommended)                      |
 | `related_sections` | list of string  | no       | kanon section ids; unknown ids warn, not error       |
 | `enforcement`    | mapping           | no       | see below                                                         |
+| `reviewed_by`    | mapping           | no       | `{handle, domain}` of the peer reviewer; with `reviewed_on` the obligation displays as `reviewed`, otherwise `draft` |
+| `reviewed_on`    | date              | no       | ISO `YYYY-MM-DD`; peer-review date; required together with `reviewed_by` |
 
 ### scope
 
@@ -52,41 +57,65 @@ Each grounding is a single jurisdiction with a precise legal source.
 | field           | type   | required | constraint                                                          |
 | --------------- | ------ | -------- | ------------------------------------------------------------------- |
 | `jurisdiction`  | string | yes      | ISO 3166-1 alpha-2 (`JP`, `US`, `GB`, ...) or `EU` (the only exception; `UK` is rejected — use `GB`) |
-| `subdivision`   | string | no       | ISO 3166-2 suffix (`CA` for US); only allowed with US/CA/AU/DE/GB    |
+| `subdivision`   | string | no       | ISO 3166-2 code suffix (`CA` for US-CA); validated via pycountry, not a hardcoded list |
 | `source_type`   | enum   | yes      | `statute, regulation, precedent, guidance, standard, model_code, private_rule, incident_report` (`private_rule`: a private body's rules, e.g. contest terms; `incident_report`: a documented incident whose lesson grounds the practice — neither is a legal source) |
+| `source_kind`   | enum   | yes      | `primary, official-secondary, unofficial` — how close the cited sources are to the instrument itself (the instrument from its publisher; an authority's own commentary page; any third-party copy, archive snapshot, or write-up) |
 | `status`        | enum   | yes      | `in_force, scheduled, proposed, superseded, withdrawn` (`withdrawn`: rescinded/revoked or taken down by its authority; historical context only) |
 | `authority`     | string | yes      | issuing body / instrument name (native script allowed)             |
 | `citation`      | string | yes      | pinpoint: article/section/case, e.g. `第23条 (安全管理措置義務)`    |
 | `effective`     | date   | no       | ISO `YYYY-MM-DD`                                                    |
 | `review_by`     | date   | yes      | ISO `YYYY-MM-DD`; freshness contract, checked by `law-map check`    |
-| `reviewed_on`   | date   | no       | ISO `YYYY-MM-DD`; when the grounding was last verified against the instrument; the `law-map watch` baseline (falls back to `effective`) and the README *last checked* column |
+| `reviewed_on`   | date   | no       | ISO `YYYY-MM-DD`; when the grounding was last verified against the instrument; the `law-map watch` baseline (falls back to `effective`) |
+| `reviewed_by`   | mapping| no       | `{handle, domain}` of the reviewer who verified this grounding; with `reviewed_on` the grounding displays as `reviewed`, otherwise `draft` |
 | `applicability` | string | no       | narrows who the source binds                                         |
+| `scope`         | string | no       | who/what the source binds (functional-equivalence difference)        |
+| `exceptions`    | string | no       | carve-outs and exemptions (functional-equivalence difference)        |
+| `strength`      | enum   | no       | `binding, persuasive, background` — how hard the source binds (functional-equivalence difference) |
+| `negative_history` | list | no       | adverse subsequent history (vacaturs, narrowings); entries `{holding (required), date, court, sources}` |
+| `verified_text_sha256` | string | no | lowercase hex sha256 of the source text as verified; compared by `law-map check --sources` (`law-map record-hashes --write` records it) |
 | `sources`       | list   | yes      | non-empty; every entry an `http(s)` URL                              |
 
 | `open_law`      | mapping| no       | `{source: <open-law source_id>, id: <source-native law id>}` e.g. `{source: jp, id: 415AC0000000057}`; `law-map check --sources` resolves it via `open_adapter(source).fetch(id)` for amendment detection |
 
 ## Validation rules (implemented in `src/law_map/model.py`)
 
-- `version` must equal 1.
+- `version` must equal 2. A v1 document is an error naming the fix:
+  `law-map migrate --in <v1-obligations> --out <dir>`.
 - `id` must match `obligation.<domain>.<slug>` (lowercase alphanumeric
   segments, hyphens allowed) and be unique across the corpus; the domain in
   the id must match the directory the file lives in.
 - `title`, `summary` non-empty; `category`, `modality`, `severity` must be
   valid enum values.
-- `groundings` must be non-empty; every grounding needs `jurisdiction`,
-  `source_type` (enum), `status` (enum), `authority`, `citation`,
-  `review_by` (ISO date), and a non-empty list of `http(s)` URLs in
-  `sources`. `effective` and `reviewed_on` must be ISO dates if present.
-- `open_law`, when present, must be a mapping with non-empty string `source` (an open-law source_id) and `id` (the source-native law id); amendment detection compares the fetched law's `modified` against the grounding's `effective`.
+- `groundings` must be non-empty, and at least one grounding must have
+  `source_kind: primary`.
+- Every grounding needs `jurisdiction`, `source_type` (enum), `source_kind`
+  (enum), `status` (enum), `authority`, `citation`, `review_by` (ISO date),
+  and a non-empty list of `http(s)` URLs in `sources`. `effective` and
+  `reviewed_on` must be ISO dates if present.
+- `scope`/`exceptions`, when present, must be non-empty strings;
+  `strength`, when present, must be one of `binding, persuasive,
+  background`.
+- `negative_history`, when present, must be a non-empty list of mappings
+  with a non-empty `holding`; `date` must be an ISO date and `sources`
+  http(s) URLs when present.
+- `verified_text_sha256`, when present, must be a 64-character lowercase
+  hex sha256.
+- `reviewed_by`/`reviewed_on` come together or not at all, at both levels;
+  missing review is not an error — the entry displays as `draft`.
+- `open_law`, when present, must be a mapping with non-empty string `source` (an open-law source_id) and `id` (the source-native law id); amendment detection compares the fetched law's `modified` against the grounding's `effective`, and the fetched text hash against `verified_text_sha256`.
 - A grounding source on an archive site (`web.archive.org`, a
   `*.archives.gov` subdomain such as `bidenwhitehouse.archives.gov`) is a
   **warning**: confirm the instrument is still current or mark it
   `withdrawn`.
+- A grounding citing an unofficial host (`web.archive.org`,
+  `*.archives.gov` except the live NARA site, `dsgvo-gesetz.de`,
+  `law.justia.com`) while claiming `primary` or `official-secondary` is a
+  **warning**: mark it `unofficial`.
 - `jurisdiction` must be an ISO 3166-1 alpha-2 code (two uppercase
   letters) or `EU`, the single documented exception; `UK` is rejected in
   favour of `GB`.
-- `subdivision` is only allowed for jurisdictions `US, CA, AU, DE, GB`;
-  anywhere else it is a **warning**, not an error.
+- `subdivision` must be an ISO 3166-2 code for its jurisdiction
+  (e.g. `CA` for `US`), checked via pycountry.
 - `enforcement.check_refs` entries must point to existing
   `checks/<domain>/<slug>.yml` files (error otherwise).
 - `related_sections` unknown ids produce a warning, not an error.
@@ -100,7 +129,8 @@ Each grounding is a single jurisdiction with a precise legal source.
 Machine-check specs that the obligation documents point at through
 `enforcement.check_refs`. Validated by `src/law_map/checkspecs.py`
 (`law-map validate` fails on any violation); `daimonion --rules <checks-dir>`
-consumes the same files directly.
+consumes the same files directly. One obligation, one spec: a second spec
+for the same obligation is an error (merge duplicate L1/L2 specs into one).
 
 | field        | type         | required | constraint                                                                 |
 | ------------ | ------------ | -------- | -------------------------------------------------------------------------- |
@@ -108,3 +138,25 @@ consumes the same files directly.
 | `obligation` | string       | yes      | the obligation id this spec implements; must exist in the corpus            |
 | `level`      | enum         | yes      | `L0` prose \| `L1` detection \| `L2` hard gate (becomes rule enforcement)  |
 | `triggers`   | list of regex| no       | regex strings daimonion matches against code; every entry must compile       |
+| `blocking`   | string       | for L2   | the executable rule: how the gate fails a release job                      |
+| `fixtures`   | list of path | for L2   | repo-relative must-trigger / must-not-trigger test files; every entry must exist |
+
+An `L2` spec without an executable `blocking` rule and existing `fixtures`
+fails validation: a hard gate must be runnable and pinned by tests, never a
+natural-language sketch.
+
+## Standards correspondences (PHI-9)
+
+law-map does not invent identifiers or deontic operators where stable
+standards exist:
+
+- Instrument identity follows **ELI** (European Legislation Identifier):
+  EU sources are cited by their ELI URL (`https://eur-lex.europa.eu/eli/…`),
+  which encodes the CELEX number `law-map watch` queries.
+- Grounding structure corresponds to **Akoma Ntoso**: `jurisdiction` is the
+  FRBRuri country component, `authority`/`citation` are the expression-level
+  pinpoint, `effective`/`status` track the lifecycle the standard models as
+  FRBR dates and statuses.
+- `modality` uses the **LegalRuleML** (OASIS) deontic operators:
+  `obligation` → Obligation, `prohibition` → Prohibition, `permission` →
+  Permission.

@@ -1,4 +1,4 @@
-version: 1
+version: 2
 id: obligation.crypto.no-deprecated-algorithms
 title: "No deprecated cryptographic algorithms in code or transport configuration"
 category: crypto
@@ -20,6 +20,8 @@ scope:
 groundings:
   - jurisdiction: US
     source_type: standard
+    source_kind: primary
+    strength: binding
     status: in_force
     authority: "NIST SP 800-131A Rev.2 — Transitioning Cryptographic Algorithms and Key Lengths"
     citation: >
@@ -35,6 +37,8 @@ groundings:
       - https://csrc.nist.gov/pubs/sp/800/131/a/r2/final
   - jurisdiction: US
     source_type: standard
+    source_kind: primary
+    strength: binding
     status: in_force
     authority: "PCI DSS v4.0"
     citation: "Req. 4.2.1 — strong cryptography for transmission; Req. 2.2.5/8.3.6 — no insecure protocols/services or weak algorithms"
@@ -45,6 +49,8 @@ groundings:
       - https://www.pcisecuritystandards.org/document_library/
   - jurisdiction: EU
     source_type: regulation
+    source_kind: primary
+    strength: binding
     status: scheduled
     authority: "Cyber Resilience Act (CRA), Regulation (EU) 2024/2847"
     citation: >
@@ -58,6 +64,8 @@ groundings:
       - https://eur-lex.europa.eu/eli/reg/2024/2847/oj
   - jurisdiction: JP
     source_type: guidance
+    source_kind: official-secondary
+    strength: persuasive
     status: in_force
     authority: "CRYPTREC 電子政府推奨暗号リスト / IPA TLS 安全設定ガイドライン"
     citation: >
@@ -87,5 +95,4 @@ related_sections:
 enforcement:
   level: L2
   check_refs:
-    - crypto/no-deprecated-algorithms
     - crypto/deprecated-algorithms-prohibited
