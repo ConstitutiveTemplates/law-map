@@ -1,0 +1,68 @@
+name: Section proposal
+description: Propose a new ethics/legal prose section for the kanon corpus.
+title: "[section] <tier>-<slug>: <one-line summary>"
+labels: ["section"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a section. Sections live in
+        `sections/<tier>/<slug>.md`, start as `status: draft`, and must
+        pass `just check` (`tools/validate.py`): the YAML front matter id
+        matches the `<tier>-<slug>` path name, the body is
+        consumer-agnostic, and the generated MANIFEST is in sync
+        (`just manifest`). See CONTRIBUTING.md.
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Tier
+      description: Which tier directory should the section land in?
+      multiple: false
+      options:
+        - baseline
+        - domain
+        - region
+        - sector
+        - lang
+    validations:
+      required: true
+  - type: input
+    id: slug
+    attributes:
+      label: Section slug
+      description: "`<slug>` part of the id (`<tier>-<slug>`); lowercase alphanumeric, hyphens allowed."
+      placeholder: "ai-assisted"
+    validations:
+      required: true
+  - type: textarea
+    id: rule_summary
+    attributes:
+      label: Rule summary
+      description: What rule or constraint should the section state, and who is it aimed at? One-line 要約 shape, then the detail.
+      placeholder: "Summarize the rule the section would encode, and the concrete shapes it must prohibit/recommend."
+    validations:
+      required: true
+  - type: textarea
+    id: primary_sources
+    attributes:
+      label: Primary source URL(s)
+      description: Canonical statute, opinion, or standard the section rests on — one-line summary plus link per source; never paste statutes verbatim.
+      placeholder: "https://… per source, one per line"
+    validations:
+      required: true
+  - type: input
+    id: jurisdiction_scope
+    attributes:
+      label: Jurisdiction / scope
+      description: Which legal systems or project shapes does this apply to (e.g. JP, EU market, world-wide)?
+      placeholder: "JP / EU / world-wide"
+    validations:
+      required: true
+  - type: input
+    id: proposed_review_by
+    attributes:
+      label: Proposed review_by
+      description: "First `(review_by: YYYY-MM-DD)` date for 制度変更ウォッチ; must not be already due."
+      placeholder: "YYYY-MM-DD"
+    validations:
+      required: true

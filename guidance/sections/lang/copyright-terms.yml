@@ -1,0 +1,74 @@
+# Copyright protection terms per jurisdiction -- the structured-data half of
+# sections/baseline/copyright-ai.md (its 事実 paragraph states the
+# differences in prose; this table is what a public-domain checker reads).
+# Same lifecycle as the section it serves (`serves:` below), and the table is
+# data, not prose -- consumers render the section's summary, not this file.
+# Sources point at the statute or the national office, not at secondary
+# summaries. This is not legal advice; expert review required.
+version: 1
+review_by: 2027-03-31
+serves: baseline-copyright-ai
+disclaimer: 法的助言ではない。判定は対象法域の现行法と専門家レビューを通すこと。
+
+terms:
+  jp:
+    individual: 死後70年(没年の翌年末まで)。2018-12-30に死去した著作者から70年に延伸、それ以前の死去は従来の死後50年。
+    corporate: 映画の著作物は公表後(公表されない場合は創作後)70年。映画以外の団体名義著作物は公表後または創作後70年のいずれか早い方。
+    notes:
+      - 戦時加算(連合国軍の占領下で保護期間が停止・延長された分、最長4,664日)が戦前の著作物に適用され得る。
+      - 著作権法51条・52条、及び「昭和20年7月16日を基準とする戦時加算」の計算は条文と文化庁資料で確認すること。
+    sources:
+      - https://laws.e-gov.go.jp/document?lawid=345AC0000000117
+      - https://www.wipo.int/wipolex/en/members/profile/JP
+  us:
+    individual: 死後70年。1978-01-01以降に創作された著作物が原則。
+    corporate: 職務著作(work made for hire)は公表後95年または創作後120年のいずれか短い方。
+    notes:
+      - 1978年以前の著作物は出版・更新登録の経緯で保護期間が変わる移行規則の対象。1972年以前の録音物は特別枠(最長2067年まで)。
+      - 17 U.S.C. §302・§303 と Copyright Office Circular 15a で確認すること。
+    sources:
+      - https://www.law.cornell.edu/uscode/text/17/302
+      - https://www.copyright.gov/circs/circ15a.pdf
+  eu:
+    individual: 死後70年(指令2006/116/ECが加盟国に統一)。
+    corporate: 映画は監督・脚本・台詞・作曲の4者それぞれの死後70年(ただし加盟国は職務著作の別枠を持ち得る)。
+    notes:
+      - 匿名・変名著作物は公表後(適法に公表されなければ創作後)70年。
+      - 一部加盟国に戦争等による延長が残る。対象国の現行法で確認すること。
+    sources:
+      - https://eur-lex.europa.eu/eli/dir/2006/116/oj
+  uk:
+    individual: 死後70年(CDPA 1988)。
+    corporate: コンピュータ生成著作物は作成後50年。王立著作物(crown copyright)は作成後125年または公表後50年のいずれか早い方。
+    notes:
+      - 職務著作の扱いが米国と異なる。CDPA 1988 ss. 9(3)・12 の改正履歴(2010年、2022年の死後70年への延伸)に注意。
+    sources:
+      - https://www.legislation.gov.uk/ukpga/1988/48/section/12
+  ca:
+    individual: 死後70年。2022-12-30に死後50年から延伸(延伸時点で保護中の著作物に適用)。
+    corporate: 職務著作はカナダ法では限定的(写真等)。一般規則との関係で個別確認。
+    notes:
+      - Bill C-19 (2022) による延伸は既存著作物に遡及せず、公表済み・パブリックドメインになった著作物を復活させない。
+    sources:
+      - https://laws-lois.justice.gc.ca/eng/acts/c-42/page-3.html
+  au:
+    individual: 死後70年(2005-01-01からの延伸)。
+    corporate: 王立著作物は公表後50年。2005年の改正で写真も他の著作物と同一扱い。
+    notes:
+      - Copyright Act 1968 s.33。延伸は保護継続中の著作物に適用。
+    sources:
+      - https://www.legislation.gov.au/C2007A00063/latest/text
+  cn:
+    individual: 死後50年(没年の12月31日まで)。著作権法2020年改正でも死後50年のまま。
+    corporate: 法人著作物は最初の公表後50年。
+    notes:
+      - 2020年改正(2021-06-01施行)はデジタル対象と視聴覚著作物の枠を更新したが、保護期間は変わっていない。
+    sources:
+      - https://www.wipo.int/wipolex/en/members/profile/CN
+  kr:
+    individual: 死後70年。2013-07-01の延伸(延伸時点で保護継続中の著作物に適用)。
+    corporate: 映画は公表後70年、団体名義のその他は公表後70年。
+    notes:
+      - 2013年改正の遡及範囲(保護継続中の著作物に限定)を確認すること。
+    sources:
+      - https://www.wipo.int/wipolex/en/members/profile/KR

@@ -1,0 +1,35 @@
+name: Source correction
+description: Correct a wrong or dead claim, source, or URL in an existing kanon section.
+title: "[correction] <tier>-<slug>: <what is wrong>"
+labels: ["correction"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Corrections to section prose or sources land here, not in the
+        consumer template. The fix bumps the section's front matter `version` to
+        `YYYY-MM-DD.rev`; see CONTRIBUTING.md.
+  - type: input
+    id: section_id
+    attributes:
+      label: Section id
+      description: The `<tier>-<slug>` id from the section front matter (matches its path).
+      placeholder: "region-eu-cra"
+    validations:
+      required: true
+  - type: textarea
+    id: wrong_claim
+    attributes:
+      label: Wrong / dead claim or URL
+      description: Quote the claim or URL that is wrong, stale, or dead, and say why.
+      placeholder: "The section says … but … / the linked URL now 404s / the statute was amended …"
+    validations:
+      required: true
+  - type: input
+    id: corrected_source
+    attributes:
+      label: Corrected primary source URL
+      description: Canonical URL that grounds the correction (official gazette, EUR-Lex, court opinion, regulator page).
+      placeholder: "https://…"
+    validations:
+      required: true
