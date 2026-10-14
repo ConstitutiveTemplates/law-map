@@ -31,7 +31,7 @@ engineering work:
 obligation.privacy.no-cleartext-pii-logging
 ├─ JP   statute    APPI 第23条 (安全管理措置)
 ├─ EU   regulation GDPR Art. 5(1)(f), Art. 32
-├─ UK   statute    UK GDPR + DPA 2018
+├─ GB   statute    UK GDPR + DPA 2018
 ├─ US   statute    Cal. Civ. Code §1798.150
 └─ US   precedent  FTC v. Wyndham; In re LabMD
 ```

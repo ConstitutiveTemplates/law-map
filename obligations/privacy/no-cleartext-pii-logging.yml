@@ -41,7 +41,7 @@ groundings:
     open_law:
       source: eu
       id: "32016R0679"
-  - jurisdiction: UK
+  - jurisdiction: GB
     source_type: statute
     status: in_force
     authority: "UK GDPR and Data Protection Act 2018"

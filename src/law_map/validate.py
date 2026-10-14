@@ -18,6 +18,8 @@ from .model import (
     CATEGORIES,
     ENFORCEMENT_LEVELS,
     IDENT_RE,
+    JURISDICTION_ALIASES,
+    JURISDICTION_RE,
     MODALITIES,
     SEVERITIES,
     SOURCE_TYPES,
@@ -131,6 +133,7 @@ def _validate_grounding(g: dict[str, Any], errors: list[str], index: int) -> Non
     where = f"groundings[{index}]"
     for key in ("jurisdiction", "authority", "citation", "review_by"):
         _require_text(g, key, errors)
+    _validate_jurisdiction(g.get("jurisdiction"), where, errors)
     _require_iso_date(g, "review_by", where, errors, "an ISO date (YYYY-MM-DD)")
     _require_iso_date(g, "effective", where, errors, "an ISO date")
 
@@ -152,6 +155,20 @@ def _validate_grounding(g: dict[str, Any], errors: list[str], index: int) -> Non
                 value = ref.get(key)
                 if not isinstance(value, str) or not value.strip():
                     errors.append(f"{where}.open_law.{key} must be a non-empty string")
+
+
+def _validate_jurisdiction(value: object, where: str, errors: list[str]) -> None:
+    """ISO 3166-1 alpha-2 (or the ``EU`` exception); aliases such as ``UK`` name their ISO code."""
+    if not isinstance(value, str) or not value.strip():
+        return  # missing/empty is reported by _require_text
+    if value in JURISDICTION_ALIASES:
+        errors.append(
+            f"{where}.jurisdiction {value!r} is not ISO 3166-1; use {JURISDICTION_ALIASES[value]!r}"
+        )
+    elif not JURISDICTION_RE.match(value):
+        errors.append(
+            f"{where}.jurisdiction must be an ISO 3166-1 alpha-2 code or 'EU', got {value!r}"
+        )
 
 
 def _validate_directives(data: dict[str, Any], errors: list[str]) -> None:

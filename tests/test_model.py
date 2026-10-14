@@ -113,6 +113,14 @@ def test_empty_or_missing_corpus() -> None:
             "source_type must be one of",
         ),
         (lambda d: d["groundings"][0].__setitem__("status", "enacted"), "status must be one of"),
+        (
+            lambda d: d["groundings"][0].__setitem__("jurisdiction", "UK"),
+            "jurisdiction 'UK' is not ISO 3166-1; use 'GB'",
+        ),
+        (
+            lambda d: d["groundings"][0].__setitem__("jurisdiction", "jp"),
+            "jurisdiction must be an ISO 3166-1 alpha-2 code or 'EU'",
+        ),
         (lambda d: d.__setitem__("scope", "not a mapping"), "scope must be a mapping"),
         (lambda d: d.__setitem__("conflicts", "x"), "conflicts must be a list"),
         (lambda d: d.__setitem__("requires", [42]), "requires must contain only obligation ids"),

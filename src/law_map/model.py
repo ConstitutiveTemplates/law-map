@@ -24,6 +24,8 @@ __all__ = [
     "CATEGORIES",
     "ENFORCEMENT_LEVELS",
     "IDENT_RE",
+    "JURISDICTION_ALIASES",
+    "JURISDICTION_RE",
     "MODALITIES",
     "SEVERITIES",
     "SOURCE_TYPES",
@@ -45,6 +47,11 @@ SOURCE_TYPES = {"statute", "regulation", "precedent", "guidance", "standard", "m
 STATUSES = {"in_force", "scheduled", "proposed", "superseded"}
 ENFORCEMENT_LEVELS = {"L0", "L1", "L2"}
 SUBDIVISION_JURISDICTIONS = {"US", "CA", "AU", "DE", "GB"}
+# Grounding jurisdictions are ISO 3166-1 alpha-2 codes; EU (an ISO
+# "exceptionally reserved" code) is the one documented non-country
+# exception. Common non-ISO aliases are rejected with the ISO code to use.
+JURISDICTION_RE = re.compile(r"^[A-Z]{2}$")
+JURISDICTION_ALIASES = {"UK": "GB"}
 
 
 @dataclass

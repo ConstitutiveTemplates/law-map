@@ -34,6 +34,8 @@ subset lives in `src/law_map/model.py`. What validation actually enforces:
   `authority`, `citation`, `review_by` (ISO `YYYY-MM-DD`), and a non-empty
   list of `http(s)` URLs in `sources`. `effective` must be an ISO date if
   present.
+- `jurisdiction` must be an ISO 3166-1 alpha-2 code (`JP`, `US`, `GB`, ...);
+  `EU` is the single documented exception. `UK` is rejected — use `GB`.
 - `subdivision` is only allowed for jurisdictions `US, CA, AU, DE, GB`;
   anywhere else it is a warning, not an error.
 - `enforcement.check_refs` entries must point to existing

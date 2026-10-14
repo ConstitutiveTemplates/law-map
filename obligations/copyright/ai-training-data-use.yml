@@ -63,7 +63,7 @@ groundings:
     review_by: "2027-02-28"
     sources:
       - https://eur-lex.europa.eu/eli/reg/2024/1689/oj
-  - jurisdiction: UK
+  - jurisdiction: GB
     source_type: statute
     status: in_force
     authority: "Copyright, Designs and Patents Act 1988"
