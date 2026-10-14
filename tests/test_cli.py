@@ -152,7 +152,7 @@ def test_check_codex_clean_exits_0(corpus_dir: str, tmp_path, capsys) -> None:
 def test_check_codex_broken_checkout_exits_1(corpus_dir: str, tmp_path, capsys) -> None:
     codex = tmp_path / "codex"  # no sections/ directory at all
     assert cli.main(["--root", corpus_dir, "check", "--codex", str(codex)]) == 1
-    assert "not a good-future-codex checkout" in capsys.readouterr().err
+    assert "not a kanon checkout" in capsys.readouterr().err
 
 
 def test_check_codex_unresolved_section_exits_1(corpus_dir: str, tmp_path, capsys) -> None:

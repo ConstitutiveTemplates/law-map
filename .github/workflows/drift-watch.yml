@@ -47,17 +47,17 @@ jobs:
           if grep -Eq "\[source |\[open-law (skipped|amended|unreachable)\]" drift.txt; then
             echo "FOUND=1" >> "$GITHUB_ENV"
           fi
-      - name: Checkout good-future-codex
+      - name: Checkout kanon
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          repository: ConstitutiveTemplates/good-future-codex
-          path: codex
+          repository: ConstitutiveTemplates/kanon
+          path: kanon
           persist-credentials: false
-      - name: Codex section cross-reference
-        # related_sections ids drift when codex renames/removes a section —
+      - name: Kanon section cross-reference
+        # related_sections ids drift when kanon renames/removes a section —
         # surface it here rather than only on PRs touching law-map itself.
         run: |
-          if ! uv run law-map validate --codex codex >> drift.txt 2>&1; then
+          if ! uv run law-map validate --kanon kanon >> drift.txt 2>&1; then
             echo "FOUND=1" >> "$GITHUB_ENV"
           fi
       - name: Open or update drift issue

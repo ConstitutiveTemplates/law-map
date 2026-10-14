@@ -3,8 +3,8 @@
 Pure content checks: every problem is appended to ``errors`` (fatal) or
 ``warnings`` (non-fatal) instead of raising, so callers can report the
 whole corpus state at once. Cross-file checks (``requires``/``conflicts``
-id existence, ``check_refs`` files, codex sections) live in
-:mod:`law_map.refs` and :mod:`law_map.codex`; file discovery and
+id existence, ``check_refs`` files, kanon sections) live in
+:mod:`law_map.refs` and :mod:`law_map.kanon`; file discovery and
 orchestration live in :mod:`law_map.model`.
 """
 

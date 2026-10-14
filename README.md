@@ -15,8 +15,8 @@ behavior, they are one obligation node with multiple groundings.
 ```mermaid
 flowchart LR
     OL[open-law<br/>world legislation scrapers] -->|unified Law objects| V[law-map<br/>obligation graph<br/>statute / precedent / guidance]
-    V -->|export .md.jinja sections| C[good-future-codex<br/>reviewed prose sections]
-    C --> T[daimonion<br/>vendors into generated repos]
+    V -->|export .md.jinja sections| C[kanon<br/>reviewed prose sections]
+    C --> T[architekton-py<br/>vendors into generated repos]
     T -->|AGENTS.md + CI gates| G[generated projects]
     V -->|checks/ specs| S[semgrep / ruff / pytest stubs]
     S --> T
@@ -28,9 +28,9 @@ flowchart LR
 - **law-map (this repo)** — organizes law as technical obligations, mapped
   to jurisdiction groundings covering civil law (statutes) and common law
   (precedent/guidance) via functional equivalence.
-- [good-future-codex](https://github.com/ConstitutiveTemplates/good-future-codex) —
+- [kanon](https://github.com/ConstitutiveTemplates/kanon) —
   reviewed human/AI-facing prose sections consumed by templates.
-- [daimonion](https://github.com/ConstitutiveTemplates/daimonion) —
+- [architekton-py](https://github.com/ConstitutiveTemplates/architekton-py) —
   vendors everything into generated AGENTS.md/CI.
 
 ## Layout
@@ -50,12 +50,12 @@ docs/why-law-map.md             design note: functional equivalence
 ```bash
 uv sync
 uv run law-map validate            # load corpus, report every error/warning
-uv run law-map validate --codex codex/   # also cross-check related_sections against a good-future-codex checkout
+uv run law-map validate --kanon kanon/   # also cross-check related_sections against a kanon checkout
 uv run law-map list                # all obligation ids
 uv run law-map show privacy/no-cleartext-pii-logging
 uv run law-map check               # groundings due for review (default 30 days)
 uv run law-map check --sources --days 30   # also HEAD-check source URLs
-uv run law-map export --out out/   # codex-style .md.jinja section skeletons
+uv run law-map export --out out/   # kanon-style .md.jinja section skeletons
 uv run pytest -q
 uv run ruff check .
 uv run mypy src/law_map
@@ -75,11 +75,11 @@ citation, ISO `review_by`, non-empty http(s) `sources`, optional `open_law`
 (`requires`/`conflicts` ids, `enforcement.check_refs` files). Files whose
 basename starts with `_` are excluded from the corpus (see
 `obligations/_example.yml`). `related_sections` ids (`<tier>-<slug>`) are
-resolved only with `--codex <checkout>`: then each must resolve to
+resolved only with `--kanon <checkout>`: then each must resolve to
 `sections/<tier>/<slug>.md.jinja` per the `<tier>-<slug>` naming rule, and an id
-not present becomes an error, while codex sections that no obligation's
+not present becomes an error, while kanon sections that no obligation's
 `related_sections` references are reported as warnings (reverse coverage),
-never errors. Without `--codex` the ids are unchecked.
+never errors. Without `--kanon` the ids are unchecked.
 
 ## Review freshness
 

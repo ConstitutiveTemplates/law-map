@@ -213,7 +213,7 @@ def test_cross_reference_singleton_related_section_is_quiet(tmp_path: Path) -> N
 
 
 def _write_codex(tmp_path: Path) -> Path:
-    """A minimal good-future-codex checkout: real section files laid out per
+    """A minimal kanon checkout: real section files laid out per
     the ``<tier>-<slug>`` naming rule (sections/<tier>/<slug>.md.jinja)."""
     codex = tmp_path / "codex"
     sections = codex / "sections"

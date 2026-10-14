@@ -1,4 +1,4 @@
-"""Export obligations to good-future-codex-style ``.md.jinja`` section skeletons.
+"""Export obligations to kanon-style ``.md.jinja`` section skeletons.
 
 Each obligation becomes one file named after its id slug. The output is a
 skeleton: structure, groundings, citations, URLs and the review-by wiring
@@ -24,7 +24,7 @@ __all__ = ["export_obligations", "render_obligation"]
 
 
 def render_obligation(ob: Obligation, today: date | None = None) -> str:
-    """Render one obligation as a ``.md.jinja`` codex section skeleton."""
+    """Render one obligation as a ``.md.jinja`` kanon section skeleton."""
     slug = _obligation_slug(ob)
     version = (today or date.today()).isoformat()
     triggers = ", ".join(_section_triggers(ob))

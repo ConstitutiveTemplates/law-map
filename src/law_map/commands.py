@@ -52,11 +52,11 @@ def cmd_show(args: argparse.Namespace, corpus: Corpus) -> int:
 
 
 def cmd_check(args: argparse.Namespace, corpus: Corpus) -> int:
-    if getattr(args, "codex", None) is not None:
+    if getattr(args, "kanon", None) is not None:
         _print_issues("error", corpus.errors)
         if corpus.errors:
             print(
-                f"check failed: {len(corpus.errors)} corpus error(s) with --codex — exit 1",
+                f"check failed: {len(corpus.errors)} corpus error(s) with --kanon — exit 1",
                 file=sys.stderr,
             )
             return 1

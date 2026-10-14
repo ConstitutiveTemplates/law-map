@@ -8,7 +8,7 @@ accessors.
 Single-file validation lives in :mod:`law_map.validate` (obligations) and
 :mod:`law_map.checkspecs` (check specs), corpus discovery
 in :mod:`law_map.loader`, cross-file links in :mod:`law_map.refs`, and
-codex linkage in :mod:`law_map.codex`.
+codex linkage in :mod:`law_map.kanon`.
 """
 
 from __future__ import annotations
@@ -97,11 +97,11 @@ _COMPAT_EXPORTS: dict[str, str] = {
     "check_unique_ids": "law_map.validate",
     "validate_obligation_document": "law_map.validate",
     "check_cross_references": "law_map.refs",
-    "CODEX_SECTIONS_DIR": "law_map.codex",
-    "codex_section_path": "law_map.codex",
-    "check_codex_sections": "law_map.codex",
-    "check_codex_coverage": "law_map.codex",
-    "unresolved_section_error": "law_map.codex",
+    "CODEX_SECTIONS_DIR": "law_map.kanon",
+    "codex_section_path": "law_map.kanon",
+    "check_codex_sections": "law_map.kanon",
+    "check_codex_coverage": "law_map.kanon",
+    "unresolved_section_error": "law_map.kanon",
 }
 
 
@@ -110,7 +110,7 @@ def __getattr__(name: str) -> object:
 
     Canonical homes are :mod:`law_map.loader` (``load_corpus``),
     :mod:`law_map.validate` (single-file checks), :mod:`law_map.refs`
-    (cross-file checks), and :mod:`law_map.codex` (codex linkage).
+    (cross-file checks), and :mod:`law_map.kanon` (codex linkage).
     Lazy import keeps the ``model -> validate -> model`` cycle unobservable.
     """
     if name in _COMPAT_EXPORTS:

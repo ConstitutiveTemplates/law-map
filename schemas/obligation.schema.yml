@@ -26,7 +26,7 @@ listed.
 | `conflicts`      | list of id        | no       | ids this obligation can clash with; must exist in corpus         |
 | `requires`       | list of id        | no       | ids this obligation depends on; must exist in corpus             |
 | `directives`     | mapping           | no       | keys `human` and `agent` (both recommended)                      |
-| `related_sections` | list of string  | no       | good-future-codex section ids; unknown ids warn, not error       |
+| `related_sections` | list of string  | no       | kanon section ids; unknown ids warn, not error       |
 | `enforcement`    | mapping           | no       | see below                                                         |
 
 ### scope
@@ -82,7 +82,7 @@ Each grounding is a single jurisdiction with a precise legal source.
 
 Machine-check specs that the obligation documents point at through
 `enforcement.check_refs`. Validated by `src/law_map/checkspecs.py`
-(`law-map validate` fails on any violation); `law-lint --rules <checks-dir>`
+(`law-map validate` fails on any violation); `daimonion --rules <checks-dir>`
 consumes the same files directly.
 
 | field        | type         | required | constraint                                                                 |
@@ -90,4 +90,4 @@ consumes the same files directly.
 | `id`         | string       | yes      | `domain/slug`; must match the file path `checks/<domain>/<slug>.yml`       |
 | `obligation` | string       | yes      | the obligation id this spec implements; must exist in the corpus            |
 | `level`      | enum         | yes      | `L0` prose \| `L1` detection \| `L2` hard gate (becomes rule enforcement)  |
-| `triggers`   | list of regex| no       | regex strings law-lint matches against code; every entry must compile       |
+| `triggers`   | list of regex| no       | regex strings daimonion matches against code; every entry must compile       |

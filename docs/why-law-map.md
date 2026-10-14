@@ -56,7 +56,7 @@ bound and how hard.
 ## The pipeline
 
 ```text
-open-law ──> law-map ──> good-future-codex ──> daimonion ──> projects
+open-law ──> law-map ──> kanon ──> architekton-py / daimonion ──> projects
 scrape      organize       review prose           vendor                  generated
 legislation deontic rules  human/AI-facing        AGENTS.md + CI gates    repos
 ```
@@ -69,9 +69,9 @@ legislation deontic rules  human/AI-facing        AGENTS.md + CI gates    repos
    freshness contract per grounding. `law-map check` keeps the graph honest:
    expired groundings fail CI; the weekly drift-watch workflow probes source
    URLs for 404s and redirects and files one issue.
-3. **good-future-codex** contains the reviewed, human/AI-facing prose
+3. **kanon** contains the reviewed, human/AI-facing prose
    sections derived from the graph (`law-map export` produces the skeletons).
-4. **daimonion** vendors the outcomes into generated
+4. **architekton-py** (the template) vendors the outcomes into generated
    repositories: AGENTS.md obligations and CI gates that enforce them.
 
 ## Design consequences

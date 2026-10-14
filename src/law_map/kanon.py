@@ -1,4 +1,4 @@
-"""good-future-codex section linkage.
+"""kanon section linkage.
 
 ``related_sections`` ids follow the ``<tier>-<slug>`` rule:
 ``baseline-personal-data`` resolves to
@@ -40,7 +40,7 @@ def unresolved_section_error(ob_id: str, section: str) -> str:
     """Shared wording for a ``related_sections`` id that resolves nowhere."""
     return (
         f"{ob_id}: related_sections '{section}' does not resolve to a "
-        "good-future-codex section (expected sections/<tier>/<slug>.md.jinja, "
+        "kanon section (expected sections/<tier>/<slug>.md.jinja, "
         "e.g. baseline-personal-data -> sections/baseline/personal-data.md.jinja)"
     )
 
@@ -49,7 +49,7 @@ def check_codex_sections(corpus: Corpus, codex_root: Path) -> list[str]:
     """Verify every ``related_sections`` id resolves inside a codex checkout.
 
     Per the ``<tier>-<slug>`` naming rule each id must map to an *existing*
-    ``sections/<tier>/<slug>.md.jinja`` in good-future-codex; anything else
+    ``sections/<tier>/<slug>.md.jinja`` in kanon; anything else
     is an error, not a warning. Returns a list of error strings (empty when
     the corpus is consistent with the checkout). Never raises: a missing or
     wrong-shaped checkout surfaces as per-id errors.

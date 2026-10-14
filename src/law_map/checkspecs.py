@@ -6,7 +6,7 @@ module validates spec *content*: the ``id``/``obligation``/``level``
 shape, ``id`` matching the file path, ``level`` in the enforcement
 vocabulary, the ``obligation`` ref resolving into the corpus, and every
 ``triggers`` entry compiling as a regex. Problems land in
-``corpus.errors`` so ``law-map validate`` fails on them, and law-lint
+``corpus.errors`` so ``law-map validate`` fails on them, and daimonion
 consumes the same ``triggers`` field via ``--rules <checks-dir>``.
 """
 

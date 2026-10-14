@@ -28,11 +28,11 @@ jobs:
         run: uv run mypy src/law_map
       - name: Tests
         run: uv run pytest -q
-      - name: Checkout good-future-codex
+      - name: Checkout kanon
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          repository: ConstitutiveTemplates/good-future-codex
-          path: codex
+          repository: ConstitutiveTemplates/kanon
+          path: kanon
           persist-credentials: false
-      - name: Corpus validates against codex sections
-        run: uv run law-map validate --codex codex
+      - name: Corpus validates against kanon sections
+        run: uv run law-map validate --kanon kanon

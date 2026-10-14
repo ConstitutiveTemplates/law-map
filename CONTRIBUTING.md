@@ -39,18 +39,18 @@ subset lives in `src/law_map/model.py`. What validation actually enforces:
 - `enforcement.check_refs` entries must point to existing
   `checks/<domain>/<slug>.yml` files (error otherwise).
 - `requires` / `conflicts` must reference ids present in the corpus.
-- `related_sections` references good-future-codex section ids
-  (`<tier>-<slug>`); verified with `law-map validate --codex <checkout>`
+- `related_sections` references kanon section ids
+  (`<tier>-<slug>`); verified with `law-map validate --kanon <checkout>`
   (offline `validate` leaves them unchecked).
 
 Cite the exact legal text — pinpoint article/section/case in `citation`, and
 the canonical instrument URL in `sources`. Do not rely on memory.
 
-## Prose lives in good-future-codex
+## Prose lives in kanon
 
 law-map records *what instruments say*; the reviewed, human/AI-facing prose
 that tells a team what to do lives in
-[good-future-codex](https://github.com/ConstitutiveTemplates/good-future-codex).
+[kanon](https://github.com/ConstitutiveTemplates/kanon).
 An obligation points at its prose via `related_sections`
 (`<tier>-<slug>` ids), and `law-map export` produces section skeletons.
 Section prose corrections belong there, not here.

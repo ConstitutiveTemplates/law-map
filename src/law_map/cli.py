@@ -34,13 +34,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_validate = sub.add_parser("validate", help="validate the corpus against the schema rules")
     p_validate.add_argument("--warnings", action="store_true", help="also print non-fatal warnings")
     p_validate.add_argument(
-        "--codex",
+        "--kanon", "--codex",
         type=Path,
         default=None,
         help=(
-            "path to a good-future-codex checkout; every related_sections id must "
+            "path to a kanon checkout; every related_sections id must "
             "resolve to sections/<tier>/<slug>.md.jinja (errors on unresolved ids); "
-            "codex sections no obligation references become warnings"
+            "kanon sections no obligation references become warnings"
         ),
     )
 
@@ -57,16 +57,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="HEAD-check grounding source URLs and resolve open_law refs via open-law (network access)",
     )
     p_check.add_argument(
-        "--codex",
+        "--kanon", "--codex",
         type=Path,
         default=None,
         help=(
-            "path to a good-future-codex checkout; every related_sections id must "
+            "path to a kanon checkout; every related_sections id must "
             "resolve to sections/<tier>/<slug>.md.jinja (errors on unresolved ids)"
         ),
     )
 
-    p_export = sub.add_parser("export", help="render obligations as .md.jinja codex sections")
+    p_export = sub.add_parser("export", help="render obligations as .md.jinja kanon sections")
     p_export.add_argument("--out", type=Path, default=Path("out"), help="output directory")
     return parser
 
@@ -76,9 +76,9 @@ def main(argv: list[str] | None = None) -> int:
     corpus = load_corpus(args.root, today=check_mod.today())
 
     checks_root = args.root.parent / "checks"
-    codex_root = getattr(args, "codex", None)
+    codex_root = getattr(args, "kanon", None)
     if codex_root is not None and not (codex_root / "sections").is_dir():
-        corpus.errors.append(f"--codex {codex_root}: not a good-future-codex checkout (no sections/ directory)")
+        corpus.errors.append(f"--kanon {codex_root}: not a kanon checkout (no sections/ directory)")
         codex_root = None  # avoid redundant per-id errors from a broken path
     check_cross_references(
         corpus,
