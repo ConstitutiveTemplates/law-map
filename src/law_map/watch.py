@@ -38,10 +38,12 @@ __all__ = [
     "Instrument",
     "WatchFetch",
     "WatchProbe",
+    "collect_section_watch_refs",
     "collect_watch_refs",
     "format_watch_line",
     "format_watch_summary",
     "instruments_of",
+    "instruments_of_url",
     "latest_egov_amendment",
     "latest_eurlex_amendment",
     "latest_uk_effect",
@@ -114,16 +116,23 @@ def instruments_of(grounding: dict[str, Any]) -> list[Instrument]:
         if kind is not None:
             found.append(Instrument(kind, ref["id"]))
     for url in grounding.get("sources") or []:
-        if not isinstance(url, str):
-            continue
-        if m := _ELI_RE.search(url):
-            kind_letter = _ELI_LETTER[m.group(1)]
-            found.append(Instrument("eurlex", f"3{m.group(2)}{kind_letter}{int(m.group(3)):04d}"))
-        elif m := _EGOV_RE.search(url):
-            found.append(Instrument("egov", m.group(1)))
-        elif m := _UK_RE.search(url):
-            found.append(Instrument("uk", m.group(1)))
+        found.extend(instruments_of_url(url))
     return list(dict.fromkeys(i for i in found if i.kind != "eurlex" or _CELEX_RE.match(i.ident)))
+
+
+def instruments_of_url(url: object) -> list[Instrument]:
+    """Watchable instruments in one source URL (EUR-Lex ELI, e-Gov, legislation.gov.uk)."""
+    if not isinstance(url, str):
+        return []
+    if m := _ELI_RE.search(url):
+        kind_letter = _ELI_LETTER[m.group(1)]
+        ident = f"3{m.group(2)}{kind_letter}{int(m.group(3)):04d}"
+        return [Instrument("eurlex", ident)] if _CELEX_RE.match(ident) else []
+    if m := _EGOV_RE.search(url):
+        return [Instrument("egov", m.group(1))]
+    if m := _UK_RE.search(url):
+        return [Instrument("uk", m.group(1))]
+    return []
 
 
 def collect_watch_refs(corpus: Corpus) -> list[WatchRef]:
@@ -142,22 +151,49 @@ def collect_watch_refs(corpus: Corpus) -> list[WatchRef]:
     return refs
 
 
-def watch_laws(corpus: Corpus, fetch: WatchFetch | None = None) -> list[WatchProbe]:
+def collect_section_watch_refs(
+    sections: list[tuple[str, list[str], str | None]],
+) -> list[WatchRef]:
+    """One ref per (guidance section, cited instrument), baselined on the section version date.
+
+    ``sections`` is ``(section_id, sources, version_date)`` per section; the
+    version date (front matter ``version: "YYYY-MM-DD.rev"``) is the baseline —
+    an amendment newer than the section's last edit means the prose may cite
+    superseded text. ``obligation_id`` carries the section id and ``index``
+    is -1, so ``format_watch_line`` renders ``<section-id> section`` instead
+    of ``groundings[N]``.
+    """
+    refs: list[WatchRef] = []
+    for section_id, sources, version_date in sections:
+        for instrument in dict.fromkeys(i for url in sources for i in instruments_of_url(url)):
+            refs.append(WatchRef(section_id, -1, instrument, "version", version_date))
+    return refs
+
+
+def watch_laws(
+    corpus: Corpus,
+    fetch: WatchFetch | None = None,
+    section_refs: list[WatchRef] | None = None,
+) -> list[WatchProbe]:
     """Compare each cited instrument's latest amendment with its groundings' baselines.
 
     *fetch* injects the publisher lookup (tests, offline); without it the
-    official feeds are queried over HTTPS.
+    official feeds are queried over HTTPS. *section_refs* (from
+    :func:`collect_section_watch_refs`) adds guidance-section instruments to
+    the same probe run, sharing the per-instrument cache.
     """
     if fetch is None:
         with httpx.Client(timeout=TIMEOUT, follow_redirects=True, headers={"User-Agent": USER_AGENT}) as client:
-            return _watch(corpus, _http_fetch(client))
-    return _watch(corpus, fetch)
+            return _watch(corpus, _http_fetch(client), section_refs)
+    return _watch(corpus, fetch, section_refs)
 
 
-def _watch(corpus: Corpus, fetch: WatchFetch) -> list[WatchProbe]:
+def _watch(
+    corpus: Corpus, fetch: WatchFetch, section_refs: list[WatchRef] | None = None
+) -> list[WatchProbe]:
     cache: dict[Instrument, tuple[str, str] | None | Exception] = {}
     probes: list[WatchProbe] = []
-    for ref in collect_watch_refs(corpus):
+    for ref in [*collect_watch_refs(corpus), *(section_refs or [])]:
         if ref.instrument not in cache:
             try:
                 cache[ref.instrument] = fetch(ref.instrument)
@@ -176,7 +212,10 @@ def _watch(corpus: Corpus, fetch: WatchFetch) -> list[WatchProbe]:
 
 def format_watch_line(p: WatchProbe) -> str | None:
     """One flagged line, or ``None`` when the grounding is current."""
-    where = f"{p.ref.obligation_id} groundings[{p.ref.index}] {p.ref.instrument}"
+    if p.ref.index == -1:
+        where = f"{p.ref.obligation_id} section {p.ref.instrument}"
+    else:
+        where = f"{p.ref.obligation_id} groundings[{p.ref.index}] {p.ref.instrument}"
     if p.problem == "not-found":
         return f"[law-watch not-found] {where}: the publisher has no such instrument (wrong id?)"
     if p.problem == "unreachable":

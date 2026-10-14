@@ -172,7 +172,7 @@ def test_probe_open_law_dedups_and_ignores_malformed(tmp_path: Path) -> None:
 def test_run_check_wires_open_law_fetch_without_url_probes(tmp_path: Path, monkeypatch) -> None:
     root = write_corpus(tmp_path, _open_law_doc())
     corpus = load_corpus(root)
-    monkeypatch.setattr(check_mod, "probe_sources", lambda _corpus: [])
+    monkeypatch.setattr(check_mod, "probe_sources", lambda _corpus, **_kw: [])
     report = run_check(
         corpus,
         today=date(2026, 10, 4),

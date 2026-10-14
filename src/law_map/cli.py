@@ -109,6 +109,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_export = sub.add_parser("export", help="render obligations as .md.jinja kanon sections")
     p_export.add_argument("--out", type=Path, default=Path("out"), help="output directory")
+
+    p_manifest = sub.add_parser(
+        "manifest", help="regenerate guidance/sections/MANIFEST.yml from section front matter"
+    )
+    p_manifest.add_argument(
+        "--check",
+        action="store_true",
+        help="do not write; exit 1 when the checked-in MANIFEST is stale",
+    )
     return parser
 
 
@@ -145,6 +154,8 @@ def main(argv: list[str] | None = None) -> int:
         return commands.cmd_watch(args, corpus)
     if args.command == "export":
         return commands.cmd_export(args, corpus)
+    if args.command == "manifest":
+        return commands.cmd_manifest(args)
     raise AssertionError(f"unhandled command {args.command!r}")
 
 
