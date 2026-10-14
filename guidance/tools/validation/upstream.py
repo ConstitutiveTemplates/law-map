@@ -66,8 +66,8 @@ def _obligation_notes(
 def check_upstream_project_status(
     origin: str,
     url: str,
-    law_map_dir: Path = REPO.parent / "law-map",
-    open_law_dir: Path = REPO.parent / "open-law",
+    law_map_dir: Path = REPO.parent,
+    open_law_dir: Path = REPO.parent.parent / "open-law",
 ) -> list[str]:
     """Inspect upstream law-map and open-law for groundings covering a failed URL."""
     notes: list[str] = []
@@ -86,10 +86,32 @@ def check_upstream_project_status(
     return notes
 
 
-def obligation_sections(law_map_dir: Path = REPO.parent / "law-map") -> dict[str, set[str]] | None:
+def obligation_ids(law_map_dir: Path = REPO.parent) -> set[str] | None:
+    """Every law-map obligation id (``obligations/<domain>/<slug>.yml``).
+
+    None when no obligations tree is found (offline use without the merged
+    repo around skips the unknown-id check instead of failing it).
+    """
+    root = law_map_dir / OBLIGATIONS_SUBDIR
+    if not root.is_dir():
+        return None
+    known: set[str] = set()
+    for path in sorted(root.rglob("*.yml")):
+        if path.name.startswith("_"):
+            continue
+        data = _load_obligation_doc(path)
+        if data is None:
+            continue
+        ob_id = data.get("id") or path.stem
+        known.add(str(ob_id))
+    return known
+
+
+def obligation_sections(law_map_dir: Path = REPO.parent) -> dict[str, set[str]] | None:
     """Section id -> law-map obligation ids that list it in ``related_sections``.
 
-    None when no law-map checkout sits next to this repo.
+    ``law_map_dir`` defaults to this repo's root (merged rulebook: obligations
+    live at ``<root>/obligations/``). None when no obligations tree is found.
     """
     root = law_map_dir / OBLIGATIONS_SUBDIR
     if not root.is_dir():

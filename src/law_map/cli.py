@@ -55,9 +55,10 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=None,
         help=(
-            "path to a kanon checkout; every related_sections id must "
-            "resolve to sections/<tier>/<slug>.md.jinja (errors on unresolved ids); "
-            "kanon sections no obligation references become warnings"
+            "path to a guidance checkout (default: this repo's guidance/); every "
+            "related_sections id must resolve to guidance/sections/<tier>/<slug>.md "
+            "(errors on unresolved ids); guidance sections no obligation "
+            "references become warnings"
         ),
     )
 
@@ -78,8 +79,9 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=None,
         help=(
-            "path to a kanon checkout; every related_sections id must "
-            "resolve to sections/<tier>/<slug>.md.jinja (errors on unresolved ids)"
+            "path to a guidance checkout (default: this repo's guidance/); every "
+            "related_sections id must resolve to guidance/sections/<tier>/<slug>.md "
+            "(errors on unresolved ids)"
         ),
     )
 
@@ -115,9 +117,12 @@ def main(argv: list[str] | None = None) -> int:
     corpus = load_corpus(args.root, today=check_mod.today(), packs=args.packs)
 
     checks_root = args.root.parent / "checks"
+    guidance_default = args.root.parent / "guidance"
     codex_root = getattr(args, "kanon", None)
+    if codex_root is None and (guidance_default / "sections").is_dir():
+        codex_root = guidance_default  # merged rulebook: validate against guidance/ by default
     if codex_root is not None and not (codex_root / "sections").is_dir():
-        corpus.errors.append(f"--kanon {codex_root}: not a kanon checkout (no sections/ directory)")
+        corpus.errors.append(f"--kanon {codex_root}: not a guidance checkout (no sections/ directory)")
         codex_root = None  # avoid redundant per-id errors from a broken path
     check_cross_references(
         corpus,

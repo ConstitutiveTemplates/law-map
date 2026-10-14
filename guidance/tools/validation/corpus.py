@@ -31,7 +31,7 @@ from .const import (
 from .frontmatter import split_front_matter
 from .manifest import expected_outputs, stale_outputs
 from .report import error, warn
-from .upstream import obligation_sections
+from .upstream import obligation_ids, obligation_sections
 from .vocabulary import duplicate_conditions, load_vocabulary, when_vocab
 
 
@@ -256,6 +256,35 @@ def validate_section_files(files: list[Path], vocab: dict, *, drift_mode: bool) 
         _validate_section_file(path, vocab, seen_ids, drift_mode=drift_mode)
 
 
+def check_obligation_ids(files: list[Path], known: set[str] | None, *, strict: bool = False) -> None:
+    """Validate section ``obligations`` refs against law-map obligation ids.
+
+    Unknown ids (no ``obligations/<domain>/<slug>.yml`` carries them) warn by
+    default; ``strict`` turns the dangling ref into an error. Shape errors
+    (not ``obligation.<category>.<slug>``) are always errors, reported by
+    :func:`check_front_matter`.
+    """
+    if known is None:
+        return
+    for path in files:
+        try:
+            front, _ = split_front_matter(path.read_text(encoding="utf-8"))
+        except yaml.YAMLError:
+            continue
+        obligations = (front or {}).get("obligations")
+        if not isinstance(obligations, list):
+            continue
+        for ob in obligations:
+            if not isinstance(ob, str) or not OBLIGATION_ID_RE.fullmatch(ob):
+                continue  # shape error already reported by check_front_matter
+            if ob not in known:
+                msg = f"{path}: obligation {ob!r} has no obligations/<domain>/<slug>.yml in law-map"
+                if strict:
+                    error(msg + " (strict mode)")
+                else:
+                    warn(msg)
+
+
 def check_law_map_links(files: list[Path], links: dict[str, set[str]] | None) -> None:
     """Warn when a section's ``obligations`` and law-map's ``related_sections`` disagree."""
     if links is None:
@@ -283,7 +312,7 @@ def check_generated_in_sync() -> None:
         error(f"{path.relative_to(REPO)}: out of sync with section front matter (run `just manifest`)")
 
 
-def validate_corpus(*, drift_mode: bool = False) -> list[Path]:
+def validate_corpus(*, drift_mode: bool = False, strict_obligations: bool = False) -> list[Path]:
     """Validate every section file and the generated MANIFEST; return the files."""
     vocab = load_vocabulary()
     for dupe in duplicate_conditions(vocab):
@@ -291,6 +320,8 @@ def validate_corpus(*, drift_mode: bool = False) -> list[Path]:
     check_license_file()
     files = section_files()
     validate_section_files(files, vocab, drift_mode=drift_mode)
-    check_law_map_links(files, obligation_sections())
+    links = obligation_sections()
+    check_law_map_links(files, links)
+    check_obligation_ids(files, obligation_ids(), strict=strict_obligations)
     check_generated_in_sync()
     return files

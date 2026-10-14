@@ -95,6 +95,7 @@ from validation.corpus import (
     check_headings,
     check_license_file,
     check_license_note,
+    check_obligation_ids,
     check_review_by,
     expected_id,
     section_files,
@@ -116,6 +117,7 @@ from validation.sources import (
     extract_yaml_sources,
     strip_url_punct,
 )
+from validation.upstream import obligation_ids, obligation_sections
 
 __all__ = [
     "BANNED_PHRASES",
@@ -154,7 +156,20 @@ __all__ = [
     "check_headings",
     "check_license_file",
     "check_license_note",
+    "check_obligation_ids",
     "check_review_by",
+    "check_sources",
+    "collect_source_urls",
+    "drift_report",
+    "errors",
+    "expected_id",
+    "extract_section_urls",
+    "extract_yaml_sources",
+    "flagged_unique_count",
+    "format_source_summary",
+    "is_flagged_status",
+    "obligation_ids",
+    "obligation_sections",
     "check_sources",
     "collect_source_urls",
     "drift_report",

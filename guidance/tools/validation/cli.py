@@ -29,9 +29,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--sources", action="store_true",
                         help="HEAD/GET-check declared sources: URLs (network access); "
                         "exit 1 when any URL is flagged (with --drift: single probe run, exit reflects sources)")
+    parser.add_argument("--strict-obligations", action="store_true",
+                        help="error (not warn) on section obligations: refs with no "
+                        "obligations/<domain>/<slug>.yml in law-map")
     args = parser.parse_args(argv)
 
-    files = validate_corpus(drift_mode=args.drift)
+    files = validate_corpus(drift_mode=args.drift, strict_obligations=args.strict_obligations)
 
     if args.drift:
         _, flagged = drift_report()

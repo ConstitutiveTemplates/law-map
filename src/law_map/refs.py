@@ -3,7 +3,7 @@
 Single-file shape is validated at load time by :mod:`law_map.validate`;
 this module checks links *between* files: ``requires``/``conflicts`` id
 existence, ``enforcement.check_refs`` spec files, and ``related_sections``
-codex linkage (via :mod:`law_map.kanon`). Runs after
+guidance linkage (via :mod:`law_map.kanon`). Runs after
 :func:`~law_map.loader.load_corpus` and appends to the corpus's
 error/warning lists.
 """
@@ -27,8 +27,8 @@ def check_cross_references(
     ``checks_root`` may be None to skip check_refs resolution (export/check
     commands operate on obligations only).
 
-    With ``codex_root`` (a kanon checkout) every
-    ``related_sections`` id must resolve to ``sections/<tier>/<slug>.md.jinja``
+    With ``codex_root`` (this repo's ``guidance/`` tree by default) every
+    ``related_sections`` id must resolve to ``guidance/sections/<tier>/<slug>.md``
     per the ``<tier>-<slug>`` naming rule — missing ids are errors. Sections
     no obligation references become warnings via :func:`check_codex_coverage`.
     Without it, ``related_sections`` ids are unchecked (the offline warning
