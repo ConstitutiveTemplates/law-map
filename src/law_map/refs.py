@@ -35,8 +35,8 @@ def check_cross_references(
     behavior was retired: corpus ids are unique by construction, so a
     singleton reference is the normal case, not a signal).
     """
-    known_ids = {ob.id for ob in corpus.obligations if ob.id}
-    for ob in corpus.obligations:
+    known_ids = {ob.id for ob in corpus.all_obligations if ob.id}
+    for ob in corpus.all_obligations:
         _check_obligation_links(ob, known_ids, corpus, checks_root, codex_root)
     if codex_root is not None:
         corpus.warnings.extend(check_codex_coverage(corpus, codex_root))

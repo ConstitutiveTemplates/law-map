@@ -34,7 +34,7 @@ def validate_check_specs(checks_root: Path, corpus: Corpus) -> None:
     checks_root = Path(checks_root)
     if not checks_root.is_dir():
         return
-    known_ids = {ob.id for ob in corpus.obligations if ob.id}
+    known_ids = {ob.id for ob in corpus.all_obligations if ob.id}
     for path in sorted(checks_root.rglob("*.yml")):
         if path.name.startswith("_"):
             continue

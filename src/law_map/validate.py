@@ -56,7 +56,7 @@ def validate_obligation_document(
 def check_unique_ids(corpus: Corpus) -> None:
     """Corpus-level check: every obligation id must be unique."""
     seen: dict[str, Path] = {}
-    for ob in corpus.obligations:
+    for ob in corpus.all_obligations:
         ob_id = ob.id
         if not ob_id:
             continue
@@ -138,6 +138,7 @@ def _validate_grounding(g: dict[str, Any], errors: list[str], index: int) -> Non
     _validate_jurisdiction(g.get("jurisdiction"), where, errors)
     _require_iso_date(g, "review_by", where, errors, "an ISO date (YYYY-MM-DD)")
     _require_iso_date(g, "effective", where, errors, "an ISO date")
+    _require_iso_date(g, "reviewed_on", where, errors, "an ISO date")
 
     _require_one_of(g, "source_type", SOURCE_TYPES, errors, where)
     _require_one_of(g, "status", STATUSES, errors, where)

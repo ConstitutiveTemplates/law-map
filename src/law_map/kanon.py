@@ -79,7 +79,7 @@ def check_codex_coverage(corpus: Corpus, codex_root: Path) -> list[str]:
     missing checkout yields no warnings (the forward check reports errors).
     """
     referenced: set[str] = set()
-    for ob in corpus.obligations:
+    for ob in corpus.all_obligations:
         related = ob.data.get("related_sections", [])
         if isinstance(related, list):
             for section in related:

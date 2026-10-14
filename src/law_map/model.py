@@ -27,7 +27,9 @@ __all__ = [
     "JURISDICTION_ALIASES",
     "JURISDICTION_RE",
     "MODALITIES",
+    "PACKS",
     "SEVERITIES",
+    "SOURCE_TYPE_PACK",
     "SOURCE_TYPES",
     "STATUSES",
     "SUBDIVISION_JURISDICTIONS",
@@ -35,6 +37,7 @@ __all__ = [
     "Obligation",
     "iter_groundings",
     "obligation_groundings",
+    "obligation_pack",
     "parse_iso_date",
 ]
 
@@ -43,7 +46,32 @@ IDENT_RE = re.compile(r"^obligation\.([a-z0-9]+(-[a-z0-9]+)*)\.([a-z0-9]+(-[a-z0
 CATEGORIES = {"privacy", "security", "copyright", "ai", "licensing", "telemetry", "crypto"}
 MODALITIES = {"obligation", "prohibition", "permission"}
 SEVERITIES = {"info", "advisory", "high", "critical"}
-SOURCE_TYPES = {"statute", "regulation", "precedent", "guidance", "standard", "model_code"}
+SOURCE_TYPES = {
+    "statute",
+    "regulation",
+    "precedent",
+    "guidance",
+    "standard",
+    "model_code",
+    # Not legal sources: a private body's rules (contest terms, platform
+    # policies) and a documented incident whose lesson grounds the practice.
+    "private_rule",
+    "incident_report",
+}
+# Corpus packs by binding level, strongest first. ``core`` holds binding law
+# (statutes, regulations, case law), ``guidance`` official guidance and
+# standards, ``community`` private rules and incident lessons.
+PACKS = ("core", "guidance", "community")
+SOURCE_TYPE_PACK = {
+    "statute": "core",
+    "regulation": "core",
+    "precedent": "core",
+    "guidance": "guidance",
+    "standard": "guidance",
+    "model_code": "guidance",
+    "private_rule": "community",
+    "incident_report": "community",
+}
 # withdrawn: no longer issued or endorsed by its authority (rescinded,
 # revoked, or taken down with a change of administration) — kept only as
 # historical context, never as a current basis for an obligation.
@@ -74,11 +102,19 @@ class Corpus:
     """Loaded obligation files plus the collected validation issues."""
 
     obligations: list[Obligation] = field(default_factory=list)
+    # Valid obligations outside the packs selected at load time: still
+    # validated and resolvable as requires/conflicts targets, never listed.
+    excluded: list[Obligation] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
 
     def ok(self) -> bool:
         return not self.errors
+
+    @property
+    def all_obligations(self) -> list[Obligation]:
+        """Selected and excluded obligations: the whole validated corpus."""
+        return [*self.obligations, *self.excluded]
 
 
 def parse_iso_date(value: object) -> date | None:
@@ -94,6 +130,16 @@ def parse_iso_date(value: object) -> date | None:
 def obligation_groundings(ob: Obligation) -> list[dict[str, Any]]:
     """The mapping groundings of one obligation (malformed entries skipped)."""
     return [g for g in ob.data.get("groundings", []) if isinstance(g, dict)]
+
+
+def obligation_pack(ob: Obligation) -> str:
+    """The pack of the strongest grounding: ``core`` beats ``guidance`` beats ``community``.
+
+    An obligation with no recognisable ``source_type`` falls back to
+    ``community``; validation reports the bad enum separately.
+    """
+    packs = {SOURCE_TYPE_PACK.get(str(g.get("source_type")), "community") for g in obligation_groundings(ob)}
+    return next((p for p in PACKS if p in packs), "community")
 
 
 def iter_groundings(corpus: Corpus) -> Iterator[dict[str, Any]]:

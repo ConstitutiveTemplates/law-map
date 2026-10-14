@@ -27,6 +27,7 @@ groundings:
       2028-08-02.
     effective: "2027-12-02"
     review_by: "2026-12-18"
+    reviewed_on: "2026-10-15"
     applicability: >
       Providers and deployers of high-risk AI systems operating in the EU;
       Annex I product-embedded systems from 2028-08-02.

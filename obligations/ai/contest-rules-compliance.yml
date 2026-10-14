@@ -15,7 +15,7 @@ scope:
     Offline practice problems explicitly designated for learning and open tool use.
 groundings:
   - jurisdiction: JP
-    source_type: standard
+    source_type: private_rule
     status: in_force
     authority: "AtCoder Rules on the Use of Generative AI (revised 2025-10-03)"
     citation: >

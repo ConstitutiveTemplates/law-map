@@ -15,7 +15,7 @@ scope:
     Dedicated time-distribution infrastructure operating internal reference clocks.
 groundings:
   - jurisdiction: JP
-    source_type: precedent
+    source_type: incident_report
     status: in_force
     authority: "Fukuoka University NTP Traffic Incident (NICT / JPNIC technical report)"
     citation: >

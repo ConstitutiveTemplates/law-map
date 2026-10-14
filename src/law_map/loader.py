@@ -9,23 +9,30 @@ land in ``corpus.errors`` for callers to report.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import date
 from pathlib import Path
 from typing import Any
 
 import yaml
 
-from .model import Corpus, Obligation
+from .model import PACKS, Corpus, Obligation, obligation_pack
 from .validate import check_unique_ids, validate_obligation_document
 
 
-def load_corpus(root: Path, today: date | None = None) -> Corpus:
+def load_corpus(
+    root: Path, today: date | None = None, packs: Iterable[str] | None = None
+) -> Corpus:
     """Load every non-underscore obligation file under root (recursive).
 
     Returns a Corpus with per-file validation issues in ``errors``; never
     raises on bad content. ``root`` may be missing (empty corpus). ``today``
     pins the date for scheduled-effective warnings (defaults to today).
+    ``packs`` selects which packs land in ``obligations`` (default: all);
+    every file is still validated, and obligations from other packs go to
+    ``excluded`` so cross-pack ``requires``/``conflicts`` keep resolving.
     """
+    selected = set(PACKS if packs is None else packs)
     corpus = Corpus()
     root = Path(root)
     if not root.is_dir():
@@ -39,7 +46,11 @@ def load_corpus(root: Path, today: date | None = None) -> Corpus:
         validate_obligation_document(
             data, path=path, errors=corpus.errors, warnings=corpus.warnings, today=today
         )
-        corpus.obligations.append(Obligation(path=path, data=data))
+        ob = Obligation(path=path, data=data)
+        if obligation_pack(ob) in selected:
+            corpus.obligations.append(ob)
+        else:
+            corpus.excluded.append(ob)
     check_unique_ids(corpus)
     return corpus
 

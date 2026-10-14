@@ -36,6 +36,15 @@ listed.
 | `components`  | list   | no       | string tags (logging, telemetry, ci, ...)    |
 | `data_types`  | list   | no       | string tags (email, phone, ip_address, ...)  |
 
+## Packs
+
+Each obligation belongs to the pack of its strongest grounding's
+`source_type` (not a field; derived at load time): `core` (`statute`,
+`regulation`, `precedent`) beats `guidance` (`guidance`, `standard`,
+`model_code`) beats `community` (`private_rule`, `incident_report`).
+`law-map --pack <pack>` loads a subset; every file is still validated and
+`requires`/`conflicts` resolve across packs.
+
 ## Grounding (one entry in `groundings`)
 
 Each grounding is a single jurisdiction with a precise legal source.
@@ -44,12 +53,13 @@ Each grounding is a single jurisdiction with a precise legal source.
 | --------------- | ------ | -------- | ------------------------------------------------------------------- |
 | `jurisdiction`  | string | yes      | ISO 3166-1 alpha-2 (`JP`, `US`, `GB`, ...) or `EU` (the only exception; `UK` is rejected — use `GB`) |
 | `subdivision`   | string | no       | ISO 3166-2 suffix (`CA` for US); only allowed with US/CA/AU/DE/GB    |
-| `source_type`   | enum   | yes      | `statute, regulation, precedent, guidance, standard, model_code`    |
+| `source_type`   | enum   | yes      | `statute, regulation, precedent, guidance, standard, model_code, private_rule, incident_report` (`private_rule`: a private body's rules, e.g. contest terms; `incident_report`: a documented incident whose lesson grounds the practice — neither is a legal source) |
 | `status`        | enum   | yes      | `in_force, scheduled, proposed, superseded, withdrawn` (`withdrawn`: rescinded/revoked or taken down by its authority; historical context only) |
 | `authority`     | string | yes      | issuing body / instrument name (native script allowed)             |
 | `citation`      | string | yes      | pinpoint: article/section/case, e.g. `第23条 (安全管理措置義務)`    |
 | `effective`     | date   | no       | ISO `YYYY-MM-DD`                                                    |
 | `review_by`     | date   | yes      | ISO `YYYY-MM-DD`; freshness contract, checked by `law-map check`    |
+| `reviewed_on`   | date   | no       | ISO `YYYY-MM-DD`; when the grounding was last verified against the instrument; the `law-map watch` baseline (falls back to `effective`) and the README *last checked* column |
 | `applicability` | string | no       | narrows who the source binds                                         |
 | `sources`       | list   | yes      | non-empty; every entry an `http(s)` URL                              |
 
@@ -66,7 +76,7 @@ Each grounding is a single jurisdiction with a precise legal source.
 - `groundings` must be non-empty; every grounding needs `jurisdiction`,
   `source_type` (enum), `status` (enum), `authority`, `citation`,
   `review_by` (ISO date), and a non-empty list of `http(s)` URLs in
-  `sources`. `effective` must be an ISO date if present.
+  `sources`. `effective` and `reviewed_on` must be ISO dates if present.
 - `open_law`, when present, must be a mapping with non-empty string `source` (an open-law source_id) and `id` (the source-native law id); amendment detection compares the fetched law's `modified` against the grounding's `effective`.
 - A grounding source on an archive site (`web.archive.org`, a
   `*.archives.gov` subdomain such as `bidenwhitehouse.archives.gov`) is a
