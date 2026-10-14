@@ -1,8 +1,0 @@
-blank_issues_enabled: false
-contact_links:
-  - name: law-map Legal RFC
-    url: https://github.com/politeuma/law-map/issues/new?template=legal_rfc.yml
-    about: Obligation-level changes (which laws ground which behaviors) are tracked in law-map, not here.
-  - name: architekton-py issues
-    url: https://github.com/politeuma/architekton-py/issues/new/choose
-    about: Template wiring, rendering, or gating problems belong in architekton-py (the consumer template), not here.
