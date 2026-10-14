@@ -51,17 +51,7 @@ and the ``import validate`` attribute surface working.
 
 from __future__ import annotations
 
-import argparse
-import datetime as dt
-import re
-import subprocess
 import sys
-from collections.abc import Callable, Iterable
-from pathlib import Path
-from typing import Any
-from urllib.parse import urlparse
-
-import yaml
 
 from validation.cli import main, print_validation_report
 from validation.const import (
@@ -83,9 +73,9 @@ from validation.const import (
     REQUIRED_HEADINGS,
     REVIEW_BY_RE,
     REVIEW_HORIZON,
-    SECTIONS,
     SECTION_GLOB,
     SECTION_LICENSE,
+    SECTIONS,
     SOURCE_RETRIES,
     SOURCE_TIMEOUT,
     SOURCE_USER_AGENT,
@@ -111,9 +101,6 @@ from validation.corpus import (
     validate_corpus,
     validate_section_files,
 )
-from validation.frontmatter import read_section, split_front_matter
-from validation.manifest import build_manifest, render_manifest
-from validation.vocabulary import load_vocabulary, when_vocab
 from validation.liveness import (
     check_sources,
     drift_report,
@@ -123,15 +110,12 @@ from validation.liveness import (
     print_source_summary,
     run_sources_check,
 )
-from validation.probe import curl_args, parse_curl_status, probe_source
-from validation.report import error, reset, warn
 from validation.sources import (
     collect_source_urls,
     extract_section_urls,
     extract_yaml_sources,
     strip_url_punct,
 )
-from validation.upstream import check_upstream_project_status
 
 __all__ = [
     "BANNED_PHRASES",
@@ -192,28 +176,6 @@ __all__ = [
 
 # Back-compat: the pre-split module exposed these private helpers, so keep
 # them importable (without advertising them in __all__).
-from validation.corpus import _validate_section_file  # noqa: E402
-from validation.liveness import (  # noqa: E402
-    _format_source_line,
-    _is_flagged_with_grounding,
-    _print_upstream_notes,
-    _probe_unique_urls,
-    _report_review_dates_drift,
-    _report_source_liveness,
-)
-from validation.probe import _run_curl  # noqa: E402
-from validation.sources import (  # noqa: E402
-    _add_source_urls,
-    _collect_yaml_source_urls,
-    _section_file_source_urls,
-    _split_front_matter_sources,
-    _yaml_data_source_urls,
-)
-from validation.upstream import (  # noqa: E402
-    _load_obligation_doc,
-    _obligation_notes,
-    _open_law_note,
-)
 
 # Back-compat: the old module printed via a private `_print_validation_report`.
 _print_validation_report = print_validation_report
