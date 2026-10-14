@@ -126,7 +126,7 @@ uv run law-map list                # all obligation ids
 uv run law-map show privacy/no-cleartext-pii-logging
 uv run law-map check               # groundings due for review (default 30 days)
 uv run law-map check --sources --days 30   # also HEAD-check grounding + guidance section source URLs
-uv run law-map export --out out/   # kanon-style .md.jinja section skeletons
+uv run law-map export --out out/   # guidance-format .md section drafts (copy to guidance/sections/draft/)
 uv run law-map stats --markdown    # scope tables (the README "Scope today" block)
 uv run law-map watch               # law-watch: were cited instruments amended? (network; covers sections too)
 uv run law-map record-hashes       # dry-run: show open_law text hashes (`--write` records them)

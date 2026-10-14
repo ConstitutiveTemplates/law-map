@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 
 from . import check, sources, stats, watch
 from .export import export_obligations
@@ -100,7 +101,14 @@ def cmd_check(args: argparse.Namespace, corpus: Corpus) -> int:
 
 
 def cmd_export(args: argparse.Namespace, corpus: Corpus) -> int:
-    written = export_obligations(corpus.obligations, args.out, today=check.today())
+    root = getattr(args, "root", None)
+    checks_root = Path(root).parent / "checks" if root is not None else None
+    written = export_obligations(
+        corpus.obligations,
+        args.out,
+        today=check.today(),
+        checks_root=checks_root if checks_root is not None and checks_root.is_dir() else None,
+    )
     for path in written:
         print(f"wrote {path}")
     if not written:

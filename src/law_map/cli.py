@@ -109,7 +109,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    p_export = sub.add_parser("export", help="render obligations as .md.jinja kanon sections")
+    p_export = sub.add_parser("export", help="render obligations as guidance-format .md section drafts")
     p_export.add_argument("--out", type=Path, default=Path("out"), help="output directory")
 
     p_migrate = sub.add_parser(

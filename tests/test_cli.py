@@ -136,7 +136,7 @@ def test_check_clean_exits_0(tmp_path, monkeypatch, capsys) -> None:
 def test_export_smoke(corpus_dir: str, tmp_path, capsys) -> None:
     out = tmp_path / "out"
     assert cli.main(["--root", corpus_dir, "export", "--out", str(out)]) == 0
-    assert (out / "valid-fixture.md.jinja").is_file()
+    assert (out / "valid-fixture.md").is_file()
     out_text = capsys.readouterr().out
     assert "wrote" in out_text
 
