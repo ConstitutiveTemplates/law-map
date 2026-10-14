@@ -157,7 +157,7 @@ def _review_watch_section(ob: Obligation) -> list[str]:
         "",
         "<!--",
         "本セクションは法的助言を構成しません。規制状況は変化します。",
-        "→ https://github.com/ConstitutiveTemplates/law-map (義務グラフの原本)",
+        "→ https://github.com/politeuma/law-map (義務グラフの原本)",
         "-->",
         "",
     ]

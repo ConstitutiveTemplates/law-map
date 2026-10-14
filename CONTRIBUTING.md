@@ -8,7 +8,7 @@ free-form PRs.
 ## Every change starts as a Legal RFC issue
 
 Open a [Legal RFC
-issue](https://github.com/ConstitutiveTemplates/law-map/issues/new?template=legal_rfc.yml)
+issue](https://github.com/politeuma/law-map/issues/new?template=legal_rfc.yml)
 using the existing template. It asks for the jurisdiction, source type,
 affected obligation id, the proposed change, a primary source URL, and
 reviewer expertise. Wait for the discussion to settle before writing a PR.
@@ -50,7 +50,7 @@ the canonical instrument URL in `sources`. Do not rely on memory.
 
 law-map records *what instruments say*; the reviewed, human/AI-facing prose
 that tells a team what to do lives in
-[kanon](https://github.com/ConstitutiveTemplates/kanon).
+[kanon](https://github.com/politeuma/kanon).
 An obligation points at its prose via `related_sections`
 (`<tier>-<slug>` ids), and `law-map export` produces section skeletons.
 Section prose corrections belong there, not here.

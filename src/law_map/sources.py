@@ -15,7 +15,7 @@ import httpx
 from .model import Corpus, iter_groundings
 
 TIMEOUT = 10.0
-USER_AGENT = "law-map-check/0.1 (+https://github.com/ConstitutiveTemplates/law-map)"
+USER_AGENT = "law-map-check/0.1 (+https://github.com/politeuma/law-map)"
 
 
 @dataclass

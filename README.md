@@ -23,14 +23,14 @@ flowchart LR
     V -.->|weekly drift-watch| I[GitHub issue<br/>review_by expiry + dead sources]
 ```
 
-- [open-law](https://github.com/ConstitutiveTemplates/open-law) — scrapes
+- [open-law](https://github.com/politeuma/open-law) — scrapes
   world legislation into unified Law objects (exists; untouched here).
 - **law-map (this repo)** — organizes law as technical obligations, mapped
   to jurisdiction groundings covering civil law (statutes) and common law
   (precedent/guidance) via functional equivalence.
-- [kanon](https://github.com/ConstitutiveTemplates/kanon) —
+- [kanon](https://github.com/politeuma/kanon) —
   reviewed human/AI-facing prose sections consumed by templates.
-- [architekton-py](https://github.com/ConstitutiveTemplates/architekton-py) —
+- [architekton-py](https://github.com/politeuma/architekton-py) —
   vendors everything into generated AGENTS.md/CI.
 
 ## Layout
@@ -118,7 +118,7 @@ ref (`[open-law <amended|unavailable|unreachable>] <id> <source>:<law_id>`,
 ## Contributing
 
 Obligation changes start as a [Legal RFC
-issue](https://github.com/ConstitutiveTemplates/law-map/issues/new?template=legal_rfc.yml)
+issue](https://github.com/politeuma/law-map/issues/new?template=legal_rfc.yml)
 using the existing template; see [CONTRIBUTING.md](CONTRIBUTING.md) for
 grounding requirements and the validation commands.
 

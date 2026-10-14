@@ -33,7 +33,7 @@ jobs:
         run: uv sync --all-extras --dev
       - name: Install open-law for amendment probes (best-effort)
         continue-on-error: true
-        run: uv pip install "open-law @ git+https://github.com/ConstitutiveTemplates/open-law"
+        run: uv pip install "open-law @ git+https://github.com/politeuma/open-law"
       - name: Offline due/expired scan
         run: |
           uv run law-map check --days 30 > drift.txt 2>&1 || true
@@ -50,7 +50,7 @@ jobs:
       - name: Checkout kanon
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          repository: ConstitutiveTemplates/kanon
+          repository: politeuma/kanon
           path: kanon
           persist-credentials: false
       - name: Kanon section cross-reference
