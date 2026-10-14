@@ -7,17 +7,19 @@ name = "law-map"
 version = "0.1.0"
 description = "Machine-readable obligation graph mapping legal groundings (statute, precedent, guidance) to technical obligations."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
 dependencies = [
     "pyyaml>=6.0",
     "httpx>=0.27",
+    # ISO 3166-1 / 3166-2 code lists for jurisdiction and subdivision checks.
+    "pycountry>=24.6",
 ]
 
 [project.optional-dependencies]
 # open-law resolves grounding `open_law` refs for `law-map check --sources`
 # amendment probes; without it every probe reports [skipped].
-openlaw = ["open-law; python_version >= '3.11'"]
+openlaw = ["open-law"]
 
 [project.scripts]
 law-map = "law_map.cli:main"
@@ -27,6 +29,7 @@ dev = [
     "pytest>=8.0",
     "ruff>=0.6",
     "mypy>=1.10",
+    "basedpyright>=1.20",
     "types-PyYAML>=6.0",
 ]
 
@@ -38,13 +41,13 @@ packages = ["src/law_map"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 strict = true
 files = ["src/law_map"]
 
@@ -52,6 +55,24 @@ files = ["src/law_map"]
 # open-law is an optional, untyped extra (`openlaw`); absent or present.
 module = ["open_law", "open_law.*"]
 ignore_missing_imports = true
+
+[tool.basedpyright]
+# Mirrors open-law's basedpyright settings (same language floor, same
+# standard mode) so the sibling repos type-check alike; mypy stays as the
+# strict gate.
+typeCheckingMode = "standard"
+pythonVersion = "3.11"
+include = ["src/law_map", "tests"]
+reportMissingImports = false
+reportMissingTypeStubs = false
+analyzeUnannotatedFunctions = false
+reportPrivateUsage = false
+reportUnusedParameter = false
+reportUnusedFunction = false
+reportUnusedImport = false
+reportUnusedCallResult = false
+enableTypeIgnoreComments = true
+reportImplicitStringConcatenation = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -1,5 +1,5 @@
 # law-map development tasks
-# `just check` = validate corpus + README stats sync + pytest + ruff + mypy
+# `just check` = validate corpus + README stats sync + pytest + ruff + mypy + basedpyright
 
 check:
     uv run law-map validate
@@ -7,6 +7,7 @@ check:
     uv run pytest -q
     uv run ruff check .
     uv run mypy src/law_map
+    uv run basedpyright
 
 fmt:
     uv run ruff format .

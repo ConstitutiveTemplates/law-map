@@ -10,7 +10,7 @@ import yaml
 
 from law_map import check as check_mod
 from law_map.check import CheckReport, check_reviews, probe_open_law, run_check
-from law_map.model import load_corpus
+from law_map.loader import load_corpus
 
 from .test_model import VALID_OBLIGATION, write_corpus
 

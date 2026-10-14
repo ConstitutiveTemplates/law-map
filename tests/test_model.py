@@ -7,13 +7,9 @@ from pathlib import Path
 import pytest
 import yaml
 
-from law_map.model import (
-    check_codex_coverage,
-    check_codex_sections,
-    check_cross_references,
-    codex_section_path,
-    load_corpus,
-)
+from law_map.kanon import check_codex_coverage, check_codex_sections, codex_section_path
+from law_map.loader import load_corpus
+from law_map.refs import check_cross_references
 
 VALID_OBLIGATION: dict = {
     "version": 1,
@@ -268,8 +264,9 @@ def test_codex_section_path_resolves_by_tier_and_slug(tmp_path: Path) -> None:
     codex = _write_codex(tmp_path)
     target = codex_section_path(codex, "baseline-personal-data")
     assert target == codex / "sections" / "baseline" / "personal-data.md.jinja"
-    assert target.is_file()
-    assert codex_section_path(codex, "evolving-new-section").is_file()
+    assert target is not None and target.is_file()
+    other = codex_section_path(codex, "evolving-new-section")
+    assert other is not None and other.is_file()
 
 
 def test_codex_section_path_rejects_malformed_ids(tmp_path: Path) -> None:
