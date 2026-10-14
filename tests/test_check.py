@@ -190,3 +190,26 @@ def test_run_check_without_sources_skips_open_law(tmp_path: Path) -> None:
     corpus = load_corpus(root)
     report = run_check(corpus, today=date(2026, 10, 4), days=30, sources=False)
     assert report.open_law == []
+
+def test_guidance_section_urls_read_from_front_matter(tmp_path: Path) -> None:
+    from law_map.sources import guidance_section_refs, guidance_section_urls
+
+    sections = tmp_path / "guidance" / "sections" / "baseline"
+    sections.mkdir(parents=True)
+    (sections / "demo.md").write_text(
+        "---\nid: baseline-demo\nversion: '2026-09-21.1'\n"
+        "sources:\n  - https://example.com/a\n  - https://example.com/shared\n---\n# Demo\n",
+        encoding="utf-8",
+    )
+    (sections / "other.md").write_text(
+        "---\nid: baseline-other\nversion: '2026-09-21.1'\n"
+        "sources:\n  - https://example.com/shared\n---\n# Other\n",
+        encoding="utf-8",
+    )
+    root = tmp_path / "guidance"
+    assert guidance_section_urls(root) == ["https://example.com/a", "https://example.com/shared"]
+    refs = guidance_section_refs(root)
+    assert [(sid, ver) for sid, _, ver in refs] == [
+        ("baseline-demo", "2026-09-21"),
+        ("baseline-other", "2026-09-21"),
+    ]

@@ -50,31 +50,35 @@ subset lives in `src/law_map/model.py`. What validation actually enforces:
 - `enforcement.check_refs` entries must point to existing
   `checks/<domain>/<slug>.yml` files (error otherwise).
 - `requires` / `conflicts` must reference ids present in the corpus.
-- `related_sections` references kanon section ids
-  (`<tier>-<slug>`); verified with `law-map validate --kanon <checkout>`
-  (offline `validate` leaves them unchecked).
+- `related_sections` references guidance section ids
+  (`<tier>-<slug>`); verified against this repo's `guidance/` tree by
+  default (`law-map validate --kanon <checkout>` checks an external tree).
 
 Cite the exact legal text — pinpoint article/section/case in `citation`, and
 the canonical instrument URL in `sources`. Do not rely on memory.
 
-## Prose lives in kanon
+## Prose lives in guidance/
 
 law-map records *what instruments say*; the reviewed, human/AI-facing prose
-that tells a team what to do lives in
-[kanon](https://github.com/politeuma/kanon).
+that tells a team what to do lives in `guidance/sections/` (merged here from
+the archived [kanon](https://github.com/politeuma/kanon) repo; its history is
+preserved via `git subtree`).
 An obligation points at its prose via `related_sections`
 (`<tier>-<slug>` ids), and `law-map export` produces section skeletons.
-Section prose corrections belong there, not here.
+Section prose corrections belong in `guidance/sections/<tier>/<slug>.md` —
+see [docs/guidance.md](docs/guidance.md) for the layout, the generated
+`MANIFEST.yml`, and the freshness contract.
 
 ## Running the checks
 
 ```bash
-uv run law-map validate       # corpus rules; exits non-zero on any error
-uv run law-map check --sources  # review_by freshness + HEAD-check source URLs
+uv run law-map validate       # corpus rules + guidance/ cross-checks; exits non-zero on any error
+uv run law-map manifest --check  # generated guidance/sections/MANIFEST.yml is in sync
+uv run law-map check --sources  # review_by freshness + HEAD-check grounding + section source URLs
 ```
 
 `uv run pytest -q` runs the offline test suite. `just check` runs
-validate + pytest + ruff + mypy.
+validate + manifest sync + pytest + ruff + mypy + basedpyright.
 
 ## The `review_by` freshness contract
 

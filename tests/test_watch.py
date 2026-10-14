@@ -148,3 +148,31 @@ def test_cli_watch_exit_code(tmp_path: Path, monkeypatch, capsys) -> None:
     assert "[law-watch changed]" in capsys.readouterr().out
     monkeypatch.setattr(watch_mod, "_http_fetch", lambda _client: lambda _i: None)
     assert cli.main(["--root", str(root), "watch"]) == 0
+
+
+def test_section_watch_refs_baseline_on_version(tmp_path: Path) -> None:
+    from law_map.watch import collect_section_watch_refs
+
+    refs = collect_section_watch_refs(
+        [("region-eu-cra", ["https://eur-lex.europa.eu/eli/reg/2024/2847/oj"], "2026-09-21")]
+    )
+    assert len(refs) == 1
+    assert refs[0].obligation_id == "region-eu-cra"
+    assert refs[0].index == -1
+    assert refs[0].baseline == "2026-09-21"
+    assert refs[0].instrument == Instrument("eurlex", "32024R2847")
+
+
+def test_watch_laws_covers_section_refs(tmp_path: Path) -> None:
+    from law_map.watch import collect_section_watch_refs
+
+    root = write_corpus(tmp_path, VALID_OBLIGATION)
+    corpus = load_corpus(root)
+    section_refs = collect_section_watch_refs(
+        [("region-eu-cra", ["https://eur-lex.europa.eu/eli/reg/2024/2847/oj"], "2026-09-21")]
+    )
+    probes = watch_laws(corpus, fetch=lambda _i: ("2026-10-01", "CELEX x"), section_refs=section_refs)
+    section_lines = [p for p in probes if p.ref.index == -1]
+    assert len(section_lines) == 1
+    line = format_watch_line(section_lines[0])
+    assert line is not None and line.startswith("[law-watch changed] region-eu-cra section")

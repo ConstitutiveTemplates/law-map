@@ -117,6 +117,6 @@ def guidance_section_refs(guidance_root: Path) -> list[tuple[str, list[str], str
                     seen_urls.add(url)
                     urls.append(url)
         version = front.get("version")
-        version_date = str(version).split(".", 0)[0] if isinstance(version, str) else None
+        version_date = str(version).rsplit(".", 1)[0] if isinstance(version, str) else None
         found.append((str(sid), urls, version_date))
     return found

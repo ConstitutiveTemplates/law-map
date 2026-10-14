@@ -1,7 +1,14 @@
-# law-map
+# law-map — the rulebook
 
-Machine-readable **obligation graph**: law organized as technical obligations
-mapped to jurisdiction groundings.
+Machine-readable **obligation graph** plus the reviewed **guidance sections**
+that tell a team what to do: law organized as technical obligations mapped to
+jurisdiction groundings, with human/AI-facing prose for each rule.
+
+One rule = **obligation** (`obligations/<domain>/<slug>.yml`: the deontic
+requirement and its legal groundings) + optional **guidance**
+(`guidance/sections/<tier>/<slug>.md`: reviewed prose, triggers, and
+placement) + optional **check spec** (`checks/<domain>/<slug>.yml`: the
+machine check that enforces it).
 
 Instead of a flat "regulations" table, law-map stores *deontic rules you can
 implement* (prohibitions, obligations, permissions) with the legal sources
@@ -95,10 +102,15 @@ diagram of how the repositories fit together is
 ```
 schemas/obligation.schema.yml   field reference (types, constraints, enums)
 obligations/<domain>/<slug>.yml one obligation per file (reviewed by humans)
+guidance/sections/<tier>/<slug>.md reviewed guidance prose (CC BY 4.0; see docs/guidance.md)
+guidance/sections/MANIFEST.yml generated section index (do not edit; `law-map manifest`)
+guidance/sections/VOCABULARY.yml `when` / `placement` / `status` vocabulary (source of truth)
+guidance/tools/                 section validation + manifest tooling (kanon heritage)
 checks/<domain>/<slug>.yml      machine-check specs, optional per obligation
 src/law_map/                    loader, validator, checker, exporter, CLI
 tests/                          pytest suite (offline)
 docs/why-law-map.md             design note: functional equivalence
+docs/guidance.md                guidance sections: layout, manifest, freshness, consumers
 .github/workflows/              ci.yml, drift-watch.yml (weekly review scan + law-watch)
 ```
 
@@ -106,15 +118,15 @@ docs/why-law-map.md             design note: functional equivalence
 
 ```bash
 uv sync
-uv run law-map validate            # load corpus, report every error/warning
-uv run law-map validate --kanon kanon/   # also cross-check related_sections against a kanon checkout
+uv run law-map validate            # obligations + guidance/ cross-checks (related_sections <-> obligations)
+uv run law-map manifest --check    # generated guidance/sections/MANIFEST.yml is in sync
 uv run law-map list                # all obligation ids
 uv run law-map show privacy/no-cleartext-pii-logging
 uv run law-map check               # groundings due for review (default 30 days)
-uv run law-map check --sources --days 30   # also HEAD-check source URLs
+uv run law-map check --sources --days 30   # also HEAD-check grounding + guidance section source URLs
 uv run law-map export --out out/   # kanon-style .md.jinja section skeletons
 uv run law-map stats --markdown    # scope tables (the README "Scope today" block)
-uv run law-map watch               # law-watch: were cited instruments amended? (network)
+uv run law-map watch               # law-watch: were cited instruments amended? (network; covers sections too)
 uv run law-map --pack core list    # load only one pack (repeatable; default: all)
 uv run pytest -q
 uv run ruff check .
@@ -122,7 +134,7 @@ uv run mypy src/law_map
 ```
 
 Or with [just](https://github.com/casey/just): `just check` runs validate +
-the README stats sync check + pytest + ruff + mypy.
+manifest sync check + the README stats sync check + pytest + ruff + mypy + basedpyright.
 
 ## Packs
 
@@ -151,12 +163,16 @@ citation, ISO `review_by`, non-empty http(s) `sources`, optional `open_law`
 `reviewed_on`), and cross-references
 (`requires`/`conflicts` ids, `enforcement.check_refs` files). Files whose
 basename starts with `_` are excluded from the corpus (see
-`obligations/_example.yml`). `related_sections` ids (`<tier>-<slug>`) are
-resolved only with `--kanon <checkout>`: then each must resolve to
-`sections/<tier>/<slug>.md.jinja` per the `<tier>-<slug>` naming rule, and an id
-not present becomes an error, while kanon sections that no obligation's
+`obligations/_example.yml`). `related_sections` ids (`<tier>-<slug>`) resolve
+against this repo's `guidance/` tree by default: each must resolve to
+`guidance/sections/<tier>/<slug>.md` per the `<tier>-<slug>` naming rule, and an id
+not present becomes an error, while guidance sections that no obligation's
 `related_sections` references are reported as warnings (reverse coverage),
-never errors. Without `--kanon` the ids are unchecked.
+never errors. Pass `--kanon <checkout>` to validate against an external
+guidance checkout instead. The reverse direction — section front matter
+`obligations:` refs — is checked by the guidance tooling
+(`guidance/tools/validate.py`, `--strict-obligations` turns unknown ids into
+errors); see [docs/guidance.md](docs/guidance.md).
 
 ## Review freshness
 
@@ -170,7 +186,9 @@ the fetched text. Refs skip silently when the `open-law` package is not installe
 and report `[open-law unavailable]` when the source serves no machine full text.
 The weekly `drift-watch` workflow runs `law-map check --sources --days 30` and
 opens one GitHub issue (`law-drift` label) listing groundings due or expired,
-source URLs that now 404 or redirect, plus amended or unreachable open-law refs;
+source URLs that now 404 or redirect (grounding `sources:` **and** guidance
+section `sources:`, probed together — see [docs/guidance.md](docs/guidance.md)
+for the single-system design), plus amended or unreachable open-law refs;
 when a run is clean it closes any open `law-drift` issue with a "drift resolved"
 comment. `law-map check` exits 1 when any grounding is expired, so the workflow
 can gate on it.
@@ -181,8 +199,11 @@ therefore runs a **law-watch** job: `law-map watch` asks each cited
 instrument's publisher whether it was amended after the grounding was last
 verified — EUR-Lex (amending acts recorded against the CELEX, e.g.
 `32024R1689`), e-Gov (API v2 revision history), and legislation.gov.uk (the
-act's changes feed). Instruments come from `open_law` refs and source URLs.
-The baseline is the grounding's `reviewed_on` date, else its `effective` date
+act's changes feed). Instruments come from `open_law` refs and source URLs —
+grounding URLs plus guidance section `sources:` (section lines render as
+`[law-watch changed] <section-id> section <kind>:<instrument>` and are baselined
+on the section front matter `version` date). The grounding baseline is the
+grounding's `reviewed_on` date, else its `effective` date
 (`scheduled`/`proposed` groundings need `reviewed_on`). Each newer amendment
 prints `[law-watch changed] <id> groundings[<n>] <kind>:<instrument>: amended
 <date> by <act> (...)`, the command exits 1, and the job opens or updates one
