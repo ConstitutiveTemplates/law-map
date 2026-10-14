@@ -14,6 +14,11 @@ dependencies = [
     "httpx>=0.27",
 ]
 
+[project.optional-dependencies]
+# open-law resolves grounding `open_law` refs for `law-map check --sources`
+# amendment probes; without it every probe reports [skipped].
+openlaw = ["open-law; python_version >= '3.11'"]
+
 [project.scripts]
 law-map = "law_map.cli:main"
 
@@ -24,6 +29,9 @@ dev = [
     "mypy>=1.10",
     "types-PyYAML>=6.0",
 ]
+
+[tool.uv.sources]
+open-law = { git = "https://github.com/politeuma/open-law" }
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/law_map"]

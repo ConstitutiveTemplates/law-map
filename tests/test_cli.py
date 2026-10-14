@@ -10,6 +10,7 @@ import yaml
 
 from law_map import check as check_mod
 from law_map import cli
+from law_map import openlaw as openlaw_mod
 
 from .test_model import VALID_OBLIGATION
 
@@ -202,6 +203,10 @@ def test_check_sources_prints_skipped_count(tmp_path, monkeypatch, capsys) -> No
     root.mkdir()
     (root / "ob0.yml").write_text(yaml.safe_dump(doc), encoding="utf-8")
 
+    def _no_open_law() -> None:
+        raise ImportError("No module named 'open_law'")
+
+    monkeypatch.setattr(openlaw_mod, "_default_open_law_fetch", _no_open_law)
     monkeypatch.setattr(check_mod, "today", lambda: date(2026, 10, 4))
     assert cli.main(["--root", str(root), "check", "--sources", "--days", "30"]) == 0
     out = capsys.readouterr().out
