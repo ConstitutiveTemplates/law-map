@@ -55,7 +55,7 @@ TP-Link中継器の月715MBは実測例の一部で、複数メーカの実機�
 239ヶ国から到達。中国・台湾メーカが prominent だが中国発の断定はしない。
 出典: JANOG41藤村/谷崎スライド、GIGAZINE 2019-07-02、
 日経xTECH 2019-09-27(いずれもsourcesに記録)。
-一次(福岡大学IPC)で現状を確認すること(TODO)。
+現状は一次ソース(福岡大学IPC)で確認すること(下記「制度変更ウォッチ」の確認TODO)。
 
 ## 禁止パターン
 
@@ -73,7 +73,7 @@ TP-Link中継器の月715MBは実測例の一部で、複数メーカの実機�
 - cron・ポーリング時刻の分散(`$RANDOM % N`)、backoff+jitter付きリトライ。
 - ポーリング間隔の版管理、cache、User-Agent相当の識別子(運用者へ連絡可能に)。
 - 受ける側: per-IP/ASN rate limit・WAF・SYN cookie・上流Flowspec・CDN吸収。
-- 連絡・届出: 上流ISP・JPCERT/CC・委託先。事故報告手順TODO。
+- 連絡・届出: 上流ISP・JPCERT/CC・委託先。事故報告の手順は下記確認TODO参照。
 
 ## 運用チェック
 
@@ -92,6 +92,8 @@ TP-Link中継器の月715MBは実測例の一部で、複数メーカの実機�
   現状は一次ソースで確認 (review_by: 2026-12-18)。
 - 確認TODO: 福岡大学IPCの公開NTPページで現行ステータスを確認。
 - 影響TODO: 自プロジェクトのNTP設定に福岡大IP・ホスト名が残っていないか棚卸し。
+- 確認TODO: JPCERT/CCのインシデント報告手順(届出フォーム・対象範囲・
+  期限内報告の要否)を一次で確認し、自プロジェクトの連絡先一覧に反映する。
 
 <!-- 法的助言ではない。専門家レビュー必須。 / This is not legal advice; expert review required. -->
 

@@ -1,0 +1,104 @@
+name: Grounding proposal
+description: Suggest one new grounding (legal source) for an existing obligation. Lighter than a legal RFC — one source only.
+title: "[grounding] <obligation id>: <instrument name>"
+labels: ["grounding-proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Propose **one** source that should ground an existing obligation.
+        Cite the exact legal text (pinpoint + canonical URL); do not rely on
+        memory. For obligation-level changes (new/amended/retired obligations,
+        multiple sources, scope changes) use the heavier **Legal RFC** form.
+  - type: dropdown
+    id: obligation_id
+    attributes:
+      label: Obligation id
+      description: The existing obligation this source would ground.
+      multiple: false
+      options:
+        - obligation.accessibility.european-accessibility-act
+        - obligation.ai.biometric-identification-gated
+        - obligation.ai.contest-rules-compliance
+        - obligation.ai.llm-appsec-baseline
+        - obligation.ai.ml-bias-mitigation
+        - obligation.ai.samd-clinical-evaluation
+        - obligation.copyright.ai-training-data-use
+        - obligation.crypto.no-deprecated-algorithms
+        - obligation.licensing.no-copyleft-contamination
+        - obligation.privacy.external-transmission-declared
+        - obligation.privacy.no-cleartext-pii-logging
+        - obligation.security.coordinated-vulnerability-disclosure
+        - obligation.security.prompt-injection-defense
+        - obligation.security.public-ntp-hygiene
+        - obligation.security.sbom-and-vulnerability-handling
+    validations:
+      required: true
+  - type: input
+    id: jurisdiction
+    attributes:
+      label: Jurisdiction
+      description: ISO 3166-1 alpha-2 code (JP, US, DE, GB, ...) or EU; subdivision (ISO 3166-2) optional.
+      placeholder: "JP or US / CA"
+    validations:
+      required: true
+  - type: input
+    id: instrument
+    attributes:
+      label: Instrument / statute name
+      description: Issuing body and instrument, e.g. "委員会 — GDPR" or "総務省 — 個人情報保護法". Native script allowed.
+      placeholder: "Regulation (EU) 2016/679 (GDPR)"
+    validations:
+      required: true
+  - type: input
+    id: citation
+    attributes:
+      label: Pinpoint citation
+      description: Article/section/clause the grounding rests on, e.g. "第23条 (安全管理措置義務)" or "Art. 32".
+    validations:
+      required: true
+  - type: input
+    id: canonical_url
+    attributes:
+      label: Canonical URL
+      description: One http(s) URL on the authoritative host (official gazette, EUR-Lex, e-Gov, court, regulator).
+      placeholder: "https://eur-lex.europa.eu/eli/reg/2016/679/oj"
+    validations:
+      required: true
+  - type: dropdown
+    id: source_kind
+    attributes:
+      label: Source kind
+      description: How close is this URL to the instrument itself (schema v2 `source_kind`)?
+      options:
+        - primary — the instrument from its publisher
+        - official-secondary — an authority's own commentary page
+        - unofficial — third-party copy, archive snapshot, or write-up
+    validations:
+      required: true
+  - type: dropdown
+    id: status
+    attributes:
+      label: Instrument status
+      options:
+        - in_force
+        - scheduled
+        - proposed
+    validations:
+      required: true
+  - type: input
+    id: effective_date
+    attributes:
+      label: Effective date
+      description: ISO date the instrument took/takes effect (leave blank if not yet in force).
+      placeholder: "2018-05-25"
+    validations:
+      required: false
+  - type: textarea
+    id: what_it_requires
+    attributes:
+      label: What this source requires
+      description: In your own words — which behaviour does the pinpointed text mandate for this obligation?
+      placeholder: "Art. 32 requires ...; it grounds this obligation because ..."
+    validations:
+      required: true

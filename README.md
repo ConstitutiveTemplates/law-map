@@ -198,15 +198,9 @@ text hashing differently from the grounding's `verified_text_sha256` as
 `[open-law changed]` (record hashes with `law-map record-hashes --write`;
 every grounding of the same law is compared, fetching deduplicates). Each
 probe carries a sha256 of the fetched text. Refs skip silently when the
-`open-law` package is not installed
-The weekly `drift-watch` workflow runs `law-map check --sources --days 30` and
-opens one GitHub issue (`law-drift` label) listing groundings due or expired,
-source URLs that now 404 or redirect (grounding `sources:` **and** guidance
-section `sources:`, probed together — see [docs/guidance.md](docs/guidance.md)
-for the single-system design), plus amended or unreachable open-law refs;
-when a run is clean it closes any open `law-drift` issue with a "drift resolved"
-comment. `law-map check` exits 1 when any grounding is expired, so the workflow
-can gate on it.
+`open-law` package is not installed. This path is implemented and validated,
+but no obligation populates it yet (only `obligations/_example.yml` does);
+it activates as groundings gain open-law-backed refs.
 
 Dates alone miss a law that changes before its `review_by` (the EU AI Omnibus
 moved AI Act deadlines months ahead of every review date). The same workflow
@@ -214,7 +208,9 @@ therefore runs a **law-watch** job: `law-map watch` asks each cited
 instrument's publisher whether it was amended after the grounding was last
 verified — EUR-Lex (amending acts recorded against the CELEX, e.g.
 `32024R1689`), e-Gov (API v2 revision history), and legislation.gov.uk (the
-act's changes feed). Instruments come from `open_law` refs and source URLs —
+act's changes feed) — this is the live amendment-detection path today, since it
+works from source URLs alone and does not wait on `open_law` refs. Instruments
+come from `open_law` refs (when present) and source URLs —
 grounding URLs plus guidance section `sources:` (section lines render as
 `[law-watch changed] <section-id> section <kind>:<instrument>` and are baselined
 on the section front matter `version` date). The grounding baseline is the
