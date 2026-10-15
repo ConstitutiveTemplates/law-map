@@ -27,6 +27,7 @@ groundings:
       Economic operators placing designated consumer digital products and services on the EU market.
     exceptions: "microenterprises qualifying for the Directive (EU) 2019/882 Art. 4(5) statutory exemption"
     strength: binding
+    confidence: high
     sources:
       - https://eur-lex.europa.eu/eli/dir/2019/882/oj
   - jurisdiction: EU
@@ -39,6 +40,7 @@ groundings:
       presumption of conformity corresponding to W3C WCAG 2.1 Level AA.
     effective: "2021-03-01"
     review_by: "2027-01-31"
+    confidence: high
     sources:
       - https://www.etsi.org/deliver/etsi_en/301500_301599/301549/
 conflicts: []

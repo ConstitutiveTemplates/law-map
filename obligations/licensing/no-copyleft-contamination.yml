@@ -30,6 +30,7 @@ groundings:
       covenants); 17 USC §§ 501-504 infringement remedies apply.
     effective: "2008-08-13"
     review_by: "2027-03-31"
+    confidence: high
     sources:
       - https://law.justia.com/cases/federal/appellate-courts/cafc/08-1001/08-1001-2011-03-14.html
   - jurisdiction: EU
@@ -41,6 +42,7 @@ groundings:
     citation: "Art. 2 reproduction right and Art. 4 distribution right — licence conditions attach at copying/distribution."
     effective: "2001-06-22"
     review_by: "2027-03-31"
+    confidence: medium
     sources:
       - https://eur-lex.europa.eu/eli/dir/2001/29/oj
   - jurisdiction: DE
@@ -51,6 +53,7 @@ groundings:
     authority: "GPL enforcement in German courts"
     citation: "Welte v. Sitecom, OLG München / Landgericht München I (2004, 2006) — GPL conditions enforceable via injunction in copyright proceedings."
     review_by: "2027-03-31"
+    confidence: high
     sources:
       # English translation of LG München I 21 O 6123/04 (Welte v. Sitecom),
       # hosted by ifrOSS; the old fsfe.org activity page is gone (404).
@@ -63,6 +66,7 @@ groundings:
     authority: "著作権法 (Copyright Act)"
     citation: "第21条・第26条 — reproduction and transfer rights; licence violations actionable as infringement."
     review_by: "2027-03-31"
+    confidence: medium
     sources:
       - https://laws.e-gov.go.jp/law/345AC0000000048
 conflicts: []

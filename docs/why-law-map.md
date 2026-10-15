@@ -53,9 +53,11 @@ without the graph pretending all sources carry equal weight. Scope,
 `applicability`, and `status` fields keep groundings honest about who is
 bound and how hard. Each grounding also records *where it differs* from its
 siblings — `scope`, `exceptions`, and `strength` (`binding, persuasive,
-background`) — plus adverse history in `negative_history` and its
-provenance in `source_kind` (`primary, official-secondary, unofficial`),
-so functional equivalence never hides the ways the laws diverge.
+background`) — plus how sure its mapping to the obligation is in
+`confidence` (`high, medium, low`), adverse history in `negative_history`,
+and its provenance in `source_kind` (`primary, official-secondary,
+unofficial`), so functional equivalence never hides the ways the laws
+diverge or presumes a similarity the texts do not share.
 
 ## The pipeline
 

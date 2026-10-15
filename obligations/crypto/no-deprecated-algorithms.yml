@@ -33,6 +33,7 @@ groundings:
     applicability: >
       Binding on US federal systems; the de facto deprecation calendar
       industry and FTC 'reasonable security' analysis follow.
+    confidence: high
     sources:
       - https://csrc.nist.gov/pubs/sp/800/131/a/r2/final
   - jurisdiction: US
@@ -45,6 +46,7 @@ groundings:
     effective: "2024-03-31"
     review_by: "2027-03-31"
     applicability: "Systems storing, processing, or transmitting cardholder data."
+    confidence: high
     sources:
       - https://www.pcisecuritystandards.org/document_library/
   - jurisdiction: EU
@@ -60,6 +62,7 @@ groundings:
       operationalises.
     effective: "2027-12-11"
     review_by: "2027-01-31"
+    confidence: low
     sources:
       - https://eur-lex.europa.eu/eli/reg/2024/2847/oj
   - jurisdiction: JP
@@ -73,6 +76,7 @@ groundings:
       64-bit block ciphers; IPA guidance requires TLS 1.2+ with
       forward-secrecy suites for e-Gov facing systems.
     review_by: "2027-03-31"
+    confidence: high
     sources:
       - https://www.cryptrec.go.jp/en/index.html
 conflicts: []

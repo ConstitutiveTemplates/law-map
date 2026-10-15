@@ -2,16 +2,41 @@
 
 law-map is the obligation graph: machine-readable deontic rules (what
 software must do, must not do, or may do) grounded in precise legal sources.
-Changes here are reviewed by humans, so they start as issues — not as
-free-form PRs.
+Changes here are reviewed by humans; issues and pull requests are both
+welcome.
 
-## Every change starts as a Legal RFC issue
+## Issues and pull requests
 
-Open a [Legal RFC
+For a substantive change (a new obligation, a new jurisdiction, or a
+reinterpretation of a source) open a [Legal RFC
 issue](https://github.com/politeuma/law-map/issues/new?template=legal_rfc.yml)
 using the existing template. It asks for the jurisdiction, source type,
 affected obligation id, the proposed change, a primary source URL, and
-reviewer expertise. Wait for the discussion to settle before writing a PR.
+reviewer expertise. You may open the PR alongside it; you do not have to wait
+for the discussion to settle.
+
+Small PRs — a typo, a broken URL, a pinpoint citation, a `review_by` bump
+after re-verifying the source — are welcome directly. A maintainer links
+them to an issue afterwards if one is needed.
+
+## Reviewing without legal-advice exposure
+
+Reviewing a grounding here is not giving legal advice. A review records
+that you read the cited text and that the citation, scope, exceptions, and
+confidence match it, as you understand it in good faith. It is not an
+opinion on anyone's product, creates no lawyer-client or advisory
+relationship, and is not a statement by your employer.
+
+You do not need to name an employer or organisation to take part:
+
+- `reviewed_by.handle` is any stable handle (a GitHub username or a
+  pseudonym); real names are not required.
+- `reviewed_by.domain` states the area you reviewed (e.g. `JP data
+  protection`), not your affiliation.
+- Contribute from a personal account; nothing in the templates or the
+  schema asks for an organisation, and maintainers will not ask either.
+- A comment on the issue or PR is enough to give a review; a maintainer can
+  record the `reviewed_by` entry for you.
 
 ## Grounding requirements
 
@@ -51,6 +76,11 @@ subset lives in `src/law_map/model.py`. What validation actually enforces:
   is bound), `exceptions` (carve-outs), `strength` (`binding, persuasive,
   background`), and adverse subsequent history in `negative_history`
   (e.g. the 11th Cir.'s 2018 vacatur of the LabMD order).
+- Record how sure the grounding → obligation mapping is in `confidence`:
+  `high` (the cited text itself requires the behaviour), `medium` (it does
+  in substance, but scope/exceptions/strength diverge materially), `low`
+  (support by analogy or inference only — e.g. a general security duty
+  cited for a specific practice). Show the divergence, not only the match.
 - Peer review (`reviewed_by` handle+domain with `reviewed_on`, on the
   obligation and per grounding) is optional; anything lacking it displays
   as `draft`.

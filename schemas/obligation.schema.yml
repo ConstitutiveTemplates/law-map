@@ -71,6 +71,7 @@ Each grounding is a single jurisdiction with a precise legal source.
 | `scope`         | string | no       | who/what the source binds (functional-equivalence difference)        |
 | `exceptions`    | string | no       | carve-outs and exemptions (functional-equivalence difference)        |
 | `strength`      | enum   | no       | `binding, persuasive, background` — how hard the source binds (functional-equivalence difference) |
+| `confidence`    | enum   | no       | `high, medium, low` — how sure the grounding → obligation mapping is: `high` the cited text itself requires the behaviour; `medium` it does in substance but scope/exceptions/strength diverge materially; `low` support by analogy or inference only |
 | `negative_history` | list | no       | adverse subsequent history (vacaturs, narrowings); entries `{holding (required), date, court, sources}` |
 | `verified_text_sha256` | string | no | lowercase hex sha256 of the source text as verified; compared by `law-map check --sources` (`law-map record-hashes --write` records it) |
 | `sources`       | list   | yes      | non-empty; every entry an `http(s)` URL                              |
@@ -94,7 +95,8 @@ Each grounding is a single jurisdiction with a precise legal source.
   `reviewed_on` must be ISO dates if present.
 - `scope`/`exceptions`, when present, must be non-empty strings;
   `strength`, when present, must be one of `binding, persuasive,
-  background`.
+  background`; `confidence`, when present, must be one of `high, medium,
+  low`.
 - `negative_history`, when present, must be a non-empty list of mappings
   with a non-empty `holding`; `date` must be an ISO date and `sources`
   http(s) URLs when present.

@@ -181,7 +181,7 @@ def cmd_migrate(args: argparse.Namespace) -> int:
             print(f"  - {note}")
     print(
         "review every inferred source_kind, then record negative_history, "
-        "scope/exceptions/strength, peer review, and verified_text_sha256 "
+        "scope/exceptions/strength/confidence, peer review, and verified_text_sha256 "
         "(law-map record-hashes --write)"
     )
     return 0

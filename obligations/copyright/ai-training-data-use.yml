@@ -29,6 +29,7 @@ groundings:
       would unreasonably prejudice the copyright owner's interests.
     effective: "2019-01-01"
     review_by: "2027-03-31"
+    confidence: high
     sources:
       - https://laws.e-gov.go.jp/document?lawid=345AC0000000048
       - https://www.cric.or.jp/english/clj/cl2.html
@@ -51,6 +52,7 @@ groundings:
     applicability: >
       Art. 4 applies to commercial training only where no opt-out was
       reserved; opt-out compliance is the operative duty.
+    confidence: high
     sources:
       - https://eur-lex.europa.eu/eli/dir/2019/790/oj
     open_law:
@@ -68,6 +70,7 @@ groundings:
       content summaries.
     effective: "2025-08-02"
     review_by: "2027-02-28"
+    confidence: high
     sources:
       - https://eur-lex.europa.eu/eli/reg/2024/1689/oj
   - jurisdiction: GB
@@ -81,6 +84,7 @@ groundings:
       training requires a licence. (Proposed broader exception shelved 2023;
       reform consultation active — watch.)
     review_by: "2026-12-31"
+    confidence: high
     sources:
       - https://www.legislation.gov.uk/ukpga/1988/48/section/29A
     open_law:
@@ -103,6 +107,7 @@ groundings:
     applicability: >
       Not a licence: a fact-specific defence. Document source provenance and
       non-substitutive purpose to stay defensible.
+    confidence: low
     sources:
       - https://www.copyright.gov/ai/
 conflicts: []

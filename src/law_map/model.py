@@ -24,6 +24,7 @@ import pycountry
 
 __all__ = [
     "CATEGORIES",
+    "CONFIDENCES",
     "ENFORCEMENT_LEVELS",
     "IDENT_RE",
     "JURISDICTION_ALIASES",
@@ -110,6 +111,12 @@ ENFORCEMENT_LEVELS = {"L0", "L1", "L2"}
 # and standards), ``background`` (withdrawn context, incident lessons, and
 # other non-binding material). Optional per grounding.
 STRENGTHS = {"binding", "persuasive", "background"}
+# How sure the grounding -> obligation mapping is (PHI-3: functional
+# equivalence presumes similarity too readily): ``high`` (the cited text
+# itself requires the obligation's behaviour), ``medium`` (requires it in
+# substance, but scope/exceptions/strength diverge materially), ``low``
+# (supports it only by analogy or inference). Optional per grounding.
+CONFIDENCES = {"high", "medium", "low"}
 # Grounding jurisdictions are ISO 3166-1 alpha-2 codes; EU (an ISO
 # "exceptionally reserved" code) is the one documented non-country
 # exception. Common non-ISO aliases are rejected with the ISO code to use.

@@ -31,6 +31,7 @@ groundings:
     applicability: >
       Industry baseline referenced by procurement and security reviews
       worldwide; version-agnostic (cite by name, not number).
+    confidence: high
     sources:
       - https://genai.owasp.org/llm-top-10/
   - jurisdiction: EU
@@ -49,6 +50,7 @@ groundings:
     applicability: >
       Providers of GPAI models, and of GPAI models with systemic risk,
       placing them on the EU market.
+    confidence: low
     sources:
       - https://eur-lex.europa.eu/eli/reg/2024/1689/oj
   - jurisdiction: EU
@@ -68,6 +70,7 @@ groundings:
     applicability: >
       Providers and deployers of high-risk AI systems placing on or using
       in the EU market; Annex I product-embedded systems from 2028-08-02.
+    confidence: medium
     sources:
       - https://eur-lex.europa.eu/eli/reg/2024/1689/oj
   - jurisdiction: US
@@ -82,6 +85,7 @@ groundings:
       human-oversight controls.
     effective: "2023-01-26"
     review_by: "2027-03-31"
+    confidence: medium
     sources:
       - https://www.nist.gov/itl/ai-risk-management-framework
 conflicts: []

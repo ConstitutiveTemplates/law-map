@@ -18,6 +18,7 @@ from urllib.parse import urlparse
 
 from .model import (
     CATEGORIES,
+    CONFIDENCES,
     ENFORCEMENT_LEVELS,
     IDENT_RE,
     JURISDICTION_ALIASES,
@@ -195,12 +196,15 @@ def _validate_subdivision(g: dict[str, Any], where: str, errors: list[str]) -> N
 
 
 def _validate_grounding_scope(g: dict[str, Any], where: str, errors: list[str]) -> None:
-    """Optional functional-equivalence differences: who is bound, what is excepted, how hard it binds."""
+    """Optional functional-equivalence differences: who is bound, what is excepted, how hard it binds,
+    and how sure the grounding -> obligation mapping is."""
     for key in ("scope", "exceptions"):
         if key in g and (not isinstance(g[key], str) or not g[key].strip()):
             errors.append(f"{where}.{key} must be a non-empty string")
     if "strength" in g and g["strength"] not in STRENGTHS:
         errors.append(f"{where}.strength must be one of {sorted(STRENGTHS)}, got {g['strength']!r}")
+    if "confidence" in g and g["confidence"] not in CONFIDENCES:
+        errors.append(f"{where}.confidence must be one of {sorted(CONFIDENCES)}, got {g['confidence']!r}")
 
 
 def _validate_negative_history(g: dict[str, Any], where: str, errors: list[str]) -> None:

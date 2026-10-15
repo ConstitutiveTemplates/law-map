@@ -26,6 +26,7 @@ groundings:
     applicability: "個人情報取扱事業者 — any business handling personal data"
     scope: "personal-information handlers, with no size threshold"
     strength: binding
+    confidence: medium
     sources:
       - https://laws.e-gov.go.jp/document?lawid=415AC0000000057
     open_law:
@@ -44,6 +45,7 @@ groundings:
     scope: "controllers and processors offering goods/services to, or monitoring, people in the Union (extraterritorial)"
     exceptions: "purely household activity (Art. 2(2)(c)); competent-authority processing under the Law Enforcement Directive"
     strength: binding
+    confidence: medium
     sources:
       - https://eur-lex.europa.eu/eli/reg/2016/679/oj
     open_law:
@@ -59,6 +61,7 @@ groundings:
     review_by: "2027-03-31"
     scope: "controllers and processors as under UK GDPR; post-Brexit text may diverge from EU GDPR"
     strength: binding
+    confidence: medium
     sources:
       - https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/
   - jurisdiction: US
@@ -74,6 +77,7 @@ groundings:
     scope: "for-profit businesses meeting the revenue/data-volume thresholds"
     exceptions: "sectoral carve-outs (GLBA, HIPAA, FCRA-covered data)"
     strength: binding
+    confidence: medium
     sources:
       - https://oag.ca.gov/privacy/ccpa
   - jurisdiction: US
@@ -97,6 +101,7 @@ groundings:
           unenforceably vague (894 F.3d 1304). The order no longer binds, and
           LabMD cannot be cited as decided authority that the logging practice
           itself was held unlawful; Wyndham remains the binding precedent.
+    confidence: low
     sources:
       - https://www.ftc.gov/legal-library/browse/cases-proceedings
 conflicts: []

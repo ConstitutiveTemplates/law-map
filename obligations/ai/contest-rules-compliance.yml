@@ -28,6 +28,7 @@ groundings:
     applicability: >
       All participants submitting code in rated AtCoder competitions.
     strength: background
+    confidence: high
     sources:
       - https://info.atcoder.jp/entry/llm-rules-en
 conflicts: []

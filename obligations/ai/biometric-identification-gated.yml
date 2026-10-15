@@ -35,6 +35,7 @@ groundings:
       Private entities collecting Illinois residents' biometrics; the
       US's most-enforced biometric statute (Facebook $650M, Google $100M
       settlements).
+    confidence: high
     sources:
       # ilga.gov rejects datacenter egress (TLS reset/timeouts); the
       # Wayback snapshot is the reachable copy of the same statute page.
@@ -52,6 +53,7 @@ groundings:
       GDPR Art. 9 — biometric data is special-category, explicit consent.
     effective: "2024-08-01"
     review_by: "2026-12-18"
+    confidence: high
     sources:
       - https://eur-lex.europa.eu/eli/reg/2024/1689/oj
       - https://eur-lex.europa.eu/eli/reg/2016/679/oj
@@ -65,6 +67,7 @@ groundings:
     citation: "§503.001 — informed consent before capture; destruction within one year of purpose expiry."
     effective: "2009-09-01"
     review_by: "2027-03-31"
+    confidence: high
     sources:
       - https://statutes.capitol.texas.gov/Docs/BC/htm/BC.503.htm
   - jurisdiction: US
@@ -77,6 +80,7 @@ groundings:
     citation: "Cal. Civ. Code §1798.140(ae), §1798.121 — right to limit use/disclosure of sensitive PI including biometrics."
     effective: "2023-01-01"
     review_by: "2027-01-31"
+    confidence: medium
     sources:
       - https://oag.ca.gov/privacy/ccpa
 conflicts: []

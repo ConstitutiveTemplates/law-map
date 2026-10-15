@@ -8,7 +8,7 @@ by URL alone), and the European Accessibility Act's move from the
 
 What migration does *not* do is the expert work: confirming each
 inferred ``source_kind``, recording ``negative_history``,
-``scope``/``exceptions``/``strength``, peer review (``reviewed_by`` +
+``scope``/``exceptions``/``strength``/``confidence``, peer review (``reviewed_by`` +
 ``reviewed_on``), and ``verified_text_sha256`` (see
 ``law-map record-hashes``). Files are rewritten with PyYAML, so comments
 do not survive — review the diff before committing.

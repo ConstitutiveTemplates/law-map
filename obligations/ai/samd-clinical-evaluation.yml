@@ -28,6 +28,7 @@ groundings:
     review_by: "2027-03-31"
     applicability: >
       Manufacturers submitting premarket applications for AI/ML-enabled medical devices.
+    confidence: high
     sources:
       - https://www.fda.gov/regulatory-information/search-fda-guidance-documents/marketing-submission-recommendations-predetermined-change-control-plan-artificial-intelligence
   - jurisdiction: EU
@@ -43,6 +44,7 @@ groundings:
     review_by: "2026-12-18"
     applicability: >
       Medical device software placed on the EU single market.
+    confidence: medium
     sources:
       - https://eur-lex.europa.eu/eli/reg/2017/745/oj
 conflicts: []

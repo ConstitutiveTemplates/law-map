@@ -33,6 +33,7 @@ groundings:
     applicability: >
       Providers and deployers of high-risk AI systems operating in the EU;
       Annex I product-embedded systems from 2028-08-02.
+    confidence: high
     sources:
       - https://eur-lex.europa.eu/eli/reg/2024/1689/oj
   - jurisdiction: US
@@ -52,6 +53,7 @@ groundings:
       US policy and only available on the archived bidenwhitehouse.archives.gov
       site. Kept as historical context for the subgroup-testing practice, not
       as a basis that binds anyone.
+    confidence: medium
     sources:
       - https://bidenwhitehouse.archives.gov/ostp/ai-bill-of-rights/
 conflicts: []
