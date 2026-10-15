@@ -91,8 +91,9 @@ subset lives in `src/law_map/model.py`. What validation actually enforces:
   `EU` is the single documented exception. `UK` is rejected — use `GB`.
 - `subdivision` must be an ISO 3166-2 code for its jurisdiction
   (`CA` for `US-CA`), checked via pycountry — not a hardcoded list.
-- `L2` check specs need an executable `blocking` rule and existing
-  `fixtures`; one obligation, one spec (merge duplicate L1/L2 specs).
+- `L2` check specs need an executable `blocking` recipe (`command` argv/shell
+  string plus optional `config` paths), a non-empty `fail_when` list, and
+  existing `fixtures`; one obligation, one spec (merge duplicate L1/L2 specs).
 - `enforcement.check_refs` entries must point to existing
   `checks/<domain>/<slug>.yml` files (error otherwise).
 - `requires` / `conflicts` must reference ids present in the corpus.
@@ -138,8 +139,9 @@ bump it only after actually re-verifying the source is still current.
 Record `reviewed_on: "YYYY-MM-DD"` on a grounding when you re-verify it
 against the instrument's current text. The weekly law-watch (`law-map
 watch`) compares that date with the instrument's latest amendment on
-EUR-Lex, e-Gov or legislation.gov.uk and files a `law-watch` issue when the
-law changed after it. After any corpus change, run `just stats` so the
+EUR-Lex, e-Gov, legislation.gov.uk, or the RFC Editor, lists source hosts
+with no amendment feed as `[not watched]`, and files a `law-watch` issue
+when the law changed after it. After any corpus change, run `just stats` so the
 README scope tables stay in sync (CI checks them).
 
 ## Disclaimer

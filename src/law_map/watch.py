@@ -11,14 +11,20 @@ grounding was last verified:
 - e-Gov (law id, e.g. ``415AC0000000057``): API v2 ``law_revisions``, the
   latest ``amendment_promulgate_date``;
 - legislation.gov.uk (``ukpga/1988/48``): the changes feed for the act,
-  newest affecting legislation first.
+  newest affecting legislation first;
+- RFC Editor (``rfc9116``): the ``rfc/<n>.json`` metadata record — the
+  ``obsoleted_by``/``updated_by`` lists name the superseding RFCs, or the
+  record is current when both are empty.
 
 A grounding's baseline is its ``reviewed_on`` date, else its ``effective``
 date (a ``scheduled``/``proposed`` grounding has no baseline without
 ``reviewed_on``: its ``effective`` is a future date, not a verification).
 An amendment newer than the baseline is reported as ``[law-watch changed]``;
 re-verify the grounding and record ``reviewed_on`` to acknowledge it.
-Instruments are fetched once each but compared per grounding. Never raises.
+URLs on hosts with no amendment feed (``www.ftc.gov``, ``oag.ca.gov``,
+``www.nist.gov``, ...) are listed as ``[not watched] <host>`` lines so the
+blind spot is visible instead of silent. Instruments are fetched once each
+but compared per grounding. Never raises.
 """
 
 from __future__ import annotations
@@ -28,6 +34,7 @@ import xml.etree.ElementTree as ET
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
+from urllib.parse import urlsplit
 
 import httpx
 
@@ -46,7 +53,9 @@ __all__ = [
     "instruments_of_url",
     "latest_egov_amendment",
     "latest_eurlex_amendment",
+    "latest_rfc_update",
     "latest_uk_effect",
+    "unwatched_hosts",
     "watch_laws",
 ]
 
@@ -57,6 +66,7 @@ UK_CHANGES_FEED = (
     "https://www.legislation.gov.uk/changes/affected/{id}/data.feed"
     "?results-count=20&sort=affecting-year-number&order=descending"
 )
+RFC_METADATA = "https://www.rfc-editor.org/rfc/rfc{num}.json"
 EURLEX_QUERY = """PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
 SELECT ?celex ?date WHERE {{
   ?work cdm:resource_legal_id_celex "{celex}"^^<http://www.w3.org/2001/XMLSchema#string> .
@@ -72,14 +82,15 @@ _ELI_LETTER = {"reg": "R", "dir": "L", "dec": "D"}
 _CELEX_RE = re.compile(r"^3\d{4}[RLD]\d{4}$")
 _EGOV_RE = re.compile(r"laws\.e-gov\.go\.jp/(?:document\?lawid=|law/)([0-9A-Za-z]+)")
 _UK_RE = re.compile(r"legislation\.gov\.uk/((?:ukpga|uksi|asp|ssi|anaw|asc|wsi|nia|nisr|nisi)/\d{4}/\d+)")
+_RFC_RE = re.compile(r"rfc-editor\.org/(?:rfc/rfc(\d+)|info/rfc(\d+))", re.IGNORECASE)
 _OPEN_LAW_KIND = {"eu": "eurlex", "jp": "egov", "uk": "uk", "gb": "uk"}
 _NO_BASELINE_STATUSES = {"scheduled", "proposed"}
 
 
 @dataclass(frozen=True)
 class Instrument:
-    kind: str  # "eurlex" | "egov" | "uk"
-    ident: str  # CELEX | e-Gov law id | "<type>/<year>/<number>"
+    kind: str  # "eurlex" | "egov" | "uk" | "rfc"
+    ident: str  # CELEX | e-Gov law id | "<type>/<year>/<number>" | "rfc<number>"
 
     def __str__(self) -> str:
         return f"{self.kind}:{self.ident}"
@@ -121,7 +132,7 @@ def instruments_of(grounding: dict[str, Any]) -> list[Instrument]:
 
 
 def instruments_of_url(url: object) -> list[Instrument]:
-    """Watchable instruments in one source URL (EUR-Lex ELI, e-Gov, legislation.gov.uk)."""
+    """Watchable instruments in one source URL (EUR-Lex ELI, e-Gov, legislation.gov.uk, RFC)."""
     if not isinstance(url, str):
         return []
     if m := _ELI_RE.search(url):
@@ -132,7 +143,44 @@ def instruments_of_url(url: object) -> list[Instrument]:
         return [Instrument("egov", m.group(1))]
     if m := _UK_RE.search(url):
         return [Instrument("uk", m.group(1))]
+    if m := _RFC_RE.search(url):
+        return [Instrument("rfc", f"rfc{m.group(1) or m.group(2)}")]
     return []
+
+
+def unwatched_hosts(corpus: Corpus, section_sources: list[str] | None = None) -> dict[str, int]:
+    """Grounding/section source hosts with no amendment feed, mapped to URL counts.
+
+    Every grounding ``sources`` URL (plus ``section_sources``) that yields no
+    :func:`instruments_of_url` instrument counts once under its lowercased
+    hostname; non-URL entries count under ``"?"``. Sorted most-cited first
+    by the caller.
+    """
+    from .model import iter_groundings
+
+    counts: dict[str, int] = {}
+    urls: list[object] = []
+    for grounding in iter_groundings(corpus):
+        sources = grounding.get("sources")
+        if isinstance(sources, list):
+            urls.extend(sources)
+    urls.extend(section_sources or [])
+    for url in urls:
+        if instruments_of_url(url):
+            continue
+        host = _host_of(url)
+        counts[host] = counts.get(host, 0) + 1
+    return counts
+
+
+def _host_of(url: object) -> str:
+    """Lowercased hostname of a source URL, or ``"?"`` when unparseable."""
+    if not isinstance(url, str):
+        return "?"
+    try:
+        return (urlsplit(url).hostname or "?").lower()
+    except ValueError:
+        return "?"
 
 
 def collect_watch_refs(corpus: Corpus) -> list[WatchRef]:
@@ -188,9 +236,7 @@ def watch_laws(
     return _watch(corpus, fetch, section_refs)
 
 
-def _watch(
-    corpus: Corpus, fetch: WatchFetch, section_refs: list[WatchRef] | None = None
-) -> list[WatchProbe]:
+def _watch(corpus: Corpus, fetch: WatchFetch, section_refs: list[WatchRef] | None = None) -> list[WatchProbe]:
     cache: dict[Instrument, tuple[str, str] | None | Exception] = {}
     probes: list[WatchProbe] = []
     for ref in [*collect_watch_refs(corpus), *(section_refs or [])]:
@@ -275,6 +321,24 @@ def latest_uk_effect(feed: str) -> tuple[str, str] | None:
     return best
 
 
+def latest_rfc_update(payload: dict[str, Any]) -> tuple[str, str] | None:
+    """Superseding RFCs from an RFC Editor ``rfc/<n>.json`` metadata record.
+
+    Returns ``("obsoleted", "RFCxxxx, ...")`` naming the ``obsoleted_by`` /
+    ``updated_by`` RFCs, or ``None`` when the record lists neither (the RFC
+    is current: RFCs are immutable, so a change can only arrive as a
+    successor). The ``"obsoleted"`` sentinel date compares greater than any
+    real baseline, so a superseded RFC always flags ``[law-watch changed]``.
+    """
+    supersedes: list[str] = []
+    for key in ("obsoleted_by", "updated_by"):
+        value = payload.get(key) or []
+        supersedes.extend(str(entry).upper() for entry in value if str(entry).strip())
+    if not supersedes:
+        return None
+    return ("obsoleted", ", ".join(dict.fromkeys(supersedes)))
+
+
 def _http_fetch(client: httpx.Client) -> WatchFetch:
     def _fetch(instrument: Instrument) -> tuple[str, str] | None:
         if instrument.kind == "eurlex":
@@ -291,6 +355,10 @@ def _http_fetch(client: httpx.Client) -> WatchFetch:
             resp = client.get(EGOV_REVISIONS.format(id=instrument.ident))
             resp.raise_for_status()
             return latest_egov_amendment(resp.json())
+        if instrument.kind == "rfc":
+            resp = client.get(RFC_METADATA.format(num=instrument.ident.removeprefix("rfc")))
+            resp.raise_for_status()
+            return latest_rfc_update(resp.json())
         resp = client.get(UK_CHANGES_FEED.format(id=instrument.ident))
         resp.raise_for_status()
         return latest_uk_effect(resp.text)

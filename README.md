@@ -168,9 +168,9 @@ schema `version: 2` (v1 files name the fix: `law-map migrate --in
 citation, ISO `review_by`, non-empty http(s) `sources`, optional `open_law`
 `{source, id}` ref into open-law for amendment detection, optional ISO
 `reviewed_on`, optional `verified_text_sha256`, `scope`/`exceptions`/`strength`/`confidence`,
-`negative_history`), at least one `primary` grounding per obligation,
 subdivisions as ISO 3166-2 codes, `L2` specs only with an executable
-`blocking` rule and existing `fixtures` (one spec per obligation), peer-review
+`blocking.command` recipe, a non-empty `fail_when` list, and existing `fixtures`
+(one spec per obligation), peer-review
 shape (`reviewed_by` handle+domain with `reviewed_on`; missing review displays
 as `draft`), and cross-references
 (`requires`/`conflicts` ids, `enforcement.check_refs` files). Files whose
@@ -207,16 +207,20 @@ moved AI Act deadlines months ahead of every review date). The same workflow
 therefore runs a **law-watch** job: `law-map watch` asks each cited
 instrument's publisher whether it was amended after the grounding was last
 verified — EUR-Lex (amending acts recorded against the CELEX, e.g.
-`32024R1689`), e-Gov (API v2 revision history), and legislation.gov.uk (the
-act's changes feed) — this is the live amendment-detection path today, since it
-works from source URLs alone and does not wait on `open_law` refs. Instruments
-come from `open_law` refs (when present) and source URLs —
-grounding URLs plus guidance section `sources:` (section lines render as
-`[law-watch changed] <section-id> section <kind>:<instrument>` and are baselined
-on the section front matter `version` date). The grounding baseline is the
-grounding's `reviewed_on` date, else its `effective` date
-(`scheduled`/`proposed` groundings need `reviewed_on`). Each newer amendment
-prints `[law-watch changed] <id> groundings[<n>] <kind>:<instrument>: amended
+`32024R1689`), e-Gov (API v2 revision history), legislation.gov.uk (the
+act's changes feed), and the RFC Editor (`rfc/<n>.json` metadata:
+`obsoleted_by`/`updated_by` name the superseding RFCs) — this is the live
+amendment-detection path today, since it works from source URLs alone and
+does not wait on `open_law` refs. Instruments come from `open_law` refs
+(when present) and source URLs — grounding URLs plus guidance section
+`sources:` (section lines render as `[law-watch changed] <section-id> section
+<kind>:<instrument>` and are baselined on the section front matter `version`
+date). Source URLs on hosts with no amendment feed (e.g. `www.ftc.gov`,
+`oag.ca.gov`, `www.nist.gov`) print as `[not watched] <host>` lines so the
+blind spot stays visible. The grounding baseline is the grounding's
+`reviewed_on` date, else its `effective` date (`scheduled`/`proposed`
+groundings need `reviewed_on`). Each newer amendment prints
+`[law-watch changed] <id> groundings[<n>] <kind>:<instrument>: amended
 <date> by <act> (...)`, the command exits 1, and the job opens or updates one
 `law-watch` issue (closed again on a clean run). After re-verifying a
 grounding, set `reviewed_on` to the date you checked it.

@@ -104,7 +104,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser(
         "watch",
         help=(
-            "law-watch: ask EUR-Lex, e-Gov and legislation.gov.uk whether cited "
+            "law-watch: ask EUR-Lex, e-Gov, legislation.gov.uk and the RFC Editor whether cited "
             "instruments were amended after each grounding's reviewed_on/effective (network)"
         ),
     )
@@ -134,9 +134,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="patch the obligation files (default is a dry run printing the hashes)",
     )
 
-    p_manifest = sub.add_parser(
-        "manifest", help="regenerate guidance/sections/MANIFEST.yml from section front matter"
-    )
+    p_manifest = sub.add_parser("manifest", help="regenerate guidance/sections/MANIFEST.yml from section front matter")
     p_manifest.add_argument(
         "--check",
         action="store_true",

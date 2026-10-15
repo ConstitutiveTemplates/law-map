@@ -156,12 +156,16 @@ def cmd_watch(args: argparse.Namespace, corpus: Corpus) -> int:
     if _report_empty_root(args, corpus):
         return 1
     guidance_root = default_guidance_root(args.root)
-    section_refs = watch.collect_section_watch_refs(sources.guidance_section_refs(guidance_root))
+    section_entries = sources.guidance_section_refs(guidance_root)
+    section_refs = watch.collect_section_watch_refs(section_entries)
     probes = watch.watch_laws(corpus, section_refs=section_refs)
     for probe in probes:
         line = watch.format_watch_line(probe)
         if line is not None:
             print(line)
+    section_urls = [url for _, urls, _ in section_entries for url in urls]
+    for host, count in sorted(watch.unwatched_hosts(corpus, section_urls).items(), key=lambda kv: (-kv[1], kv[0])):
+        print(f"[not watched] {host} — {count} grounding(s)")
     print(watch.format_watch_summary(probes))
     return 1 if any(p.problem == "changed" for p in probes) else 0
 

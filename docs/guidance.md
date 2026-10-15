@@ -78,11 +78,12 @@ but **law-map owns the watch** — one system, not two:
 - `law-map check --sources` HEAD-probes grounding `sources:` **and** guidance
   section `sources:` together (deduped; `src/law_map/sources.py`).
 - `law-map watch` covers section instruments too: EUR-Lex / e-Gov /
-  legislation.gov.uk URLs found in section `sources:` are compared against
-  the publisher feeds, baselined on the section front matter `version` date.
-  Section hits render as `[law-watch changed] <section-id> section
-  <kind>:<instrument>`. See `src/law_map/watch.py`
-  (`collect_section_watch_refs`, `guidance_section_refs`).
+  legislation.gov.uk / RFC Editor URLs found in section `sources:` are
+  compared against the publisher feeds, baselined on the section front
+  matter `version` date. Section hits render as `[law-watch changed]
+  <section-id> section <kind>:<instrument>`. Other section hosts print as
+  `[not watched]`. See `src/law_map/watch.py` (`collect_section_watch_refs`,
+  `guidance_section_refs`).
 - The weekly drift-watch workflow runs all three (`check --sources`,
   `validate`, guidance `validate.py --strict-obligations`) and files one
   `law-drift` / `law-watch` issue.

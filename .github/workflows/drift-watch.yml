@@ -13,9 +13,12 @@ name: drift-watch
 # The law-watch job watches the cited instruments themselves, so a law that
 # changes before its review_by date (e.g. the EU AI Omnibus) is still
 # caught: `law-map watch` queries EUR-Lex (CELEX amendment records), e-Gov
-# (revision history) and legislation.gov.uk (changes feed) and flags every
-# grounding whose instrument was amended after its reviewed_on/effective
-# date. It keeps ONE open 'law-watch' issue, closed again on a clean run.
+# (revision history), legislation.gov.uk (changes feed), and the RFC Editor
+# (rfc/<n>.json obsoleted_by/updated_by metadata), and lists source hosts
+# with no amendment feed as `[not watched]` so the blind spot stays visible.
+# It flags every grounding whose instrument was amended after its
+# reviewed_on/effective date. It keeps ONE open 'law-watch' issue, closed
+# again on a clean run.
 
 on:
   schedule:

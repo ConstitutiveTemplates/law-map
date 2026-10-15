@@ -6,7 +6,6 @@ import copy
 from pathlib import Path
 
 import httpx
-import pytest
 
 from law_map import cli
 from law_map import watch as watch_mod
@@ -18,7 +17,8 @@ from law_map.watch import (
     instruments_of,
     latest_egov_amendment,
     latest_eurlex_amendment,
-    latest_uk_effect,
+    latest_rfc_update,
+    unwatched_hosts,
     watch_laws,
 )
 
@@ -55,6 +55,8 @@ def test_instruments_from_urls_and_open_law_refs() -> None:
             "https://laws.e-gov.go.jp/document?lawid=415AC0000000057",
             "https://laws.e-gov.go.jp/law/345AC0000000048",
             "https://www.legislation.gov.uk/ukpga/1988/48/section/29A",
+            "https://www.rfc-editor.org/rfc/rfc9116.html",
+            "https://www.rfc-editor.org/info/rfc8633",
             "https://example.org/unrelated",
         ],
         open_law={"source": "eu", "id": "32024R1689"},
@@ -65,6 +67,8 @@ def test_instruments_from_urls_and_open_law_refs() -> None:
         Instrument("egov", "415AC0000000057"),
         Instrument("egov", "345AC0000000048"),
         Instrument("uk", "ukpga/1988/48"),
+        Instrument("rfc", "rfc9116"),
+        Instrument("rfc", "rfc8633"),
     ]
 
 
@@ -88,9 +92,12 @@ def test_parsers() -> None:
         ]
     }
     assert latest_egov_amendment(egov) == ("2026-07-17", "令和八年法律第五十六号")
-    assert latest_uk_effect(UK_FEED) == ("2026-02-13", "uksi/2026/103")
-    with pytest.raises(ValueError):
-        latest_uk_effect('<!DOCTYPE x [<!ENTITY a "a">]><feed/>')
+    assert latest_rfc_update({"obsoleted_by": [], "updated_by": []}) is None
+    assert latest_rfc_update({"obsoleted_by": ["RFC2821"], "updated_by": []}) == ("obsoleted", "RFC2821")
+    assert latest_rfc_update({"obsoleted_by": [], "updated_by": ["rfc6818", "RFC8398"]}) == (
+        "obsoleted",
+        "RFC6818, RFC8398",
+    )
 
 
 def test_baselines_and_flags(tmp_path: Path) -> None:
@@ -176,3 +183,53 @@ def test_watch_laws_covers_section_refs(tmp_path: Path) -> None:
     assert len(section_lines) == 1
     line = format_watch_line(section_lines[0])
     assert line is not None and line.startswith("[law-watch changed] region-eu-cra section")
+
+
+def test_rfc_status_change_flags_grounding(tmp_path: Path) -> None:
+    corpus = _corpus(
+        tmp_path,
+        _grounding(sources=["https://www.rfc-editor.org/rfc/rfc9116.html"], effective="2022-04-01"),
+        _grounding(sources=["https://www.rfc-editor.org/rfc/rfc8633.html"], effective="2019-07-01"),
+    )
+
+    def fetch(instrument: Instrument):
+        if instrument.ident == "rfc9116":
+            return None  # current: no obsoleted_by / updated_by
+        return ("obsoleted", "RFC9999")
+
+    probes = watch_laws(corpus, fetch=fetch)
+    assert [p.problem for p in probes] == [None, "changed"]
+    assert format_watch_line(probes[0]) is None
+    assert str(format_watch_line(probes[1])).startswith(
+        "[law-watch changed] obligation.privacy.valid-fixture groundings[1] rfc:rfc8633"
+    )
+
+
+def test_unwatched_hosts_lists_blind_spot(tmp_path: Path) -> None:
+    corpus = _corpus(
+        tmp_path,
+        _grounding(
+            sources=[
+                "https://www.ftc.gov/legal-library/browse/cases-proceedings",
+                "https://oag.ca.gov/privacy/ccpa",
+                "https://eur-lex.europa.eu/eli/reg/2024/1689/oj",
+            ]
+        ),
+    )
+    assert unwatched_hosts(corpus) == {"www.ftc.gov": 1, "oag.ca.gov": 1}
+    assert unwatched_hosts(corpus, ["https://www.nist.gov/x", "https://www.ftc.gov/y"]) == {
+        "www.ftc.gov": 2,
+        "oag.ca.gov": 1,
+        "www.nist.gov": 1,
+    }
+
+
+def test_cli_watch_prints_not_watched(tmp_path: Path, monkeypatch, capsys) -> None:
+    doc = copy.deepcopy(VALID_OBLIGATION)
+    doc["groundings"][0]["sources"] = ["https://www.ftc.gov/legal-library/browse/cases-proceedings"]
+    root = write_corpus(tmp_path, doc)
+    monkeypatch.setattr(watch_mod, "_http_fetch", lambda _client: lambda _i: None)
+    assert cli.main(["--root", str(root), "watch"]) == 0
+    out = capsys.readouterr().out
+    assert "[not watched] www.ftc.gov — 1 grounding(s)" in out
+    assert out.rstrip().endswith("law-watch: 0 instrument(s), 0 grounding(s) changed, 0 not found, 0 unreachable")

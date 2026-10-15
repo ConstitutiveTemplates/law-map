@@ -66,7 +66,8 @@ discussion to settle before writing the change.
 - `private_rule` and `incident_report` are not legal sources; never file
   them as `standard` or `precedent`.
 - Check specs claiming L2 (release-blocking) need an executable `blocking`
-  rule plus existing `fixtures`, one spec per obligation.
+  recipe (`command` plus optional `config`), a non-empty `fail_when` list,
+  plus existing `fixtures`, one spec per obligation.
   `enforcement.check_refs` entries must point at existing `checks/` files;
   `requires` / `conflicts` must reference ids present in the corpus.
 - `related_sections` ids (`<tier>-<slug>`) must resolve against this
