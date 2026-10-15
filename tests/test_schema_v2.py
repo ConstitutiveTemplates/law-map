@@ -6,6 +6,7 @@ import copy
 from hashlib import sha256
 from pathlib import Path
 
+import pytest
 import yaml
 
 from law_map.checkspecs import validate_check_spec
@@ -143,35 +144,89 @@ def test_record_hashes_round_trip(tmp_path: Path) -> None:
     assert grounding["verified_text_sha256"] == sha256(b"recorded text").hexdigest()
 
 
-def test_l2_without_fixtures_or_blocking_errors(tmp_path: Path) -> None:
+def _l2_doc(**overrides: object) -> dict:
+    doc: dict = {
+        "id": "privacy/x",
+        "obligation": "obligation.privacy.x",
+        "level": "L2",
+        "blocking": {"command": "semgrep scan --config checks/privacy/x.yml --sarif"},
+        "fail_when": ["raw identifier reaches a sink"],
+        "fixtures": ["tests/fixtures/present.py"],
+    }
+    doc.update(overrides)
+    return doc
+
+
+def _validate_l2(tmp_path: Path, doc: dict) -> list[str]:
     errors: list[str] = []
+    (tmp_path / "tests" / "fixtures").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "tests" / "fixtures" / "present.py").write_text("# fixture\n", encoding="utf-8")
     validate_check_spec(
-        {"id": "privacy/x", "obligation": "obligation.privacy.x", "level": "L2"},
+        doc,
         path=tmp_path / "checks" / "privacy" / "x.yml",
         errors=errors,
         known_ids=set(),
         repo_root=tmp_path,
     )
-    assert any("'blocking' rule" in e for e in errors)
+    return errors
+
+
+def test_l2_without_fixtures_blocking_or_fail_when_errors(tmp_path: Path) -> None:
+    errors = _validate_l2(tmp_path, {"id": "privacy/x", "obligation": "obligation.privacy.x", "level": "L2"})
+    assert any("'blocking' mapping" in e for e in errors)
+    assert any("'fail_when' list" in e for e in errors)
     assert any("'fixtures' list" in e for e in errors)
 
 
+def test_l2_with_prose_blocking_errors(tmp_path: Path) -> None:
+    errors = _validate_l2(tmp_path, _l2_doc(blocking="release job fails on any finding"))
+    assert any("'blocking' mapping" in e for e in errors)
+
+
+@pytest.mark.parametrize("command", ["", "   ", [], ["semgrep", ""], ["", 42], None, 42])
+def test_l2_with_non_executable_blocking_command_errors(tmp_path: Path, command: object) -> None:
+    errors = _validate_l2(tmp_path, _l2_doc(blocking={"command": command}))
+    assert any("'blocking.command'" in e for e in errors)
+
+
+@pytest.mark.parametrize("command", [["semgrep", "scan"], "semgrep scan --config x.yml"])
+def test_l2_with_executable_blocking_command_passes(tmp_path: Path, command: object) -> None:
+    assert _validate_l2(tmp_path, _l2_doc(blocking={"command": command})) == []
+
+
+def test_l2_with_bad_blocking_config_errors(tmp_path: Path) -> None:
+    errors = _validate_l2(tmp_path, _l2_doc(blocking={"command": "semgrep scan", "config": ["", 42]}))
+    assert any("'blocking.config'" in e for e in errors)
+
+
+def test_l2_without_fail_when_errors(tmp_path: Path) -> None:
+    errors = _validate_l2(tmp_path, _l2_doc(fail_when=[]))
+    assert any("'fail_when' list" in e for e in errors)
+
+
 def test_l2_with_missing_fixture_errors(tmp_path: Path) -> None:
-    errors: list[str] = []
-    validate_check_spec(
-        {
-            "id": "privacy/x",
-            "obligation": "obligation.privacy.x",
-            "level": "L2",
-            "blocking": "job fails",
-            "fixtures": ["tests/fixtures/absent.py"],
-        },
-        path=tmp_path / "checks" / "privacy" / "x.yml",
-        errors=errors,
-        known_ids=set(),
-        repo_root=tmp_path,
+    errors = _validate_l2(
+        tmp_path,
+        _l2_doc(fixtures=["tests/fixtures/absent.py"]),
     )
     assert any("does not exist" in e for e in errors)
+
+
+def test_all_repo_l2_specs_pass_gate_validation() -> None:
+    from law_map.checkspecs import validate_check_spec as _validate
+
+    repo_root = Path(__file__).resolve().parent.parent
+    failures: list[str] = []
+    for path in sorted((repo_root / "checks").rglob("*.yml")):
+        if path.name.startswith("_"):
+            continue
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict) or data.get("level") != "L2":
+            continue
+        errors: list[str] = []
+        _validate(data, path=path, errors=errors, known_ids=set(), repo_root=repo_root)
+        failures.extend(errors)
+    assert failures == []
 
 
 def test_migrate_document_v1_to_v2() -> None:

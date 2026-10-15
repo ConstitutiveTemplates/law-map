@@ -138,18 +138,20 @@ def _default_repo_root(path: Path) -> Path:
 
 
 def _validate_spec_gate(data: dict[str, Any], path: Path, errors: list[str], repo_root: Path) -> None:
-    """An ``L2`` hard gate is allowed only with an executable rule and fixtures that exist.
+    """Validate an L2 hard gate's executable rule and fixtures.
 
-    ``blocking`` wires the gate into a release job (the executable rule);
-    ``fixtures`` names repo-relative must-trigger / must-not-trigger files
-    every one of which must exist. L0 prose and L1 detection specs carry
-    no such requirement.
+    ``blocking`` is the verifiable gate recipe: a mapping with a non-empty
+    ``command`` (argv list or shell string, optionally plus ``config`` files
+    the gate reads) — not a prose paragraph about failing the release job.
+    ``fail_when`` names the non-empty list of concrete failure conditions the
+    command checks, and ``fixtures`` names repo-relative must-trigger /
+    must-not-trigger files every one of which must exist. L0 prose and L1
+    detection specs carry no such requirement.
     """
     if data.get("level") != "L2":
         return
-    blocking = data.get("blocking")
-    if not isinstance(blocking, str) or not blocking.strip():
-        errors.append(f"{path}: L2 specs need a 'blocking' rule wiring the gate into a release job")
+    _validate_spec_blocking(data, path, errors)
+    _validate_spec_fail_when(data, path, errors)
     fixtures = data.get("fixtures")
     if not isinstance(fixtures, list) or not fixtures:
         errors.append(f"{path}: L2 specs need a non-empty 'fixtures' list of test files")
@@ -161,3 +163,41 @@ def _validate_spec_gate(data: dict[str, Any], path: Path, errors: list[str], rep
         target = Path(repo_root) / fixture.split("#")[0].strip()
         if not target.is_file():
             errors.append(f"{path}: fixture '{fixture}' does not exist under {repo_root}")
+
+
+def _validate_spec_blocking(data: dict[str, Any], path: Path, errors: list[str]) -> None:
+    """An L2 ``blocking`` recipe must name something a release job can run."""
+    blocking = data.get("blocking")
+    if not isinstance(blocking, dict):
+        errors.append(
+            f"{path}: L2 specs need a 'blocking' mapping with a 'command' recipe "
+            f"(argv list or shell string) wiring the gate into a release job, got {blocking!r}"
+        )
+        return
+    command = blocking.get("command")
+    if isinstance(command, str):
+        ok = bool(command.strip())
+    elif isinstance(command, list):
+        ok = bool(command) and all(isinstance(part, str) and part.strip() for part in command)
+    else:
+        ok = False
+    if not ok:
+        errors.append(f"{path}: L2 'blocking.command' must be a non-empty argv list or shell string, got {command!r}")
+    config = blocking.get("config")
+    if config is not None and (
+        not isinstance(config, list)
+        or not config
+        or not all(isinstance(entry, str) and entry.strip() for entry in config)
+    ):
+        errors.append(f"{path}: L2 'blocking.config', when present, must be a non-empty list of path strings")
+
+
+def _validate_spec_fail_when(data: dict[str, Any], path: Path, errors: list[str]) -> None:
+    """An L2 gate must spell out the concrete failure conditions it checks."""
+    fail_when = data.get("fail_when")
+    if (
+        not isinstance(fail_when, list)
+        or not fail_when
+        or not all(isinstance(entry, str) and entry.strip() for entry in fail_when)
+    ):
+        errors.append(f"{path}: L2 specs need a non-empty 'fail_when' list of concrete failure conditions")

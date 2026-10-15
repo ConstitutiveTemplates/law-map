@@ -51,10 +51,10 @@ fixtures:
   - tests/fixtures/cleartext_logging_blocked.py   # must trigger
   - tests/fixtures/masked_logging_ok.py           # must NOT trigger
 
-blocking: >
-  Release job fails on any non-exempt finding. Findings are reported per
-  file+line with the tainted identifier class. Suppression requires a
-  dated, reasoned ignore entry naming the lawful basis and expiry.
+blocking:
+  command: semgrep scan --config checks/privacy/cleartext-pii-logging-prohibited.yml --sarif
+  config:
+    - checks/privacy/cleartext-pii-logging-prohibited.yml
 
 acceptance: >
   No raw personal identifier from scope.data_types reaches a logging,

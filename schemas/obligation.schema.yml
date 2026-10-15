@@ -140,12 +140,15 @@ for the same obligation is an error (merge duplicate L1/L2 specs into one).
 | `obligation` | string       | yes      | the obligation id this spec implements; must exist in the corpus            |
 | `level`      | enum         | yes      | `L0` prose \| `L1` detection \| `L2` hard gate (becomes rule enforcement)  |
 | `triggers`   | list of regex| no       | regex strings daimonion matches against code; every entry must compile       |
-| `blocking`   | string       | for L2   | the executable rule: how the gate fails a release job                      |
+| `blocking`   | mapping      | for L2   | the executable gate recipe: `command` (non-empty argv list or shell string) plus optional `config` (list of repo-relative paths the gate reads) |
+| `fail_when`  | list of str  | for L2   | concrete failure conditions the `blocking.command` checks; every entry non-empty |
 | `fixtures`   | list of path | for L2   | repo-relative must-trigger / must-not-trigger test files; every entry must exist |
 
-An `L2` spec without an executable `blocking` rule and existing `fixtures`
-fails validation: a hard gate must be runnable and pinned by tests, never a
-natural-language sketch.
+An `L2` spec without an executable `blocking.command` recipe, a non-empty
+`fail_when` list, and existing `fixtures` fails validation: a hard gate must
+be runnable and pinned by tests, never a natural-language sketch. Example:
+`blocking: {command: "semgrep scan --config checks/crypto/deprecated-algorithms-prohibited.yml --sarif",
+config: [checks/crypto/deprecated-algorithms-prohibited.yml]}`.
 
 ## Standards correspondences (PHI-9)
 

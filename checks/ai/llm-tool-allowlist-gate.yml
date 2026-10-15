@@ -48,10 +48,10 @@ fixtures:
   - tests/fixtures/llm_unbounded_tools.py   # must trigger
   - tests/fixtures/llm_gated_tools.py       # must NOT trigger
 
-blocking: >
-  Release job fails on any unbounded tool surface or missing approval
-  gate; findings are reported per file+line. Suppression requires a
-  dated, reasoned ignore entry naming the compensating control and expiry.
+blocking:
+  command: semgrep scan --config checks/ai/llm-tool-allowlist-gate.yml --sarif
+  config:
+    - checks/ai/llm-tool-allowlist-gate.yml
 
 acceptance: >
   Every tool-call surface maps to a declared allowlist entry with minimal

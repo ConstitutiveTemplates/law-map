@@ -40,11 +40,13 @@ security_contact:
 fixtures:
   - tests/fixtures/sbom.example.cdx.json   # minimal CycloneDX SBOM proving the artifact shape
 
-blocking: >
-  Release job fails when the SBOM artifact is absent, SECURITY.md names no
-  monitored intake channel, or the dependency audit reports an
-  unremediated exploitable CVE. Suppression requires a dated, reasoned
-  ignore entry naming the compensating control and expiry.
+blocking:
+  command:
+    - cyclonedx-bom
+    - --output
+    - sbom.cdx.json
+  config:
+    - SECURITY.md
 
 acceptance: >
   Every release carries an SBOM artifact with a recorded digest, a

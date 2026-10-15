@@ -63,11 +63,10 @@ fixtures:
   - tests/fixtures/deprecated_crypto.py   # must trigger
   - tests/fixtures/approved_crypto.py     # must NOT trigger
 
-blocking: >
-  Release job fails on any non-exempt finding; findings are reported per
-  file+line against the violated standard body (NIST SP 800-131A, PCI DSS
-  4.2.1, CRYPTREC list). Suppression requires a dated, reasoned ignore
-  entry naming the compensating control and expiry.
+blocking:
+  command: semgrep scan --config checks/crypto/deprecated-algorithms-prohibited.yml --sarif
+  config:
+    - checks/crypto/deprecated-algorithms-prohibited.yml
 
 acceptance: >
   No non-exempt code or config sink remains; every exemption cites its
