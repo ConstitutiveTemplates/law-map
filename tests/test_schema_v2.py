@@ -249,18 +249,14 @@ def test_migrate_rejects_non_v1() -> None:
 
 
 def test_migrate_tree_round_trips_repo_v1(tmp_path: Path) -> None:
-    import subprocess
-
-    repo = Path(__file__).resolve().parent.parent
-    proc = subprocess.run(
-        ["git", "-C", str(repo), "show", "e8e3a23:obligations/privacy/no-cleartext-pii-logging.yml"],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
+    # The v1 document is a committed fixture, not a `git show` of e8e3a23 —
+    # CI checkouts are shallow and don't carry that commit.
     v1_root = tmp_path / "v1"
     (v1_root / "privacy").mkdir(parents=True)
-    (v1_root / "privacy" / "no-cleartext-pii-logging.yml").write_text(proc.stdout, encoding="utf-8")
+    (v1_root / "privacy" / "no-cleartext-pii-logging.yml").write_text(
+        (Path(__file__).parent / "fixtures" / "v1-no-cleartext-pii-logging.yml").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
     out = tmp_path / "v2"
     report = migrate_tree(v1_root, out)
     assert "privacy/no-cleartext-pii-logging.yml" in report
