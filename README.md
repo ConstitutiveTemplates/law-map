@@ -113,6 +113,7 @@ src/law_map/                    loader, validator, checker, exporter, CLI
 tests/                          pytest suite (offline)
 docs/why-law-map.md             design note: functional equivalence
 docs/guidance.md                guidance sections: layout, manifest, freshness, consumers
+docs/tooling.md                deliberate tooling differences from sibling repos
 .github/workflows/              ci.yml, drift-watch.yml (weekly review scan + law-watch)
 ```
 
@@ -166,7 +167,7 @@ schema `version: 2` (v1 files name the fix: `law-map migrate --in
 (jurisdiction, source_type, required `source_kind`, status, authority,
 citation, ISO `review_by`, non-empty http(s) `sources`, optional `open_law`
 `{source, id}` ref into open-law for amendment detection, optional ISO
-`reviewed_on`, optional `verified_text_sha256`, `scope`/`exceptions`/`strength`,
+`reviewed_on`, optional `verified_text_sha256`, `scope`/`exceptions`/`strength`/`confidence`,
 `negative_history`), at least one `primary` grounding per obligation,
 subdivisions as ISO 3166-2 codes, `L2` specs only with an executable
 `blocking` rule and existing `fixtures` (one spec per obligation), peer-review
@@ -243,10 +244,13 @@ ref (`[open-law <amended|unavailable|unreachable>] <id> <source>:<law_id>`,
 
 ## Contributing
 
-Obligation changes start as a [Legal RFC
-issue](https://github.com/politeuma/law-map/issues/new?template=legal_rfc.yml)
-using the existing template; see [CONTRIBUTING.md](CONTRIBUTING.md) for
-grounding requirements and the validation commands.
+Small PRs are welcome directly; substantive obligation changes also get a
+[Legal RFC
+issue](https://github.com/politeuma/law-map/issues/new?template=legal_rfc.yml).
+Reviewing is not legal advice and needs no organisational affiliation; see
+[CONTRIBUTING.md](CONTRIBUTING.md) for grounding requirements and the
+validation commands. Deliberate tooling differences from the sibling repos
+are recorded in [docs/tooling.md](docs/tooling.md).
 
 ## License
 

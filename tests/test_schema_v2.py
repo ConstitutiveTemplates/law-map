@@ -99,6 +99,16 @@ def test_strength_enum(tmp_path: Path) -> None:
     assert any("strength must be one of" in e for e in corpus.errors)
 
 
+def test_confidence_enum(tmp_path: Path) -> None:
+    doc = _doc()
+    doc["groundings"][0]["confidence"] = "certain"
+    corpus = load_corpus(write_corpus(tmp_path, doc))
+    assert any("confidence must be one of" in e for e in corpus.errors)
+    for level in ("high", "medium", "low"):
+        doc["groundings"][0]["confidence"] = level
+        assert load_corpus(write_corpus(tmp_path, doc)).ok(), level
+
+
 def test_changed_hash_detected(tmp_path: Path) -> None:
     doc = _doc()
     doc["groundings"][0]["open_law"] = {"source": "eu", "id": "32016R0679"}

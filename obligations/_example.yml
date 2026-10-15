@@ -28,6 +28,7 @@ groundings:
     applicability: "personal information handlers"
     scope: "personal-information handlers, with no size threshold"
     strength: binding
+    confidence: high
     sources:
       - https://www.ppc.go.jp/personalinfo/legal/
     open_law:
@@ -42,6 +43,7 @@ groundings:
     authority: "FTC Act Section 5 enforcement"
     citation: "In re LabMD (order vacated — see negative_history)"
     review_by: "2027-03-31"
+    confidence: low
     sources:
       - https://www.ftc.gov/legal-library/browse/cases-proceedings
     negative_history:
@@ -59,6 +61,7 @@ groundings:
     review_by: "2027-01-31"
     exceptions: "products outside the numeric thresholds in Art. 2"
     strength: binding
+    confidence: medium
     sources:
       - https://eur-lex.europa.eu/eli/reg/2024/2847/oj
   - jurisdiction: GB
@@ -70,6 +73,7 @@ groundings:
     citation: "proposed data protection guidance"
     review_by: "2028-01-01"
     strength: persuasive
+    confidence: medium
     sources:
       - https://ico.org.uk/
 conflicts:

@@ -27,6 +27,7 @@ groundings:
     applicability: >
       Firmware, IoT devices, embedded systems, and distributed client software synchronizing time.
     strength: persuasive
+    confidence: high
     sources:
       - https://www.rfc-editor.org/rfc/rfc8633.html
   - jurisdiction: JP
@@ -44,6 +45,7 @@ groundings:
     applicability: >
       Firmware, IoT devices, embedded systems, and distributed client software synchronizing time.
     strength: background
+    confidence: medium
     sources:
       - https://2017.apricot.net/assets/files/APIC674/apricot2017-20170222-01-english-presentation_1487892982.pdf
 conflicts: []

@@ -33,6 +33,7 @@ groundings:
     applicability: >
       Web services and apps transmitting user identifiers to external
       parties (ads/analytics/crash tooling) toward Japanese users.
+    confidence: high
     sources:
       - https://laws.e-gov.go.jp/law/359AC0000000166
       - https://www.soumu.go.jp/main_sosiki/joho_tsusin/d_syohi/gaibusoushin_kiritsu_00001.html
@@ -48,6 +49,7 @@ groundings:
       transparency and Art. 6/7 lawful basis.
     effective: "2009-12-19"
     review_by: "2027-03-31"
+    confidence: high
     sources:
       - https://eur-lex.europa.eu/eli/dir/2002/58/oj
       - https://eur-lex.europa.eu/eli/reg/2016/679/oj
@@ -64,6 +66,7 @@ groundings:
     effective: "2021-12-01"
     review_by: "2027-03-31"
     applicability: "German-implementation baseline; the strictest ePrivacy transposition."
+    confidence: high
     sources:
       - https://dsgvo-gesetz.de/tdddg/
   - jurisdiction: US
@@ -79,6 +82,7 @@ groundings:
       honoured).
     effective: "2023-01-01"
     review_by: "2027-01-31"
+    confidence: medium
     sources:
       - https://oag.ca.gov/privacy/ccpa
 conflicts: []

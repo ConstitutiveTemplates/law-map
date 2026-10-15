@@ -30,6 +30,7 @@ groundings:
       the EU market; the secure-by-design baseline behind the isolation
       and gating practice.
     strength: binding
+    confidence: low
     sources:
       - https://eur-lex.europa.eu/eli/reg/2024/2847/oj
   - jurisdiction: US
@@ -46,6 +47,7 @@ groundings:
     applicability: >
       Developers, architects, and deployers of LLM-integrated software and autonomous agents.
     strength: background
+    confidence: high
     sources:
       - https://genai.owasp.org/llm-top-10/
   - jurisdiction: US
@@ -59,6 +61,7 @@ groundings:
     effective: "2025-01-15"
     review_by: "2027-03-31"
     strength: persuasive
+    confidence: high
     sources:
       - https://www.nist.gov/itl/ai-risk-management-framework
 conflicts: []
